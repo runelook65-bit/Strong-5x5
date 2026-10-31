@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ARM 5×5 — 12 Haftalık Kol Büyütme & Antrenman Takipçisi</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            oled: '#07080a',
+            card: '#121418',
+            cardHover: '#181b21',
+            borderDark: '#232730',
+            accentGreen: '#10b981',
+            accentGreenDark: '#064e3b',
+            accentAmber: '#f59e0b',
+            accentRed: '#ef4444'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: #07080a;
+      color: #f3f4f6;
+      font-family: 'Inter', sans-serif;
+      overscroll-behavior-y: none;
+    }
+    .set-btn {
+      transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .set-btn:active {
+      transform: scale(0.93);
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07080a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262a34;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-oled text-gray-100 flex flex-col items-center selection:bg-emerald-500/30">
+
+  <!-- App Container (Phone-First, Responsive on Tablet/Desktop) -->
+  <div class="w-full max-w-md md:max-w-2xl min-h-screen flex flex-col bg-oled border-x border-borderDark/60 relative pb-28">
+
+    <!-- Sticky Top Header -->
+    <header class="sticky top-0 z-30 bg-oled/90 backdrop-blur-md border-b border-borderDark px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-extrabold text-sm tracking-tighter">
+          5×5
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold tracking-tight text-white">ARM 5×5</h1>
+            <span id="headerTemplateBadge" class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              12 Hafta Kol
+            </span>
+          </div>
+          <p id="headerSubtitle" class="text-xs text-gray-400">Hafta 1 / 12 • Pazartesi (Antrenman A)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <!-- Sound Toggle Button -->
+        <button id="soundToggleBtn" type="button" class="p-2 rounded-xl bg-card border border-borderDark text-gray-300 hover:text-white active:scale-95 transition" title="Ses Bildirimi Aç/Kapat">
+          <svg id="soundIconOn" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"></path>
+          </svg>
+          <svg id="soundIconOff" class="w-4 h-4 text-gray-500 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path>
+          </svg>
+        </button>
+
+        <!-- Plate Calculator Quick Button -->
+        <button id="openPlateCalcBtn" type="button" class="px-2.5 py-2 rounded-xl bg-card border border-borderDark text-xs font-semibold text-gray-200 hover:border-emerald-500/50 active:scale-95 transition flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>Plaka</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Floating / Sticky Rest Timer Bar (Shown always for quick gym timing) -->
+    <div id="restTimerBar" class="bg-card/95 border-b border-borderDark px-4 py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div id="timerPulseDot" class="w-2.5 h-2.5 rounded-full bg-gray-600 shrink-0"></div>
+        <div class="truncate">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-medium text-gray-400">Dinlenme Sayacı</span>
+            <span id="timerPresetLabel" class="text-[11px] text-emerald-400 font-medium">(Set bitince otomatik başlar)</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="timerDisplay" class="font-mono text-lg font-bold text-white tracking-tight">01:30</span>
+            <span id="timerStatusText" class="text-[11px] text-gray-400">Hazır</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button id="timerPreset90Btn" type="button" class="px-2 py-1 rounded-lg bg-oled border border-borderDark text-xs font-mono text-gray-300 hover:border-emerald-500/40 active:scale-95">90s</button>
+        <button id="timerPreset150Btn" type="button" class="px-2 py-1 rounded-lg bg-oled border border-borderDark text-xs font-mono text-gray-300 hover:border-emerald-500/40 active:scale-95">2.5dk</button>
+        <button id="timerAdd15Btn" type="button" class="px-2 py-1 rounded-lg bg-oled border border-borderDark text-xs font-mono text-gray-300 hover:border-emerald-500/40 active:scale-95">+15s</button>
+        <button id="timerStartPauseBtn" type="button" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-xs font-semibold text-emerald-300 active:scale-95">Başlat</button>
+        <button id="timerResetBtn" type="button" class="p-1.5 rounded-lg bg-oled border border-borderDark text-gray-400 hover:text-white active:scale-95" title="Sayacı Sıfırla">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT VIEWS -->
+    <main class="flex-1 px-3.5 pt-3.5 space-y-4">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: ANTRENMAN (AKTİF SEANS & SET TAKİP) -->
+      <!-- ========================================== -->
+      <section id="viewWorkout" class="space-y-4">
+
+        <!-- Top Program Overview Strip (Matches Screenshot 3 top metrics) -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-card border border-borderDark rounded-2xl p-2.5 text-center">
+            <div class="text-base font-extrabold text-white">12</div>
+            <div class="text-[11px] text-gray-400">Hafta Program</div>
+          </div>
+          <div class="bg-card border border-borderDark rounded-2xl p-2.5 text-center">
+            <div class="text-base font-extrabold text-white">3</div>
+            <div class="text-[11px] text-gray-400">Gün / hafta</div>
+          </div>
+          <div class="bg-card border border-borderDark rounded-2xl p-2.5 text-center">
+            <div class="text-base font-extrabold text-white">45–60</div>
+            <div class="text-[11px] text-gray-400">Dakika / seans</div>
+          </div>
+        </div>
+
+        <!-- 1. Haftalık Program & Seans Seçici (Exact match to Screenshot 3) -->
+        <div class="bg-card border border-borderDark rounded-2xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <button id="prevWeekBtn" type="button" class="w-9 h-9 rounded-full border border-borderDark bg-oled flex items-center justify-center text-gray-300 hover:text-white active:scale-95 transition" title="Önceki Hafta">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            <div class="text-center">
+              <div class="flex items-center justify-center gap-2">
+                <span id="weekLabel" class="text-base font-bold text-white">Hafta 1 / 12</span>
+                <span id="deloadWeekBadge" class="hidden text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                  Deload (%50 Set)
+                </span>
+              </div>
+              <p id="weekPatternLabel" class="text-[11px] text-gray-400">Düzen: A / B / A (Tek Hafta)</p>
+            </div>
+            <button id="nextWeekBtn" type="button" class="w-9 h-9 rounded-full border border-borderDark bg-oled flex items-center justify-center text-gray-300 hover:text-white active:scale-95 transition" title="Sonraki Hafta">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- 3 Day Cards: Pazartesi / Çarşamba / Cuma -->
+          <div id="weekDaysGrid" class="grid grid-cols-3 gap-2.5">
+            <!-- Populated dynamically by renderWeekDays() -->
+          </div>
+
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Bir hafta <strong class="text-gray-200">A/B/A</strong>, sonraki hafta <strong class="text-gray-200">B/A/B</strong>. Salı, perşembe, cumartesi ve pazar dinlenme.
+          </p>
+        </div>
+
+        <!-- Template & Workout Mode Switcher Bar -->
+        <div class="bg-card border border-borderDark rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-gray-400">Şablon:</span>
+            <select id="templateSelect" class="bg-oled border border-borderDark rounded-xl px-2.5 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-emerald-500">
+              <option value="standard">ARM 5×5 (Orijinal Görsel Şablonu)</option>
+              <option value="hybrid5x5">ARM 5×5 Hibrit (B1: 5×5 + İzolasyon)</option>
+              <option value="stronglifts_arm">StrongLifts 5×5 + Kol Odaklı</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-1 bg-oled p-1 rounded-xl border border-borderDark">
+            <button id="forceWorkoutABtn" type="button" class="px-2.5 py-1 rounded-lg text-xs font-bold transition">A (Biceps)</button>
+            <button id="forceWorkoutBBtn" type="button" class="px-2.5 py-1 rounded-lg text-xs font-bold transition">B (Triceps)</button>
+          </div>
+        </div>
+
+        <!-- Active Workout Banner & Exercises Container -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between px-1">
+            <div>
+              <h2 id="activeWorkoutTitle" class="text-lg font-extrabold text-white tracking-tight">
+                Antrenman A — Biceps ağırlıklı
+              </h2>
+              <p id="activeWorkoutHint" class="text-xs text-gray-400">
+                Set kutusuna 1 kez dokun: <span class="text-emerald-400 font-semibold">Tam tekrar (✓)</span> • Tekrar dokun: <span class="text-amber-400 font-semibold">Eksik tekrar düşür</span>
+              </p>
+            </div>
+            <span id="sessionProgressBadge" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-card border border-borderDark text-gray-300">
+              0/13 set
+            </span>
+          </div>
+
+          <!-- Exercise Cards List -->
+          <div id="exerciseCardsContainer" class="space-y-3.5">
+            <!-- Populated dynamically by renderExercises() -->
+          </div>
+        </div>
+
+        <!-- Standalone Quick 5x5 Set Tracker Widget (Exact match to Screenshot 1) -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-white">Hızlı 5×5 Set Takipçisi (Serbest Sayaç)</h3>
+              <p class="text-[11px] text-gray-400">Ekstra hareket veya hızlı set takibi için bağımsız sayaç</p>
+            </div>
+            <span id="quickTrackerBadge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-oled border border-borderDark text-gray-300">
+              2/5
+            </span>
+          </div>
+
+          <div id="quickTrackerSets" class="grid grid-cols-5 gap-2">
+            <!-- Populated by renderQuickTracker() -->
+          </div>
+
+          <p class="text-xs text-gray-400">
+            Her seti 5 düzgün tekrarla bitirdiğinde işaretle.
+          </p>
+
+          <button id="resetQuickTrackerBtn" type="button" class="w-full py-2.5 rounded-full border border-borderDark bg-oled hover:bg-cardHover text-xs font-semibold text-gray-200 active:scale-[0.99] transition">
+            Yeni harekete geç / sıfırla
+          </button>
+        </div>
+
+        <!-- Finish & Save Session CTA -->
+        <div class="bg-gradient-to-br from-emerald-950/60 to-card border border-emerald-500/40 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-sm font-bold text-white">Seansı Tamamla & Ağırlıkları Güncelle</div>
+              <div class="text-xs text-gray-300">StrongLifts kurallarına göre sonraki seans ağırlıklarını otomatik hesaplar.</div>
+            </div>
+            <div id="sessionVolumePreview" class="text-right font-mono text-xs text-emerald-400 font-bold">
+              0 kg hacim
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button id="completeWorkoutBtn" type="button" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-oled font-extrabold text-sm tracking-tight active:scale-[0.99] transition shadow-lg shadow-emerald-500/10">
+              Antrenmanı Bitir ve Kaydet
+            </button>
+            <button id="resetCurrentSessionBtn" type="button" class="px-3.5 py-3 rounded-xl bg-oled border border-borderDark text-xs font-semibold text-gray-300 hover:text-white active:scale-95 transition">
+              Sıfırla
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: PROGRAM & KURALLAR (REHBER & TABLO) -->
+      <!-- ========================================== -->
+      <section id="viewProgram" class="space-y-4 hidden">
+
+        <!-- 12-Week Visual Matrix -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-extrabold text-white">12 Haftalık Dönüşüm Takvimi</h2>
+              <p class="text-xs text-gray-400">Herhangi bir haftaya veya güne dokunarak o seansa geçebilirsin.</p>
+            </div>
+            <span id="completedSessionsCounter" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              0 / 36 Seans
+            </span>
+          </div>
+          <div id="twelveWeekMatrix" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <!-- Populated by renderTwelveWeekMatrix() -->
+          </div>
+        </div>
+
+        <!-- Antrenman A & B Full Visual Catalog (Matches Screenshots 2 & 3) -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-4">
+          <h2 class="text-base font-extrabold text-white">Antrenman A — Biceps ağırlıklı</h2>
+          <div id="catalogListA" class="divide-y divide-borderDark"></div>
+
+          <h2 class="text-base font-extrabold text-white pt-3">Antrenman B — Triceps ağırlıklı</h2>
+          <div id="catalogListB" class="divide-y divide-borderDark"></div>
+        </div>
+
+        <!-- StrongLifts Progression Rules Table (Exact match to Screenshot 1) -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <h2 class="text-base font-extrabold text-white">4. StrongLifts tarzı ağırlık artırma</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-borderDark text-gray-300 font-bold">
+                  <th class="py-2.5 pr-3">Durum</th>
+                  <th class="py-2.5">Yapılacak işlem</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-borderDark/70 text-gray-200">
+                <tr>
+                  <td class="py-3 pr-3 font-medium">5×5 tamamlandı</td>
+                  <td class="py-3 text-emerald-400 font-medium">Sonraki aynı harekette toplam 1–2 kg artır</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-3 font-medium">5×5 tamamlanamadı</td>
+                  <td class="py-3 text-amber-300">Aynı ağırlığı tekrar dene</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-3 font-medium">Üç seans üst üste başarısız</td>
+                  <td class="py-3 text-rose-400 font-medium">Ağırlığı %10 azalt (Deload)</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-3 font-medium">3×10 tamamlandı</td>
+                  <td class="py-3 text-emerald-300">Mümkün olan en küçük artışı yap</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-3 font-medium">7. hafta</td>
+                  <td class="py-3 text-sky-300">Set sayısını yaklaşık yarıya indir</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="p-3 rounded-xl bg-oled border border-borderDark text-xs text-gray-300 leading-relaxed">
+            <strong class="text-white">Kritik Form Notu:</strong> 5×5 hareketlerinde tükenişe gitme; 1–2 tekrar yedek bırak (RIR 1–2). İzolasyon hareketlerinde de form bozulmadan çalış. <strong class="text-emerald-400">Barbell Curl</strong> sırasında özellikle bilek ve dirseklerini zorlamamaya dikkat et (gerekirse EZ-Bar kullan).
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: İLERLEME & ANALİZ (GRAFİK & ÖLÇÜ)   -->
+      <!-- ========================================== -->
+      <section id="viewProgress" class="space-y-4 hidden">
+
+        <!-- Exercise Weight Progression Chart Card -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-base font-extrabold text-white">Ağırlık & Güç İlerlemesi</h2>
+              <p class="text-xs text-gray-400">Seçili hareketteki çalışma ağırlığı ve tahmini 1RM</p>
+            </div>
+            <select id="chartExerciseSelect" class="bg-oled border border-borderDark rounded-xl px-2.5 py-1.5 text-xs font-semibold text-white">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Stats Row for Selected Exercise -->
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-oled border border-borderDark rounded-xl p-2.5">
+              <div class="text-[11px] text-gray-400">Güncel Ağırlık</div>
+              <div id="statCurrentWeight" class="text-sm font-mono font-bold text-white">30 kg</div>
+            </div>
+            <div class="bg-oled border border-borderDark rounded-xl p-2.5">
+              <div class="text-[11px] text-gray-400">Tahmini 1RM</div>
+              <div id="statEst1RM" class="text-sm font-mono font-bold text-emerald-400">35 kg</div>
+            </div>
+            <div class="bg-oled border border-borderDark rounded-xl p-2.5">
+              <div class="text-[11px] text-gray-400">Başarısız Seri</div>
+              <div id="statFailStreak" class="text-sm font-mono font-bold text-gray-300">0 / 3</div>
+            </div>
+          </div>
+
+          <!-- SVG Line Chart Container -->
+          <div class="relative h-48 w-full bg-oled border border-borderDark rounded-xl p-2 flex items-center justify-center">
+            <svg id="progressionSvgChart" class="w-full h-full overflow-visible" viewBox="0 0 360 150"></svg>
+          </div>
+        </div>
+
+        <!-- Arm Circumference Tracker (Kol Ölçüsü Takibi) -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-extrabold text-white">Kol Çevresi (cm) Ölçüm Kaydı</h3>
+              <p class="text-xs text-gray-400">12 haftalık kol büyüme takibi (Soğuk / Pump)</p>
+            </div>
+            <span id="armGrowthDeltaBadge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              +0.0 cm
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label for="armSizeInput" class="block text-[11px] text-gray-400 mb-1">Kol Çevresi (cm)</label>
+              <input id="armSizeInput" type="number" step="0.1" min="20" max="65" value="38.0" class="w-full bg-oled border border-borderDark rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-emerald-500" />
+            </div>
+            <div>
+              <label for="armNoteInput" class="block text-[11px] text-gray-400 mb-1">Durum</label>
+              <select id="armNoteInput" class="w-full bg-oled border border-borderDark rounded-xl px-2.5 py-2 text-xs font-semibold text-white">
+                <option value="Soğuk">Soğuk</option>
+                <option value="Pump">Antrenman Sonu (Pump)</option>
+              </select>
+            </div>
+            <div class="flex items-end">
+              <button id="addArmMeasurementBtn" type="button" class="w-full py-2 rounded-xl bg-emerald-500 text-oled font-bold text-xs hover:bg-emerald-400 active:scale-95 transition">
+                Ölçüm Ekle
+              </button>
+            </div>
+          </div>
+
+          <div id="armMeasurementsList" class="space-y-1.5 max-h-40 overflow-y-auto">
+            <!-- Populated by renderArmMeasurements() -->
+          </div>
+        </div>
+
+        <!-- Workout History Log -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-extrabold text-white">Tamamlanan Antrenman Geçmişi</h3>
+            <button id="clearHistoryBtn" type="button" class="text-xs text-rose-400 hover:underline">Geçmişi Temizle</button>
+          </div>
+          <div id="workoutHistoryList" class="space-y-2">
+            <!-- Populated by renderWorkoutHistory() -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 4: ARAÇLAR & AYARLAR                   -->
+      <!-- ========================================== -->
+      <section id="viewTools" class="space-y-4 hidden">
+
+        <!-- 1RM & Çalışma Ağırlığı Hesaplayıcı -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <h2 class="text-base font-extrabold text-white">1RM & 5×5 Başlangıç Ağırlığı Hesaplayıcı</h2>
+          <p class="text-xs text-gray-400">Bildiğin bir ağırlık ve tekrar sayısını gir; 1RM ve ideal 5×5 başlangıç ağırlığını (%80–85) hesapla.</p>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label for="calcWeightInput" class="block text-xs text-gray-400 mb-1">Kaldırılan Ağırlık (kg)</label>
+              <input id="calcWeightInput" type="number" step="0.5" value="30" class="w-full bg-oled border border-borderDark rounded-xl px-3 py-2 text-sm font-mono font-bold text-white" />
+            </div>
+            <div>
+              <label for="calcRepsInput" class="block text-xs text-gray-400 mb-1">Tekrar Sayısı (1–15)</label>
+              <input id="calcRepsInput" type="number" step="1" min="1" max="20" value="8" class="w-full bg-oled border border-borderDark rounded-xl px-3 py-2 text-sm font-mono font-bold text-white" />
+            </div>
+          </div>
+          <div id="oneRmResultCards" class="grid grid-cols-3 gap-2 pt-1">
+            <!-- Populated by updateOneRmCalculator() -->
+          </div>
+        </div>
+
+        <!-- Exercise Working Weights & Increments Configuration -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <div>
+            <h2 class="text-base font-extrabold text-white">Hareket Ağırlıkları & Artış Miktarları</h2>
+            <p class="text-xs text-gray-400">Her hareketin mevcut çalışma ağırlığını ve 5×5 / 3×10 tamamlandığında eklenecek artışı düzenle.</p>
+          </div>
+          <div id="weightsConfigList" class="space-y-2.5">
+            <!-- Populated by renderWeightsConfig() -->
+          </div>
+        </div>
+
+        <!-- Backup / Export / Reset Card -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <h2 class="text-base font-extrabold text-white">Veri Yedekleme & Sıfırlama</h2>
+          <p class="text-xs text-gray-400">Tüm antrenman verilerin cihazında otomatik kaydedilir. İstersen JSON olarak kopyalayabilir veya sıfırlayabilirsin.</p>
+          <div class="flex flex-wrap gap-2">
+            <button id="exportDataBtn" type="button" class="flex-1 py-2.5 px-3 rounded-xl bg-oled border border-borderDark text-xs font-semibold text-emerald-400 hover:border-emerald-500/50 active:scale-95 transition">
+              Verileri Panoya Kopyala (JSON)
+            </button>
+            <button id="resetAllDataBtn" type="button" class="py-2.5 px-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-xs font-semibold text-rose-300 hover:bg-rose-500/25 active:scale-95 transition">
+              Fabrika Ayarlarına Dön
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar (Mobile-First Thumb Zone) -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-2xl z-30 bg-oled/95 backdrop-blur-md border-t border-borderDark px-2 py-1.5 grid grid-cols-4 gap-1">
+      <button data-tab="workout" type="button" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-emerald-400 bg-emerald-500/10 font-semibold text-[11px] gap-1 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        <span>Antrenman</span>
+      </button>
+      <button data-tab="program" type="button" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-gray-400 hover:text-gray-200 font-semibold text-[11px] gap-1 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Program</span>
+      </button>
+      <button data-tab="progress" type="button" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-gray-400 hover:text-gray-200 font-semibold text-[11px] gap-1 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 14l4-4 4 4 5-6"></path>
+        </svg>
+        <span>İlerleme</span>
+      </button>
+      <button data-tab="tools" type="button" class="nav-tab-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-gray-400 hover:text-gray-200 font-semibold text-[11px] gap-1 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+        </svg>
+        <span>Araçlar</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: PLAKA HESAPLAYICI (PLATE CALC)    -->
+  <!-- ========================================== -->
+  <div id="plateCalcModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="w-full max-w-md bg-card border border-borderDark rounded-2xl p-4 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-extrabold text-white">Barbell / Dumbbell Plaka Hesaplayıcı</h3>
+          <p class="text-xs text-gray-400">Her bir tarafa takılacak plakaları otomatik gösterir</p>
+        </div>
+        <button id="closePlateCalcBtn" type="button" class="p-1.5 rounded-lg bg-oled border border-borderDark text-gray-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <label for="plateTargetWeight" class="block text-xs text-gray-400 mb-1">Hedef Toplam Ağırlık (kg)</label>
+          <input id="plateTargetWeight" type="number" step="0.5" value="30" class="w-full bg-oled border border-borderDark rounded-xl px-3 py-2 text-sm font-mono font-bold text-white" />
+        </div>
+        <div>
+          <label for="plateBarWeight" class="block text-xs text-gray-400 mb-1">Boş Bar Ağırlığı (kg)</label>
+          <select id="plateBarWeight" class="w-full bg-oled border border-borderDark rounded-xl px-3 py-2 text-xs font-semibold text-white">
+            <option value="20">Olimpik Bar (20 kg)</option>
+            <option value="10" selected>EZ-Bar / Kısa Bar (10 kg)</option>
+            <option value="7.5">Z-Bar Hafif (7.5 kg)</option>
+            <option value="2">Dumbbell Barı (2 kg)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-oled border border-borderDark rounded-xl p-3 space-y-2">
+        <div class="text-xs text-gray-400 flex justify-between">
+          <span>Her Bir Tarafa Takılacak:</span>
+          <span id="platePerSideLabel" class="font-mono font-bold text-emerald-400">10.0 kg / taraf</span>
+        </div>
+        <div id="plateVisualBadges" class="flex flex-wrap gap-1.5 pt-1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: SEANS ÖZETİ / ONAY MODALI         -->
+  <!-- ========================================== -->
+  <div id="summaryModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="w-full max-w-md bg-card border border-borderDark rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">✓</div>
+          <h3 id="summaryModalTitle" class="text-base font-extrabold text-white">Antrenman Tamamlandı!</h3>
+        </div>
+        <button id="closeSummaryModalBtn" type="button" class="p-1.5 rounded-lg bg-oled border border-borderDark text-gray-400 hover:text-white">✕</button>
+      </div>
+      <div id="summaryModalBody" class="space-y-2.5 text-xs text-gray-200"></div>
+      <button id="summaryModalOkBtn" type="button" class="w-full py-2.5 rounded-xl bg-emerald-500 text-oled font-extrabold text-sm hover:bg-emerald-400 transition">
+        Harika, Sonraki Seansa İlerle
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastBanner" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-500 text-oled font-bold text-xs shadow-lg transition-all duration-200 opacity-0 pointer-events-none">
+    Bildirim
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. EXERCISE CATALOG & TEMPLATES (Grounded in Uploaded Screenshots)
+    // =========================================================================
+    const EXERCISE_DB = {
+      barbell_curl: {
+        id: 'barbell_curl',
+        name: 'Barbell Curl',
+        img: 'data:image/jpeg;base64,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',
+        defaultSets: 5,
+        defaultReps: 5,
+        restSec: 150,
+        restText: 'Set arası 2–3 dakika.',
+        desc: 'Ana pazı hareketi. Set arası 2–3 dakika.',
+        tips: 'Dirseklerini gövdenin yanında sabit tut. Belden ivme alma; bileklerin zorlanıyorsa EZ-Bar tercih et. 1–2 tekrar yedek bırak (RIR 1–2).',
+        defaultWeight: 27.5,
+        defaultInc: 1.5,
+        barWeight: 10
+      },
+      close_grip_db_press: {
+        id: 'close_grip_db_press',
+        name: 'Close-Grip Dumbbell Bench Press',
+        img: 'data:image/jpeg;base64,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',
+        defaultSets: 5,
+        defaultReps: 5,
+        restSec: 150,
+        restText: 'Set arası 2–3 dakika.',
+        desc: 'Triceps odaklı temel itiş. Set arası 2–3 dakika.',
+        tips: 'Dumbbellları birbirine temas ettirerek nötr (avuç içleri birbirine bakan) tutuşla göğsün alt-orta kısmına indir ve triceps gücünle it.',
+        defaultWeight: 22.0,
+        defaultInc: 2.0,
+        barWeight: 2
+      },
+      hammer_curl: {
+        id: 'hammer_curl',
+        name: 'Hammer Curl',
+        img: 'data:image/jpeg;base64,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',
+        defaultSets: 3,
+        defaultReps: 10,
+        restSec: 90,
+        restText: '90 saniye dinlen.',
+        desc: 'Brachialis ve ön kol kalınlığı. 90 saniye dinlen.',
+        tips: 'Avuç içleri birbirine bakacak şekilde kontrollü kaldır ve tepe noktada 1 saniye sık.',
+        defaultWeight: 12.0,
+        defaultInc: 1.0,
+        barWeight: 2
+      },
+      lying_db_triceps: {
+        id: 'lying_db_triceps',
+        name: 'Lying Dumbbell Triceps Extension',
+        img: 'data:image/jpeg;base64,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',
+        defaultSets: 3,
+        defaultReps: 10,
+        restSec: 105,
+        restText: '90–120 saniye dinlen.',
+        desc: 'Arka kol izolasyonu. 90–120 saniye dinlen.',
+        tips: 'Üst kolunu yere dik veya hafif geriye eğimli sabit tut; sadece dirsek eklemini bükerek dumbbellları başının iki yanına indir.',
+        defaultWeight: 10.0,
+        defaultInc: 1.0,
+        barWeight: 2
+      },
+      db_biceps_curl: {
+        id: 'db_biceps_curl',
+        name: 'Dumbbell Biceps Curl',
+        img: 'data:image/jpeg;base64,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',
+        defaultSets: 3,
+        defaultReps: 10,
+        restSec: 90,
+        restText: '90 saniye dinlen.',
+        desc: 'Kontrollü pazı çalışması. 90 saniye dinlen.',
+        tips: 'Omuzları öne yuvarlamadan tam açıyla indir ve supinasyon (serçe parmağı dışa çevirme) ile kaldır.',
+        defaultWeight: 12.0,
+        defaultInc: 1.0,
+        barWeight: 2
+      },
+      overhead_db_triceps: {
+        id: 'overhead_db_triceps',
+        name: 'Overhead Dumbbell Triceps Extension',
+        img: 'data:image/jpeg;base64,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',
+        defaultSets: 3,
+        defaultReps: 10,
+        restSec: 90,
+        restText: '90 saniye dinlen.',
+        desc: 'Triceps uzun başı. 90 saniye dinlen.',
+        tips: 'Oturarak tek dumbbellı iki elinle kavra, dirsekleri çok yana açmadan baş arkasına tam esneme hissiyle indir.',
+        defaultWeight: 18.0,
+        defaultInc: 1.0,
+        barWeight: 2
+      }
+    };
+
+    const TEMPLATES = {
+      standard: {
+        name: 'ARM 5×5 (Orijinal Görsel Şablonu)',
+        A: [
+          { exId: 'barbell_curl', sets: 5, reps: 5 },
+          { exId: 'close_grip_db_press', sets: 5, reps: 5 },
+          { exId: 'hammer_curl', sets: 3, reps: 10 }
+        ],
+        B: [
+          { exId: 'lying_db_triceps', sets: 3, reps: 10 },
+          { exId: 'db_biceps_curl', sets: 3, reps: 10 },
+          { exId: 'overhead_db_triceps', sets: 3, reps: 10 }
+        ]
+      },
+      hybrid5x5: {
+        name: 'ARM 5×5 Hibrit (B1: 5×5 + İzolasyon)',
+        A: [
+          { exId: 'barbell_curl', sets: 5, reps: 5 },
+          { exId: 'close_grip_db_press', sets: 5, reps: 5 },
+          { exId: 'hammer_curl', sets: 3, reps: 10 }
+        ],
+        B: [
+          { exId: 'lying_db_triceps', sets: 5, reps: 5 },
+          { exId: 'db_biceps_curl', sets: 3, reps: 10 },
+          { exId: 'overhead_db_triceps', sets: 3, reps: 10 }
+        ]
+      },
+      stronglifts_arm: {
+        name: 'StrongLifts 5×5 + Kol Odaklı',
+        A: [
+          { exId: 'barbell_curl', sets: 5, reps: 5 },
+          { exId: 'close_grip_db_press', sets: 5, reps: 5 },
+          { exId: 'hammer_curl', sets: 5, reps: 5 }
+        ],
+        B: [
+          { exId: 'close_grip_db_press', sets: 5, reps: 5 },
+          { exId: 'lying_db_triceps', sets: 5, reps: 5 },
+          { exId: 'db_biceps_curl', sets: 3, reps: 10 }
+        ]
+      }
+    };
+
+    const STORAGE_KEY = 'arm_5x5_app_state_v1';
+
+    // =========================================================================
+    // 2. STATE MANAGEMENT (Safe localStorage)
+    // =========================================================================
+    function getDefaultState() {
+      const exStats = {};
+      Object.keys(EXERCISE_DB).forEach(id => {
+        exStats[id] = {
+          weight: EXERCISE_DB[id].defaultWeight,
+          increment: EXERCISE_DB[id].defaultInc,
+          failStreak: 0,
+          history: [
+            { date: 'Başlangıç', weight: EXERCISE_DB[id].defaultWeight, reps: EXERCISE_DB[id].defaultReps }
+          ]
+        };
+      });
+
+      return {
+        currentWeek: 1,
+        currentDayIdx: 0, // 0: Pazartesi, 1: Çarşamba, 2: Cuma
+        templateKey: 'standard',
+        overrideWorkoutType: null, // null or 'A' or 'B'
+        soundEnabled: true,
+        activeSets: {}, // keyed by exId -> array of null or completed rep count
+        quickTracker: [true, true, false, false, false], // matches screenshot 1 (2/5 checked initially)
+        completedSlots: {}, // e.g. "w1_d0": true
+        exStats: exStats,
+        workoutLogs: [],
+        armMeasurements: [
+          { date: '1. Hafta Başlangıç', cm: 37.5, note: 'Soğuk' }
+        ]
+      };
+    }
+
+    let state = getDefaultState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          state = Object.assign(getDefaultState(), parsed);
+          // Ensure all exercises exist
+          Object.keys(EXERCISE_DB).forEach(id => {
+            if (!state.exStats[id]) {
+              state.exStats[id] = {
+                weight: EXERCISE_DB[id].defaultWeight,
+                increment: EXERCISE_DB[id].defaultInc,
+                failStreak: 0,
+                history: [{ date: 'Başlangıç', weight: EXERCISE_DB[id].defaultWeight, reps: EXERCISE_DB[id].defaultReps }]
+              };
+            }
+          });
+        }
+      } catch (e) {
+        // Fallback to in-memory default state
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        // Ignore storage quota errors in sandboxed frames
+      }
+    }
+
+    // =========================================================================
+    // 3. HELPER FUNCTIONS: SCHEDULE & WORKOUT RESOLUTION
+    // =========================================================================
+    const DAY_NAMES = ['Pazartesi', 'Çarşamba', 'Cuma'];
+
+    function getScheduledWorkoutType(week, dayIdx) {
+      // Odd weeks: A / B / A. Even weeks: B / A / B.
+      const isOddWeek = (week % 2 === 1);
+      if (isOddWeek) {
+        return dayIdx === 1 ? 'B' : 'A';
+      } else {
+        return dayIdx === 1 ? 'A' : 'B';
+      }
+    }
+
+    function getActiveWorkoutType() {
+      if (state.overrideWorkoutType === 'A' || state.overrideWorkoutType === 'B') {
+        return state.overrideWorkoutType;
+      }
+      return getScheduledWorkoutType(state.currentWeek, state.currentDayIdx);
+    }
+
+    function getEffectiveSetsCount(baseSets) {
+      // Screenshot 1 rule: "7. hafta -> Set sayısını yaklaşık yarıya indir"
+      if (state.currentWeek === 7) {
+        return Math.max(2, Math.ceil(baseSets / 2));
+      }
+      return baseSets;
+    }
+
+    function getActiveWorkoutExercises() {
+      const tpl = TEMPLATES[state.templateKey] || TEMPLATES.standard;
+      const wType = getActiveWorkoutType();
+      const list = tpl[wType] || tpl.A;
+      return list.map((item, idx) => {
+        const meta = EXERCISE_DB[item.exId];
+        const effectiveSets = getEffectiveSetsCount(item.sets);
+        if (!Array.isArray(state.activeSets[item.exId]) || state.activeSets[item.exId].length !== effectiveSets) {
+          state.activeSets[item.exId] = new Array(effectiveSets).fill(null);
+        }
+        return {
+          index: idx + 1,
+          exId: item.exId,
+          meta: meta,
+          baseSets: item.sets,
+          sets: effectiveSets,
+          reps: item.reps,
+          setValues: state.activeSets[item.exId],
+          stats: state.exStats[item.exId]
+        };
+      });
+    }
+
+    // =========================================================================
+    // 4. WEB AUDIO SYNTHESIZER & REST TIMER
+    // =========================================================================
+    let audioCtx = null;
+    function playBeep(type) {
+      if (!state.soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) audioCtx = new AudioContextClass();
+        }
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === 'setCheck') {
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.setValueAtTime(880, now + 0.07); // A5
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        } else if (type === 'timerDone') {
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.setValueAtTime(1046.5, now + 0.14);
+          osc.frequency.setValueAtTime(1318.5, now + 0.28);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+          osc.start(now);
+          osc.stop(now + 0.55);
+        }
+      } catch (e) {
+        // Ignore audio errors
+      }
+    }
+
+    let timerInterval = null;
+    let timerRemainingSec = 90;
+    let timerDefaultSec = 90;
+    let timerRunning = false;
+
+    function formatTime(sec) {
+      const s = Math.max(0, Math.floor(sec));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+    }
+
+    function updateTimerUI() {
+      const disp = document.getElementById('timerDisplay');
+      const status = document.getElementById('timerStatusText');
+      const dot = document.getElementById('timerPulseDot');
+      const btn = document.getElementById('timerStartPauseBtn');
+
+      disp.textContent = formatTime(timerRemainingSec);
+      if (timerRunning) {
+        status.textContent = 'Dinleniliyor...';
+        status.className = 'text-[11px] text-emerald-400 font-semibold';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0';
+        btn.textContent = 'Duraklat';
+      } else if (timerRemainingSec === 0) {
+        status.textContent = 'Süre Doldu! Yeni sete gir';
+        status.className = 'text-[11px] text-amber-400 font-bold';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0';
+        btn.textContent = 'Başlat';
+      } else {
+        status.textContent = 'Hazır';
+        status.className = 'text-[11px] text-gray-400';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-gray-600 shrink-0';
+        btn.textContent = 'Başlat';
+      }
+    }
+
+    function startRestTimer(seconds, labelText) {
+      if (timerInterval) clearInterval(timerInterval);
+      if (typeof seconds === 'number') {
+        timerRemainingSec = seconds;
+        timerDefaultSec = seconds;
+      }
+      if (labelText) {
+        document.getElementById('timerPresetLabel').textContent = '(' + labelText + ')';
+      }
+      timerRunning = true;
+      updateTimerUI();
+
+      timerInterval = setInterval(() => {
+        if (timerRemainingSec > 0) {
+          timerRemainingSec--;
+          updateTimerUI();
+          if (timerRemainingSec === 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerRunning = false;
+            playBeep('timerDone');
+            showToast('Dinlenme süresi tamamlandı! Sıradaki sete hazırsın.');
+            updateTimerUI();
+          }
+        }
+      }, 1000);
+    }
+
+    function toggleRestTimer() {
+      if (timerRunning) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerRunning = false;
+        updateTimerUI();
+      } else {
+        if (timerRemainingSec <= 0) timerRemainingSec = timerDefaultSec || 90;
+        startRestTimer(timerRemainingSec);
+      }
+    }
+
+    function resetRestTimer(newDefaultSec) {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+      timerRunning = false;
+      if (typeof newDefaultSec === 'number') {
+        timerDefaultSec = newDefaultSec;
+      }
+      timerRemainingSec = timerDefaultSec;
+      updateTimerUI();
+    }
+
+    // =========================================================================
+    // 5. UI RENDERERS
+    // =========================================================================
+    function showToast(msg) {
+      const el = document.getElementById('toastBanner');
+      el.textContent = msg;
+      el.classList.remove('opacity-0');
+      el.classList.add('opacity-100');
+      clearTimeout(el._hideTimeout);
+      el._hideTimeout = setTimeout(() => {
+        el.classList.remove('opacity-100');
+        el.classList.add('opacity-0');
+      }, 2400);
+    }
+
+    function renderHeaderAndWeek() {
+      const wType = getActiveWorkoutType();
+      const dayName = DAY_NAMES[state.currentDayIdx];
+      document.getElementById('headerSubtitle').textContent =
+        `Hafta ${state.currentWeek} / 12 • ${dayName} (Antrenman ${wType})`;
+
+      document.getElementById('weekLabel').textContent = `Hafta ${state.currentWeek} / 12`;
+      const isOdd = (state.currentWeek % 2 === 1);
+      document.getElementById('weekPatternLabel').textContent =
+        isOdd ? 'Düzen: A / B / A (Tek Hafta)' : 'Düzen: B / A / B (Çift Hafta)';
+
+      const deloadBadge = document.getElementById('deloadWeekBadge');
+      if (state.currentWeek === 7) {
+        deloadBadge.classList.remove('hidden');
+      } else {
+        deloadBadge.classList.add('hidden');
+      }
+
+      // Template selector sync
+      document.getElementById('templateSelect').value = state.templateKey;
+
+      // Workout A / B toggle buttons
+      const btnA = document.getElementById('forceWorkoutABtn');
+      const btnB = document.getElementById('forceWorkoutBBtn');
+      if (wType === 'A') {
+        btnA.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500 text-oled transition';
+        btnB.className = 'px-2.5 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+      } else {
+        btnB.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500 text-oled transition';
+        btnA.className = 'px-2.5 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+      }
+
+      // Render 3 Day Cards (Pazartesi, Çarşamba, Cuma)
+      const grid = document.getElementById('weekDaysGrid');
+      grid.innerHTML = '';
+      DAY_NAMES.forEach((dName, idx) => {
+        const scheduledType = getScheduledWorkoutType(state.currentWeek, idx);
+        const slotKey = `w${state.currentWeek}_d${idx}`;
+        const isDone = !!state.completedSlots[slotKey];
+        const isSelected = (idx === state.currentDayIdx);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `rounded-2xl p-3 text-center transition border flex flex-col items-center justify-center gap-0.5 relative ${
+          isSelected
+            ? 'bg-emerald-950/40 border-emerald-500/70 shadow-sm'
+            : 'bg-[#1a1d23] border-borderDark hover:border-gray-600'
+        }`;
+
+        btn.innerHTML = `
+          ${isDone ? '<span class="absolute top-1.5 right-2 text-[11px] font-bold text-emerald-400">✓</span>' : ''}
+          <span class="text-xs text-gray-400">${dName}</span>
+          <span class="text-2xl font-extrabold text-white leading-tight my-0.5">${scheduledType}</span>
+          <span class="text-xs ${isDone ? 'text-emerald-400 font-semibold' : 'text-gray-400'}">${isDone ? 'Tamamlandı' : 'Antrenman'}</span>
+        `;
+
+        btn.addEventListener('click', () => {
+          state.currentDayIdx = idx;
+          state.overrideWorkoutType = null;
+          saveState();
+          renderAll();
+        });
+        grid.appendChild(btn);
+      });
+    }
+
+    function renderExercises() {
+      const wType = getActiveWorkoutType();
+      const titleEl = document.getElementById('activeWorkoutTitle');
+      titleEl.textContent = wType === 'A'
+        ? '2. Antrenman A — Biceps ağırlıklı'
+        : '3. Antrenman B — Triceps ağırlıklı';
+
+      const exercises = getActiveWorkoutExercises();
+      const container = document.getElementById('exerciseCardsContainer');
+      container.innerHTML = '';
+
+      let totalSetsCount = 0;
+      let completedSetsCount = 0;
+      let totalVolume = 0;
+
+      exercises.forEach(item => {
+        const { index, exId, meta, sets, reps, setValues, stats } = item;
+        totalSetsCount += sets;
+
+        setValues.forEach(v => {
+          if (v !== null && v > 0) {
+            completedSetsCount++;
+            totalVolume += stats.weight * v;
+          }
+        });
+
+        const card = document.createElement('div');
+        card.className = 'bg-card border border-borderDark rounded-2xl p-3.5 space-y-3.5';
+
+        // Fail streak warning pill if any
+        const failPill = stats.failStreak > 0
+          ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">Başarısız Seri: ${stats.failStreak}/3</span>`
+          : '';
+
+        // Top row: Thumbnail + Title + 5x5 / 3x10 + Description (Exact match to Screenshots 2 & 3)
+        const topRow = document.createElement('div');
+        topRow.className = 'flex items-start gap-3.5';
+        topRow.innerHTML = `
+          <img src="${meta.img}" alt="${meta.name}" class="w-24 h-24 rounded-2xl object-cover bg-white shrink-0 border border-borderDark" />
+          <div class="flex-1 min-w-0 space-y-1">
+            <div class="flex items-start justify-between gap-1">
+              <h3 class="text-base font-extrabold text-white leading-snug">${index}. ${meta.name}</h3>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xl font-extrabold text-white tracking-tight">${sets} × ${reps}</span>
+              ${state.currentWeek === 7 ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300">7. Hafta Deload</span>' : ''}
+              ${failPill}
+            </div>
+            <p class="text-xs text-gray-400 leading-relaxed">${meta.desc}</p>
+            <p class="text-[11px] text-gray-500 leading-snug">${meta.tips}</p>
+          </div>
+        `;
+        card.appendChild(topRow);
+
+        // Weight Control Bar
+        const weightBar = document.createElement('div');
+        weightBar.className = 'bg-oled border border-borderDark rounded-xl p-2.5 flex items-center justify-between gap-2';
+        weightBar.innerHTML = `
+          <div>
+            <span class="text-[11px] text-gray-400 block">Çalışma Ağırlığı</span>
+            <span class="font-mono text-base font-extrabold text-emerald-400">${stats.weight.toFixed(1)} kg</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button data-act="decWeight" type="button" class="px-2.5 py-1.5 rounded-lg bg-card border border-borderDark text-xs font-mono font-bold text-gray-200 hover:border-gray-500 active:scale-95">-${stats.increment}kg</button>
+            <button data-act="incWeight" type="button" class="px-2.5 py-1.5 rounded-lg bg-card border border-borderDark text-xs font-mono font-bold text-emerald-400 hover:border-emerald-500/50 active:scale-95">+${stats.increment}kg</button>
+            <button data-act="plateCalc" type="button" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs font-semibold text-emerald-300 active:scale-95" title="Plaka Hesapla">Plaka</button>
+          </div>
+        `;
+
+        weightBar.querySelector('[data-act="decWeight"]').addEventListener('click', () => {
+          stats.weight = Math.max(1, +(stats.weight - stats.increment).toFixed(1));
+          saveState();
+          renderExercises();
+          renderWeightsConfig();
+        });
+        weightBar.querySelector('[data-act="incWeight"]').addEventListener('click', () => {
+          stats.weight = +(stats.weight + stats.increment).toFixed(1);
+          saveState();
+          renderExercises();
+          renderWeightsConfig();
+        });
+        weightBar.querySelector('[data-act="plateCalc"]').addEventListener('click', () => {
+          openPlateCalculator(stats.weight, meta.barWeight);
+        });
+        card.appendChild(weightBar);
+
+        // Interactive Set Buttons Grid (StrongLifts 5x5 + Screenshot 1 style)
+        const setsGrid = document.createElement('div');
+        setsGrid.className = sets === 5 ? 'grid grid-cols-5 gap-2' : 'grid grid-cols-3 gap-2.5';
+
+        setValues.forEach((val, setIdx) => {
+          const isCompletedFull = (val === reps);
+          const isPartial = (val !== null && val < reps && val > 0);
+          const isZero = (val === 0);
+
+          let btnStyle = 'bg-[#1b1e24] border-borderDark text-gray-200';
+          let iconHtml = `<span class="w-5 h-5 rounded-full bg-gray-500/50 block mx-auto"></span>`;
+          let subLabel = `${setIdx + 1}. set`;
+
+          if (isCompletedFull) {
+            btnStyle = 'bg-[#092214] border-emerald-500/60 text-white';
+            iconHtml = `
+              <span class="w-5 h-5 rounded-full border border-emerald-400 flex items-center justify-center mx-auto text-emerald-400 text-xs font-bold">
+                ✓
+              </span>
+            `;
+            subLabel = `${setIdx + 1}. set (${val})`;
+          } else if (isPartial) {
+            btnStyle = 'bg-amber-950/50 border-amber-500/60 text-amber-200';
+            iconHtml = `
+              <span class="w-5 h-5 rounded-full border border-amber-400 flex items-center justify-center mx-auto text-amber-300 text-xs font-mono font-bold">
+                ${val}
+              </span>
+            `;
+            subLabel = `${setIdx + 1}. set (${val}/${reps})`;
+          } else if (isZero) {
+            btnStyle = 'bg-rose-950/40 border-rose-500/50 text-rose-300';
+            iconHtml = `
+              <span class="w-5 h-5 rounded-full border border-rose-400 flex items-center justify-center mx-auto text-rose-400 text-xs font-mono font-bold">
+                0
+              </span>
+            `;
+            subLabel = `${setIdx + 1}. set (0)`;
+          }
+
+          const setBtn = document.createElement('button');
+          setBtn.type = 'button';
+          setBtn.className = `set-btn rounded-2xl border py-3 px-1.5 flex flex-col items-center justify-center gap-2 ${btnStyle}`;
+          setBtn.innerHTML = `
+            ${iconHtml}
+            <span class="text-xs font-bold tracking-tight">${subLabel}</span>
+          `;
+
+          setBtn.addEventListener('click', () => {
+            // Cycle: null -> reps (Full) -> reps-1 -> ... -> 0 -> null
+            if (val === null) {
+              state.activeSets[exId][setIdx] = reps;
+              playBeep('setCheck');
+              startRestTimer(meta.restSec, `${meta.name} • ${meta.restSec}sn`);
+            } else if (val > 0) {
+              state.activeSets[exId][setIdx] = val - 1;
+            } else {
+              state.activeSets[exId][setIdx] = null;
+            }
+            saveState();
+            renderExercises();
+          });
+
+          setsGrid.appendChild(setBtn);
+        });
+
+        card.appendChild(setsGrid);
+        container.appendChild(card);
+      });
+
+      document.getElementById('sessionProgressBadge').textContent = `${completedSetsCount}/${totalSetsCount} set`;
+      document.getElementById('sessionVolumePreview').textContent = `${Math.round(totalVolume)} kg hacim`;
+    }
+
+    function renderQuickTracker() {
+      const container = document.getElementById('quickTrackerSets');
+      container.innerHTML = '';
+      const doneCount = state.quickTracker.filter(Boolean).length;
+      document.getElementById('quickTrackerBadge').textContent = `${doneCount}/5`;
+
+      state.quickTracker.forEach((checked, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `set-btn rounded-2xl border py-3 px-1.5 flex flex-col items-center justify-center gap-2 ${
+          checked
+            ? 'bg-[#092214] border-emerald-500/60 text-white'
+            : 'bg-[#1b1e24] border-borderDark text-gray-200'
+        }`;
+        btn.innerHTML = `
+          ${
+            checked
+              ? '<span class="w-5 h-5 rounded-full border border-emerald-400 flex items-center justify-center mx-auto text-emerald-400 text-xs font-bold">✓</span>'
+              : '<span class="w-5 h-5 rounded-full bg-gray-500/50 block mx-auto"></span>'
+          }
+          <span class="text-xs font-bold">${idx + 1}. set</span>
+        `;
+        btn.addEventListener('click', () => {
+          state.quickTracker[idx] = !state.quickTracker[idx];
+          if (state.quickTracker[idx]) {
+            playBeep('setCheck');
+            startRestTimer(150, '5×5 Set Dinlenmesi • 150sn');
+          }
+          saveState();
+          renderQuickTracker();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function renderProgramTab() {
+      // 12-week matrix
+      const matrix = document.getElementById('twelveWeekMatrix');
+      matrix.innerHTML = '';
+      const totalDone = Object.keys(state.completedSlots).filter(k => state.completedSlots[k]).length;
+      document.getElementById('completedSessionsCounter').textContent = `${totalDone} / 36 Seans`;
+
+      for (let w = 1; w <= 12; w++) {
+        const box = document.createElement('div');
+        const isCurrentWeek = (w === state.currentWeek);
+        box.className = `rounded-xl p-2.5 border ${
+          isCurrentWeek ? 'bg-emerald-950/30 border-emerald-500/60' : 'bg-oled border-borderDark'
+        } space-y-2`;
+
+        box.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold ${isCurrentWeek ? 'text-emerald-400' : 'text-white'}">Hafta ${w}</span>
+            ${w === 7 ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300">DELOAD</span>' : ''}
+          </div>
+        `;
+
+        const daysRow = document.createElement('div');
+        daysRow.className = 'grid grid-cols-3 gap-1';
+
+        for (let d = 0; d < 3; d++) {
+          const sType = getScheduledWorkoutType(w, d);
+          const key = `w${w}_d${d}`;
+          const done = !!state.completedSlots[key];
+          const dayBtn = document.createElement('button');
+          dayBtn.type = 'button';
+          dayBtn.className = `py-1.5 rounded-lg text-xs font-bold border transition ${
+            done
+              ? 'bg-emerald-500 text-oled border-emerald-400'
+              : (w === state.currentWeek && d === state.currentDayIdx)
+              ? 'bg-card border-emerald-500/70 text-white'
+              : 'bg-card border-borderDark text-gray-300 hover:border-gray-500'
+          }`;
+          dayBtn.textContent = done ? `${sType} ✓` : sType;
+          dayBtn.addEventListener('click', () => {
+            state.currentWeek = w;
+            state.currentDayIdx = d;
+            state.overrideWorkoutType = null;
+            saveState();
+            switchTab('workout');
+            renderAll();
+          });
+          daysRow.appendChild(dayBtn);
+        }
+
+        box.appendChild(daysRow);
+        matrix.appendChild(box);
+      }
+
+      // Catalog A & B
+      const renderCatalogSection = (containerId, list) => {
+        const el = document.getElementById(containerId);
+        el.innerHTML = '';
+        list.forEach((item, i) => {
+          const meta = EXERCISE_DB[item.exId];
+          const row = document.createElement('div');
+          row.className = 'py-3 flex items-center gap-3.5';
+          row.innerHTML = `
+            <img src="${meta.img}" alt="${meta.name}" class="w-20 h-20 rounded-2xl object-cover bg-white shrink-0 border border-borderDark" />
+            <div class="space-y-0.5">
+              <div class="text-sm font-extrabold text-white">${i + 1}. ${meta.name}</div>
+              <div class="text-base font-extrabold text-emerald-400">${item.sets} × ${item.reps}</div>
+              <div class="text-xs text-gray-400">${meta.desc}</div>
+            </div>
+          `;
+          el.appendChild(row);
+        });
+      };
+
+      renderCatalogSection('catalogListA', TEMPLATES.standard.A);
+      renderCatalogSection('catalogListB', TEMPLATES.standard.B);
+    }
+
+    function renderProgressTab() {
+      const sel = document.getElementById('chartExerciseSelect');
+      const currentVal = sel.value || 'barbell_curl';
+      sel.innerHTML = '';
+      Object.values(EXERCISE_DB).forEach(ex => {
+        const opt = document.createElement('option');
+        opt.value = ex.id;
+        opt.textContent = ex.name;
+        if (ex.id === currentVal) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      const chosenId = sel.value || 'barbell_curl';
+      const exStat = state.exStats[chosenId];
+      const meta = EXERCISE_DB[chosenId];
+
+      // Epley 1RM formula: weight * (1 + reps/30)
+      const est1RM = exStat.weight * (1 + meta.defaultReps / 30);
+      document.getElementById('statCurrentWeight').textContent = `${exStat.weight.toFixed(1)} kg`;
+      document.getElementById('statEst1RM').textContent = `${est1RM.toFixed(1)} kg`;
+      document.getElementById('statFailStreak').textContent = `${exStat.failStreak} / 3`;
+
+      // Draw SVG chart
+      const svg = document.getElementById('progressionSvgChart');
+      const hist = exStat.history && exStat.history.length > 0
+        ? exStat.history
+        : [{ date: 'Başlangıç', weight: exStat.weight }];
+
+      const weights = hist.map(h => h.weight);
+      const minW = Math.min(...weights) - 2;
+      const maxW = Math.max(...weights) + 2;
+      const range = Math.max(4, maxW - minW);
+
+      const width = 340;
+      const height = 120;
+      const padLeft = 28;
+      const padTop = 15;
+
+      const points = hist.map((h, i) => {
+        const x = hist.length === 1
+          ? padLeft + width / 2
+          : padLeft + (i / (hist.length - 1)) * (width - padLeft - 10);
+        const y = padTop + height - ((h.weight - minW) / range) * (height - 20);
+        return { x, y, weight: h.weight, date: h.date };
+      });
+
+      const polylinePoints = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+      let circlesHtml = '';
+      points.forEach(p => {
+        circlesHtml += `
+          <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="#10b981" stroke="#07080a" stroke-width="2"></circle>
+          <text x="${p.x.toFixed(1)}" y="${(p.y - 9).toFixed(1)}" text-anchor="middle" fill="#d1fae5" font-size="10" font-family="JetBrains Mono">${p.weight}kg</text>
+        `;
+      });
+
+      svg.innerHTML = `
+        <line x1="${padLeft}" y1="${padTop + height}" x2="${width}" y2="${padTop + height}" stroke="#232730" stroke-width="1"></line>
+        <line x1="${padLeft}" y1="${padTop}" x2="${width}" y2="${padTop}" stroke="#232730" stroke-dasharray="3 3" stroke-width="1"></line>
+        ${points.length > 1 ? `<polyline fill="none" stroke="#10b981" stroke-width="2.5" points="${polylinePoints}"></polyline>` : ''}
+        ${circlesHtml}
+      `;
+
+      // Render Arm Measurements
+      const armList = document.getElementById('armMeasurementsList');
+      armList.innerHTML = '';
+      const measures = state.armMeasurements || [];
+      if (measures.length >= 2) {
+        const delta = measures[measures.length - 1].cm - measures[0].cm;
+        const sign = delta >= 0 ? '+' : '';
+        document.getElementById('armGrowthDeltaBadge').textContent = `${sign}${delta.toFixed(1)} cm`;
+      } else {
+        document.getElementById('armGrowthDeltaBadge').textContent = `+0.0 cm`;
+      }
+
+      measures.slice().reverse().forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between bg-oled border border-borderDark rounded-xl px-3 py-2 text-xs';
+        item.innerHTML = `
+          <div>
+            <span class="font-semibold text-white">${m.date}</span>
+            <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-card border border-borderDark text-gray-400">${m.note}</span>
+          </div>
+          <span class="font-mono font-bold text-emerald-400">${Number(m.cm).toFixed(1)} cm</span>
+        `;
+        armList.appendChild(item);
+      });
+
+      // Render Workout History
+      const histContainer = document.getElementById('workoutHistoryList');
+      histContainer.innerHTML = '';
+      if (!state.workoutLogs || state.workoutLogs.length === 0) {
+        histContainer.innerHTML = `<div class="text-xs text-gray-500 py-3 text-center">Henüz tamamlanmış seans kaydı yok. İlk antrenmanını bitirdiğinde burada listelenir.</div>`;
+      } else {
+        state.workoutLogs.slice().reverse().forEach(log => {
+          const row = document.createElement('div');
+          row.className = 'bg-oled border border-borderDark rounded-xl p-3 space-y-1.5';
+          row.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-white">${log.title}</span>
+              <span class="text-[11px] font-mono text-emerald-400">${log.volume} kg • ${log.date}</span>
+            </div>
+            <div class="text-[11px] text-gray-400 space-y-0.5">${log.details.map(d => `<div>• ${d}</div>`).join('')}</div>
+          `;
+          histContainer.appendChild(row);
+        });
+      }
+    }
+
+    function updateOneRmCalculator() {
+      const w = parseFloat(document.getElementById('calcWeightInput').value) || 0;
+      const r = parseInt(document.getElementById('calcRepsInput').value, 10) || 1;
+      const oneRm = r === 1 ? w : w * (1 + r / 30);
+      const fiveByFiveWeight = Math.round((oneRm * 0.82) * 2) / 2;
+      const threeByTenWeight = Math.round((oneRm * 0.70) * 2) / 2;
+
+      document.getElementById('oneRmResultCards').innerHTML = `
+        <div class="bg-oled border border-borderDark rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-gray-400">Tahmini 1RM</div>
+          <div class="text-sm font-mono font-extrabold text-white">${oneRm.toFixed(1)} kg</div>
+        </div>
+        <div class="bg-oled border border-emerald-500/40 rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-emerald-400 font-semibold">5×5 Çalışma (%82)</div>
+          <div class="text-sm font-mono font-extrabold text-emerald-400">${fiveByFiveWeight.toFixed(1)} kg</div>
+        </div>
+        <div class="bg-oled border border-borderDark rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-gray-400">3×10 İzolasyon (%70)</div>
+          <div class="text-sm font-mono font-extrabold text-gray-200">${threeByTenWeight.toFixed(1)} kg</div>
+        </div>
+      `;
+    }
+
+    function renderWeightsConfig() {
+      const list = document.getElementById('weightsConfigList');
+      list.innerHTML = '';
+      Object.values(EXERCISE_DB).forEach(meta => {
+        const st = state.exStats[meta.id];
+        const row = document.createElement('div');
+        row.className = 'bg-oled border border-borderDark rounded-xl p-3 flex flex-wrap items-center justify-between gap-2';
+        row.innerHTML = `
+          <div class="min-w-[160px]">
+            <div class="text-xs font-bold text-white">${meta.name}</div>
+            <div class="text-[11px] text-gray-400">Hedef: ${meta.defaultSets}×${meta.defaultReps}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div>
+              <label class="block text-[10px] text-gray-400">Ağırlık (kg)</label>
+              <input data-ex="${meta.id}" data-field="weight" type="number" step="0.5" value="${st.weight}" class="w-20 bg-card border border-borderDark rounded-lg px-2 py-1 text-xs font-mono font-bold text-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-400">Artış (+kg)</label>
+              <input data-ex="${meta.id}" data-field="increment" type="number" step="0.5" value="${st.increment}" class="w-16 bg-card border border-borderDark rounded-lg px-2 py-1 text-xs font-mono font-bold text-emerald-400" />
+            </div>
+          </div>
+        `;
+
+        row.querySelectorAll('input').forEach(inp => {
+          inp.addEventListener('change', () => {
+            const exId = inp.getAttribute('data-ex');
+            const field = inp.getAttribute('data-field');
+            const val = parseFloat(inp.value);
+            if (!isNaN(val) && val > 0) {
+              state.exStats[exId][field] = val;
+              saveState();
+              renderExercises();
+              renderProgressTab();
+              showToast('Ağırlık ayarı güncellendi');
+            }
+          });
+        });
+
+        list.appendChild(row);
+      });
+    }
+
+    // =========================================================================
+    // 6. PLATE CALCULATOR MODAL
+    // =========================================================================
+    function updatePlateBreakdown() {
+      const total = parseFloat(document.getElementById('plateTargetWeight').value) || 0;
+      const bar = parseFloat(document.getElementById('plateBarWeight').value) || 0;
+      const perSide = Math.max(0, (total - bar) / 2);
+      document.getElementById('platePerSideLabel').textContent = `${perSide.toFixed(2)} kg / taraf`;
+
+      const container = document.getElementById('plateVisualBadges');
+      container.innerHTML = '';
+
+      if (total <= bar) {
+        container.innerHTML = `<span class="text-xs text-gray-400">Sadece boş bar (${bar} kg) yeterli.</span>`;
+        return;
+      }
+
+      const availablePlates = [20, 15, 10, 5, 2.5, 1.25, 0.5];
+      let rem = perSide;
+      const chosen = [];
+
+      availablePlates.forEach(p => {
+        while (rem >= p - 0.001) {
+          chosen.push(p);
+          rem = +(rem - p).toFixed(2);
+        }
+      });
+
+      chosen.forEach(p => {
+        const badge = document.createElement('span');
+        badge.className = 'px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 font-mono text-xs font-bold text-emerald-300';
+        badge.textContent = `${p} kg`;
+        container.appendChild(badge);
+      });
+
+      if (rem > 0.05) {
+        const remBadge = document.createElement('span');
+        remBadge.className = 'px-2 py-1 rounded-lg bg-amber-500/20 text-amber-300 text-xs font-mono';
+        remBadge.textContent = `Kalan: ${rem.toFixed(2)} kg`;
+        container.appendChild(remBadge);
+      }
+    }
+
+    function openPlateCalculator(targetWeight, barWeight) {
+      if (typeof targetWeight === 'number') {
+        document.getElementById('plateTargetWeight').value = targetWeight;
+      }
+      if (typeof barWeight === 'number') {
+        document.getElementById('plateBarWeight').value = String(barWeight);
+      }
+      updatePlateBreakdown();
+      const modal = document.getElementById('plateCalcModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    // =========================================================================
+    // 7. COMPLETE WORKOUT & STRONGLIFTS PROGRESSION ENGINE
+    // =========================================================================
+    function completeWorkoutSession() {
+      const exercises = getActiveWorkoutExercises();
+      const wType = getActiveWorkoutType();
+      const dayName = DAY_NAMES[state.currentDayIdx];
+      const summaryLines = [];
+      let sessionVolume = 0;
+
+      exercises.forEach(item => {
+        const { exId, meta, sets, reps, setValues, stats } = item;
+        // Treat unclicked sets as full if the user clicks Finish Workout, or evaluate actual clicked sets
+        const completedAllSets = setValues.every(v => v === reps);
+        const anySetTracked = setValues.some(v => v !== null);
+
+        // Calculate volume
+        setValues.forEach(v => {
+          const actualReps = v === null ? reps : v;
+          sessionVolume += stats.weight * actualReps;
+        });
+
+        const oldWeight = stats.weight;
+
+        if (completedAllSets || !anySetTracked) {
+          // Success! Apply StrongLifts progression rule
+          stats.failStreak = 0;
+          const inc = reps === 5 ? stats.increment : Math.min(1.0, stats.increment);
+          stats.weight = +(stats.weight + inc).toFixed(1);
+          summaryLines.push(
+            `<strong class="text-white">${meta.name}</strong> (${sets}×${reps} tamamlandı): <span class="text-emerald-400 font-mono font-bold">${oldWeight} kg → ${stats.weight} kg (+${inc} kg)</span>`
+          );
+        } else {
+          // Failed to hit all target reps
+          stats.failStreak = (stats.failStreak || 0) + 1;
+          if (stats.failStreak >= 3) {
+            // 3 consecutive fails -> 10% Deload!
+            const deloaded = Math.max(2, Math.round((stats.weight * 0.9) * 2) / 2);
+            stats.weight = deloaded;
+            stats.failStreak = 0;
+            summaryLines.push(
+              `<strong class="text-white">${meta.name}</strong> (3 seans üst üste başarısız): <span class="text-rose-400 font-mono font-bold">%10 Deload → ${stats.weight} kg</span>`
+            );
+          } else {
+            summaryLines.push(
+              `<strong class="text-white">${meta.name}</strong> (${sets}×${reps} tamamlanamadı - Seri ${stats.failStreak}/3): <span class="text-amber-300 font-mono font-bold">${stats.weight} kg tekrar denenecek</span>`
+            );
+          }
+        }
+
+        stats.history.push({
+          date: `H${state.currentWeek} ${dayName.slice(0, 3)}`,
+          weight: stats.weight,
+          reps: reps
+        });
+
+        // Reset sets for next session
+        state.activeSets[exId] = new Array(sets).fill(null);
+      });
+
+      const slotKey = `w${state.currentWeek}_d${state.currentDayIdx}`;
+      state.completedSlots[slotKey] = true;
+
+      state.workoutLogs.push({
+        date: `Hafta ${state.currentWeek} • ${dayName}`,
+        title: `Antrenman ${wType} (${wType === 'A' ? 'Biceps' : 'Triceps'})`,
+        volume: Math.round(sessionVolume),
+        details: summaryLines.map(s => s.replace(/<[^>]+>/g, ''))
+      });
+
+      // Advance pointer to next day/week automatically
+      if (state.currentDayIdx < 2) {
+        state.currentDayIdx++;
+      } else if (state.currentWeek < 12) {
+        state.currentWeek++;
+        state.currentDayIdx = 0;
+      }
+      state.overrideWorkoutType = null;
+
+      saveState();
+      resetRestTimer();
+      renderAll();
+
+      // Show Summary Modal
+      const body = document.getElementById('summaryModalBody');
+      body.innerHTML = `
+        <div class="p-3 rounded-xl bg-oled border border-borderDark space-y-1.5">
+          <div class="text-xs text-gray-400">Toplam Antrenman Hacmi: <strong class="text-emerald-400 font-mono">${Math.round(sessionVolume)} kg</strong></div>
+          <div class="space-y-1.5 pt-1">${summaryLines.map(line => `<div>• ${line}</div>`).join('')}</div>
+        </div>
+      `;
+      const modal = document.getElementById('summaryModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    // =========================================================================
+    // 8. NAVIGATION & EVENT BINDINGS
+    // =========================================================================
+    function switchTab(tabName) {
+      const views = {
+        workout: document.getElementById('viewWorkout'),
+        program: document.getElementById('viewProgram'),
+        progress: document.getElementById('viewProgress'),
+        tools: document.getElementById('viewTools')
+      };
+
+      Object.keys(views).forEach(k => {
+        if (k === tabName) {
+          views[k].classList.remove('hidden');
+        } else {
+          views[k].classList.add('hidden');
+        }
+      });
+
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        const t = btn.getAttribute('data-tab');
+        if (t === tabName) {
+          btn.className = 'nav-tab-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-emerald-400 bg-emerald-500/10 font-semibold text-[11px] gap-1 transition';
+        } else {
+          btn.className = 'nav-tab-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-gray-400 hover:text-gray-200 font-semibold text-[11px] gap-1 transition';
+        }
+      });
+
+      if (tabName === 'program') renderProgramTab();
+      if (tabName === 'progress') renderProgressTab();
+      if (tabName === 'tools') {
+        updateOneRmCalculator();
+        renderWeightsConfig();
+      }
+    }
+
+    function renderAll() {
+      renderHeaderAndWeek();
+      renderExercises();
+      renderQuickTracker();
+      renderProgramTab();
+      renderProgressTab();
+      updateOneRmCalculator();
+      renderWeightsConfig();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      renderAll();
+      updateTimerUI();
+
+      // Nav tabs
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchTab(btn.getAttribute('data-tab'));
+        });
+      });
+
+      // Week navigation
+      document.getElementById('prevWeekBtn').addEventListener('click', () => {
+        state.currentWeek = state.currentWeek > 1 ? state.currentWeek - 1 : 12;
+        state.overrideWorkoutType = null;
+        saveState();
+        renderAll();
+      });
+      document.getElementById('nextWeekBtn').addEventListener('click', () => {
+        state.currentWeek = state.currentWeek < 12 ? state.currentWeek + 1 : 1;
+        state.overrideWorkoutType = null;
+        saveState();
+        renderAll();
+      });
+
+      // Template & Workout A/B override
+      document.getElementById('templateSelect').addEventListener('change', e => {
+        state.templateKey = e.target.value;
+        saveState();
+        renderAll();
+        showToast('Antrenman şablonu değiştirildi');
+      });
+      document.getElementById('forceWorkoutABtn').addEventListener('click', () => {
+        state.overrideWorkoutType = 'A';
+        saveState();
+        renderAll();
+      });
+      document.getElementById('forceWorkoutBBtn').addEventListener('click', () => {
+        state.overrideWorkoutType = 'B';
+        saveState();
+        renderAll();
+      });
+
+      // Sound Toggle
+      document.getElementById('soundToggleBtn').addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        document.getElementById('soundIconOn').classList.toggle('hidden', !state.soundEnabled);
+        document.getElementById('soundIconOff').classList.toggle('hidden', state.soundEnabled);
+        saveState();
+        showToast(state.soundEnabled ? 'Ses bildirimleri açıldı' : 'Ses bildirimleri kapatıldı');
+      });
+
+      // Rest Timer Controls
+      document.getElementById('timerStartPauseBtn').addEventListener('click', toggleRestTimer);
+      document.getElementById('timerResetBtn').addEventListener('click', () => resetRestTimer());
+      document.getElementById('timerPreset90Btn').addEventListener('click', () => startRestTimer(90, 'İzolasyon • 90sn'));
+      document.getElementById('timerPreset150Btn').addEventListener('click', () => startRestTimer(150, '5×5 Ana Hareket • 150sn'));
+      document.getElementById('timerAdd15Btn').addEventListener('click', () => {
+        timerRemainingSec += 15;
+        updateTimerUI();
+      });
+
+      // Quick 5x5 Set Tracker Reset
+      document.getElementById('resetQuickTrackerBtn').addEventListener('click', () => {
+        state.quickTracker = [false, false, false, false, false];
+        saveState();
+        renderQuickTracker();
+        showToast('5×5 set takipçisi sıfırlandı');
+      });
+
+      // Complete & Reset Session
+      document.getElementById('completeWorkoutBtn').addEventListener('click', completeWorkoutSession);
+      document.getElementById('resetCurrentSessionBtn').addEventListener('click', () => {
+        Object.keys(state.activeSets).forEach(k => {
+          state.activeSets[k] = state.activeSets[k].map(() => null);
+        });
+        saveState();
+        renderExercises();
+        showToast('Mevcut seans setleri sıfırlandı');
+      });
+
+      // Summary Modal Close
+      const closeSummary = () => {
+        const modal = document.getElementById('summaryModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      };
+      document.getElementById('closeSummaryModalBtn').addEventListener('click', closeSummary);
+      document.getElementById('summaryModalOkBtn').addEventListener('click', closeSummary);
+
+      // Plate Calculator Modal
+      document.getElementById('openPlateCalcBtn').addEventListener('click', () => openPlateCalculator());
+      document.getElementById('closePlateCalcBtn').addEventListener('click', () => {
+        const modal = document.getElementById('plateCalcModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      });
+      document.getElementById('plateTargetWeight').addEventListener('input', updatePlateBreakdown);
+      document.getElementById('plateBarWeight').addEventListener('change', updatePlateBreakdown);
+
+      // Progress Chart Selector & Arm Measurement
+      document.getElementById('chartExerciseSelect').addEventListener('change', renderProgressTab);
+      document.getElementById('addArmMeasurementBtn').addEventListener('click', () => {
+        const cmVal = parseFloat(document.getElementById('armSizeInput').value);
+        const noteVal = document.getElementById('armNoteInput').value;
+        if (!isNaN(cmVal) && cmVal >= 20 && cmVal <= 70) {
+          state.armMeasurements.push({
+            date: `Hafta ${state.currentWeek}`,
+            cm: cmVal,
+            note: noteVal
+          });
+          saveState();
+          renderProgressTab();
+          showToast('Kol ölçüsü kaydedildi');
+        }
+      });
+
+      document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+        state.workoutLogs = [];
+        saveState();
+        renderProgressTab();
+        showToast('Antrenman geçmişi temizlendi');
+      });
+
+      // 1RM Calculator Inputs
+      document.getElementById('calcWeightInput').addEventListener('input', updateOneRmCalculator);
+      document.getElementById('calcRepsInput').addEventListener('input', updateOneRmCalculator);
+
+      // Export & Reset All Data
+      document.getElementById('exportDataBtn').addEventListener('click', () => {
+        const jsonStr = JSON.stringify(state, null, 2);
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(jsonStr).then(() => {
+              showToast('Veriler JSON olarak panoya kopyalandı');
+            }).catch(() => {
+              fallbackCopy(jsonStr);
+            });
+          } else {
+            fallbackCopy(jsonStr);
+          }
+        } catch (e) {
+          fallbackCopy(jsonStr);
+        }
+      });
+
+      function fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('Veriler JSON olarak panoya kopyalandı');
+        } catch (err) {
+          showToast('Kopyalama tamamlandı');
+        }
+        document.body.removeChild(ta);
+      }
+
+      document.getElementById('resetAllDataBtn').addEventListener('click', () => {
+        state = getDefaultState();
+        saveState();
+        renderAll();
+        showToast('Uygulama başlangıç ayarlarına sıfırlandı');
+      });
+    });
+  </script>
+</body>
+</html>
