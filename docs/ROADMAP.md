@@ -11,14 +11,19 @@
 - Tam veri sıfırlama ve geçmiş silme için onay
 - Node'un dahili test sistemiyle temel regresyon testleri
 
-## 0.2 — Antrenman deneyimi (sırada)
+## 0.2 — Antrenman deneyimi (kod tamamlandı; gerçek cihaz QA bekliyor)
 
-- Tek set için gerçek tekrar sayısı girişi (çoklu dokunuş döngüsü yerine)
-- Dinlenme sayacını seçilebilir sürelerle özelleştirme
-- Antrenman öncesi ısınma ve hareket formu ipuçları
-- Dambıl ağırlığı tek el / çift el / toplam yük tanımlarını netleştirme
-- Daha okunaklı haftalık takvim ve birincil seans ekranı
-- Erişilebilir metin ölçekleri, hareket azaltma ve VoiceOver etiketleri
+- [x] Tek dokunuşla set tamamla, tamamlanan sete tekrar dokunarak gerçek tekrar (0–30) ve ağırlık düzenle
+- [x] Set başına gerçek yük + tekrar bazlı hacim ve programdan bağımsız seans kayıtları
+- [x] Kaydetmeden önce set, hacim, eksik setler ve sonraki ağırlık hedefi önizlemesi
+- [x] Toparlanma haftasında (7. hafta) çalışma ağırlığını otomatik artırmama
+- [x] İkincil program seçeneklerini kapatılabilir bölüme al; ilerleme ve sıradaki hareketi öne çıkar
+- [x] İki süre kısayolu + 15 sn ekleme, arka planda gerçek zamanlı dinlenme sayacı (mevcut)
+- [x] Hareket tekniği ve hafif ısınma notları, dambılda toplam kg açıklaması
+- [x] Temel aria-label, modal rolü, görünür klavye odağı ve reduced-motion (kaynak seviyesinde)
+- [ ] iOS Safari, Android Chrome ve VoiceOver ile gerçek cihaz kabul testi
+- [ ] Tüm setlere ayrı ağırlık girişi yapan akışın gerçek cihaz ergonomi testi
+- [ ] Harici cihazda uzun metin/büyük yazı/hizalama testi
 
 ## 0.3 — Veri güvenliği ve analiz
 
