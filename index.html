@@ -150,10 +150,10 @@
       <section id="viewWorkout" class="space-y-4">
 
         <!-- Focus-first workout dashboard -->
-        <div class="bg-gradient-to-br from-[#10271d] to-card border border-emerald-500/30 rounded-2xl p-4 space-y-3" aria-label="Bugünkü antrenman ilerlemesi">
+        <div class="bg-gradient-to-br from-[#10271d] to-card border border-emerald-500/30 rounded-2xl p-4 space-y-3" aria-label="Seçili antrenman ilerlemesi">
           <div class="flex items-center justify-between gap-2">
             <div>
-              <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Bugünkü antrenman</div>
+              <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Seçili antrenman</div>
               <h2 id="dashboardWorkoutTitle" class="text-xl font-extrabold tracking-tight text-white mt-1">Workout A · Biceps</h2>
               <p id="dashboardWorkoutSubtitle" class="text-xs text-gray-300 mt-1">Hafta 1 / 12 • 3 hareket</p>
             </div>
@@ -799,7 +799,8 @@
         templateKey: 'standard',
         overrideWorkoutType: null, // null or 'A' or 'B'
         soundEnabled: true,
-        activeSets: {}, // keyed by exId -> array of null or completed rep count
+        activeSets: {}, // scoped by week/day/template/workout/exercise
+        activeWeights: {}, // actual weight per completed set (null until recorded)
         quickTracker: [false, false, false, false, false], // start with zero real sets
         completedSlots: {}, // e.g. "w1_d0": true
         exStats: exStats,
@@ -827,6 +828,8 @@
               };
             }
           });
+          state.activeSets = state.activeSets && typeof state.activeSets === 'object' ? state.activeSets : {};
+          state.activeWeights = state.activeWeights && typeof state.activeWeights === 'object' ? state.activeWeights : {};
           // Keep unfinished set records from the first (exercise-only) format.
           Object.keys(EXERCISE_DB).forEach(id => {
             const scopedKey = getSetStorageKey(id);
@@ -894,6 +897,10 @@
         if (!Array.isArray(state.activeSets[setKey]) || state.activeSets[setKey].length !== effectiveSets) {
           state.activeSets[setKey] = new Array(effectiveSets).fill(null);
         }
+        if (!state.activeWeights || typeof state.activeWeights !== 'object') state.activeWeights = {};
+        if (!Array.isArray(state.activeWeights[setKey]) || state.activeWeights[setKey].length !== effectiveSets) {
+          state.activeWeights[setKey] = new Array(effectiveSets).fill(null);
+        }
         return {
           index: idx + 1,
           exId: item.exId,
@@ -903,9 +910,53 @@
           sets: effectiveSets,
           reps: item.reps,
           setValues: state.activeSets[setKey],
+          setWeights: state.activeWeights[setKey],
           stats: state.exStats[item.exId]
         };
       });
+    }
+
+    // Session calculations use actually recorded reps AND weights, not future prescriptions.
+    function getRecordedWeight(item, index) {
+      const recorded = item.setWeights[index];
+      return Number.isFinite(recorded) && recorded > 0 ? recorded : item.stats.weight;
+    }
+
+    function predictExerciseProgress(item) {
+      if (item.setValues.some(v => v === null)) {
+        return { kind: 'pending', nextWeight: item.stats.weight };
+      }
+      const success = item.setValues.every(v => Number.isInteger(v) && v >= item.reps);
+      if (success) {
+        const lowestCompletedWeight = Math.min(...item.setValues.map((_, i) => getRecordedWeight(item, i)));
+        const increment = item.reps === 5 ? item.stats.increment : Math.min(1, item.stats.increment);
+        return { kind: 'success', nextWeight: +(lowestCompletedWeight + increment).toFixed(1), increment };
+      }
+      if ((item.stats.failStreak || 0) + 1 >= 3) {
+        return { kind: 'deload', nextWeight: Math.max(2, Math.round(item.stats.weight * 0.9 * 2) / 2) };
+      }
+      return { kind: 'retry', nextWeight: item.stats.weight };
+    }
+
+    function getSessionSnapshot() {
+      const exercises = getActiveWorkoutExercises();
+      const missing = [];
+      let recordedSets = 0;
+      let totalSets = 0;
+      let volume = 0;
+      for (const item of exercises) {
+        totalSets += item.sets;
+        item.setValues.forEach((reps, i) => {
+          if (reps === null) {
+            missing.push(`${item.meta.name} · ${i + 1}. set`);
+          } else {
+            recordedSets++;
+            volume += reps * getRecordedWeight(item, i);
+          }
+        });
+      }
+      const slot = `w${state.currentWeek}_d${state.currentDayIdx}`;
+      return { exercises, missing, recordedSets, totalSets, volume: Math.round(volume), isSaved: !!state.completedSlots[slot], ready: !state.completedSlots[slot] && missing.length === 0 };
     }
 
     // =========================================================================
@@ -1125,161 +1176,194 @@
 
     function renderExercises() {
       const wType = getActiveWorkoutType();
-      const titleEl = document.getElementById('activeWorkoutTitle');
-      titleEl.textContent = wType === 'A'
-        ? '2. Antrenman A — Biceps ağırlıklı'
-        : '3. Antrenman B — Triceps ağırlıklı';
+      document.getElementById('activeWorkoutTitle').textContent =
+        wType === 'A' ? 'Antrenman A · Biceps ağırlıklı' : 'Antrenman B · Triceps ağırlıklı';
 
-      const exercises = getActiveWorkoutExercises();
+      const snapshot = getSessionSnapshot();
+      const { exercises, recordedSets, totalSets, volume, missing, isSaved } = snapshot;
       const container = document.getElementById('exerciseCardsContainer');
       container.innerHTML = '';
 
-      let totalSetsCount = 0;
-      let completedSetsCount = 0;
-      let totalVolume = 0;
+      const pct = totalSets ? Math.round(recordedSets / totalSets * 100) : 0;
+      const nextItem = exercises.find(item => item.setValues.some(v => v === null));
+      document.getElementById('dashboardWorkoutTitle').textContent = `Workout ${wType} · ${wType === 'A' ? 'Biceps' : 'Triceps'}`;
+      document.getElementById('dashboardWorkoutSubtitle').textContent =
+        `Hafta ${state.currentWeek} / 12 · ${DAY_NAMES[state.currentDayIdx]} · ${exercises.length} hareket`;
+      document.getElementById('dashboardPercent').textContent = `${pct}%`;
+      document.getElementById('sessionProgressFill').style.width = `${pct}%`;
+      document.getElementById('sessionProgressTrack').setAttribute('aria-valuenow', String(pct));
+      document.getElementById('dashboardCompleted').textContent = `${recordedSets} / ${totalSets} set tamamlandı`;
+      document.getElementById('dashboardNext').textContent =
+        isSaved ? 'Seans kaydedildi ✓' : nextItem ? `Sırada: ${nextItem.meta.name}` : 'Kaydetmeye hazır ✓';
+      document.getElementById('sessionProgressBadge').textContent = `${recordedSets}/${totalSets} set`;
+      document.getElementById('sessionVolumePreview').textContent = `${volume} kg hacim`;
+      document.getElementById('sessionRemainingPreview').textContent =
+        isSaved ? 'Kaydedildi' : missing.length ? `${missing.length} set kaldı` : 'Tüm setler girildi';
+      document.getElementById('completeWorkoutBtn').disabled = isSaved;
+      document.getElementById('completeWorkoutBtn').classList.toggle('opacity-50', isSaved);
+      document.getElementById('resetCurrentSessionBtn').disabled = isSaved;
+      document.getElementById('resetCurrentSessionBtn').classList.toggle('opacity-40', isSaved);
 
       exercises.forEach(item => {
-        const { index, exId, meta, sets, reps, setValues, stats } = item;
-        totalSetsCount += sets;
+        const { index, meta, sets, reps, setValues, stats } = item;
+        const focused = !isSaved && nextItem && nextItem.setKey === item.setKey;
+        const done = setValues.every(v => v !== null);
+        const previous = Array.isArray(stats.history) && stats.history.length ? stats.history[stats.history.length - 1] : null;
 
-        setValues.forEach(v => {
-          if (v !== null && v > 0) {
-            completedSetsCount++;
-            totalVolume += stats.weight * v;
-          }
-        });
-
-        const card = document.createElement('div');
-        card.className = 'bg-card border border-borderDark rounded-2xl p-3.5 space-y-3.5';
-
-        // Fail streak warning pill if any
-        const failPill = stats.failStreak > 0
-          ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">Başarısız Seri: ${stats.failStreak}/3</span>`
-          : '';
-
-        // Top row: Thumbnail + Title + 5x5 / 3x10 + Description (Exact match to Screenshots 2 & 3)
-        const topRow = document.createElement('div');
-        topRow.className = 'flex items-start gap-3.5';
-        topRow.innerHTML = `
-          <img src="${meta.img}" alt="${meta.name}" class="w-24 h-24 rounded-2xl object-cover bg-white shrink-0 border border-borderDark" />
+        const card = document.createElement('article');
+        card.className = `bg-card border ${focused ? 'border-emerald-500/60' : 'border-borderDark'} rounded-2xl p-3.5 space-y-3.5`;
+        const heading = document.createElement('div');
+        heading.className = 'flex gap-3 items-start';
+        heading.innerHTML = `
+          <img src="${meta.img}" alt="" loading="lazy" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover bg-white shrink-0" />
           <div class="flex-1 min-w-0 space-y-1">
-            <div class="flex items-start justify-between gap-1">
-              <h3 class="text-base font-extrabold text-white leading-snug">${index}. ${meta.name}</h3>
+            <div class="flex flex-wrap items-start justify-between gap-1">
+              <h3 class="text-sm sm:text-base font-extrabold leading-snug text-white">${index}. ${meta.name}</h3>
+              ${isSaved ? '<span class="text-[10px] text-emerald-400">Kaydedildi</span>' : focused ? '<span class="text-[10px] text-emerald-400">Sıradaki hareket</span>' : done ? '<span class="text-[10px] text-emerald-400">Setler tamam</span>' : ''}
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xl font-extrabold text-white tracking-tight">${sets} × ${reps}</span>
-              ${state.currentWeek === 7 ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300">7. Hafta Deload</span>' : ''}
-              ${failPill}
+            <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-emerald-300">
+              <span>${sets} × ${reps}</span>
+              ${stats.failStreak ? `<span class="text-[10px] font-medium text-amber-300">Başarısız seri ${stats.failStreak}/3</span>` : ''}
+              ${state.currentWeek === 7 ? '<span class="text-[10px] text-sky-300">Hafif hafta</span>' : ''}
             </div>
-            <p class="text-xs text-gray-400 leading-relaxed">${meta.desc}</p>
-            <p class="text-[11px] text-gray-500 leading-snug">${meta.tips}</p>
+            <p class="text-[11px] text-gray-400">${previous ? `Son kayıt: ${Number(previous.weight).toFixed(1)} kg × ${previous.reps} · ${previous.date}` : 'İlk kayıt · başlangıç ağırlığını ayarla'}</p>
           </div>
         `;
-        card.appendChild(topRow);
+        card.appendChild(heading);
 
-        // Weight Control Bar
         const weightBar = document.createElement('div');
-        weightBar.className = 'bg-oled border border-borderDark rounded-xl p-2.5 flex items-center justify-between gap-2';
+        weightBar.className = 'bg-oled border border-borderDark rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2';
         weightBar.innerHTML = `
           <div>
-            <span class="text-[11px] text-gray-400 block">Çalışma Ağırlığı</span>
+            <span class="text-[11px] text-gray-400 block">Sıradaki setin ağırlığı <span class="text-gray-500">· toplam kg</span></span>
             <span class="font-mono text-base font-extrabold text-emerald-400">${stats.weight.toFixed(1)} kg</span>
           </div>
           <div class="flex items-center gap-1.5">
-            <button data-act="decWeight" type="button" class="px-2.5 py-1.5 rounded-lg bg-card border border-borderDark text-xs font-mono font-bold text-gray-200 hover:border-gray-500 active:scale-95">-${stats.increment}kg</button>
-            <button data-act="incWeight" type="button" class="px-2.5 py-1.5 rounded-lg bg-card border border-borderDark text-xs font-mono font-bold text-emerald-400 hover:border-emerald-500/50 active:scale-95">+${stats.increment}kg</button>
-            <button data-act="plateCalc" type="button" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs font-semibold text-emerald-300 active:scale-95" title="Plaka Hesapla">Plaka</button>
+            <button data-act="decWeight" type="button" ${isSaved ? 'disabled' : ''} aria-label="${meta.name} ağırlığını ${stats.increment} kilogram azalt" class="px-2.5 py-2 rounded-lg bg-card border border-borderDark text-xs font-mono font-bold text-gray-200 disabled:opacity-40">−${stats.increment}</button>
+            <button data-act="incWeight" type="button" ${isSaved ? 'disabled' : ''} aria-label="${meta.name} ağırlığını ${stats.increment} kilogram artır" class="px-2.5 py-2 rounded-lg bg-card border border-borderDark text-xs font-mono font-bold text-emerald-400 disabled:opacity-40">+${stats.increment}</button>
+            <button data-act="plateCalc" type="button" class="px-2.5 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs font-semibold text-emerald-300">Plaka</button>
           </div>
         `;
-
         weightBar.querySelector('[data-act="decWeight"]').addEventListener('click', () => {
-          stats.weight = Math.max(1, +(stats.weight - stats.increment).toFixed(1));
+          if (isSaved) return;
+          stats.weight = Math.max(0.5, +(stats.weight - stats.increment).toFixed(1));
           saveState();
           renderExercises();
           renderWeightsConfig();
         });
         weightBar.querySelector('[data-act="incWeight"]').addEventListener('click', () => {
+          if (isSaved) return;
           stats.weight = +(stats.weight + stats.increment).toFixed(1);
           saveState();
           renderExercises();
           renderWeightsConfig();
         });
-        weightBar.querySelector('[data-act="plateCalc"]').addEventListener('click', () => {
-          openPlateCalculator(stats.weight, meta.barWeight);
-        });
+        weightBar.querySelector('[data-act="plateCalc"]').addEventListener('click', () =>
+          openPlateCalculator(stats.weight, meta.barWeight));
         card.appendChild(weightBar);
 
-        // Interactive Set Buttons Grid (StrongLifts 5x5 + Screenshot 1 style)
         const setsGrid = document.createElement('div');
-        setsGrid.className = sets === 5 ? 'grid grid-cols-5 gap-2' : 'grid grid-cols-3 gap-2.5';
-
+        setsGrid.className = 'grid grid-cols-3 sm:grid-cols-5 gap-2';
         setValues.forEach((val, setIdx) => {
-          const isCompletedFull = (val === reps);
-          const isPartial = (val !== null && val < reps && val > 0);
-          const isZero = (val === 0);
-
-          let btnStyle = 'bg-[#1b1e24] border-borderDark text-gray-200';
-          let iconHtml = `<span class="w-5 h-5 rounded-full bg-gray-500/50 block mx-auto"></span>`;
-          let subLabel = `${setIdx + 1}. set`;
-
-          if (isCompletedFull) {
-            btnStyle = 'bg-[#092214] border-emerald-500/60 text-white';
-            iconHtml = `
-              <span class="w-5 h-5 rounded-full border border-emerald-400 flex items-center justify-center mx-auto text-emerald-400 text-xs font-bold">
-                ✓
-              </span>
-            `;
-            subLabel = `${setIdx + 1}. set (${val})`;
-          } else if (isPartial) {
-            btnStyle = 'bg-amber-950/50 border-amber-500/60 text-amber-200';
-            iconHtml = `
-              <span class="w-5 h-5 rounded-full border border-amber-400 flex items-center justify-center mx-auto text-amber-300 text-xs font-mono font-bold">
-                ${val}
-              </span>
-            `;
-            subLabel = `${setIdx + 1}. set (${val}/${reps})`;
-          } else if (isZero) {
-            btnStyle = 'bg-rose-950/40 border-rose-500/50 text-rose-300';
-            iconHtml = `
-              <span class="w-5 h-5 rounded-full border border-rose-400 flex items-center justify-center mx-auto text-rose-400 text-xs font-mono font-bold">
-                0
-              </span>
-            `;
-            subLabel = `${setIdx + 1}. set (0)`;
-          }
-
-          const setBtn = document.createElement('button');
-          setBtn.type = 'button';
-          setBtn.className = `set-btn rounded-2xl border py-3 px-1.5 flex flex-col items-center justify-center gap-2 ${btnStyle}`;
-          setBtn.innerHTML = `
-            ${iconHtml}
-            <span class="text-xs font-bold tracking-tight">${subLabel}</span>
+          const actualWeight = getRecordedWeight(item, setIdx);
+          const isFull = val !== null && val >= reps;
+          const partial = val !== null && val > 0 && val < reps;
+          const zero = val === 0;
+          const cls = isFull ? 'bg-[#092214] border-emerald-500/60 text-emerald-200'
+            : partial ? 'bg-amber-950/40 border-amber-500/50 text-amber-200'
+            : zero ? 'bg-rose-950/40 border-rose-500/50 text-rose-300'
+            : 'bg-[#1b1e24] border-borderDark text-gray-300';
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.disabled = isSaved;
+          btn.className = `set-btn min-h-[85px] min-w-0 rounded-xl border py-2 px-1 flex flex-col items-center justify-center gap-1 disabled:opacity-65 ${cls}`;
+          btn.setAttribute('aria-label', `${meta.name} ${setIdx + 1}. set: ${val === null ? 'Henüz kaydedilmedi, tamamlamak için dokun' : `${val} tekrar, ${actualWeight} kilogram, düzenlemek için dokun`}`);
+          btn.innerHTML = `
+            <span class="text-[10px] font-semibold text-gray-400">${setIdx + 1}. SET</span>
+            <span class="text-lg leading-tight font-mono font-extrabold">${val === null ? '＋' : val >= reps ? '✓' : String(val)}</span>
+            <span class="text-[10px] font-mono">${val === null ? `${reps} hedef` : `${val}/${reps} tekrar`}</span>
+            <span class="text-[10px] text-gray-400">${actualWeight.toFixed(1)} kg</span>
           `;
-
-          setBtn.addEventListener('click', () => {
-            // Cycle: null -> reps (Full) -> reps-1 -> ... -> 0 -> null
-            if (val === null) {
-              state.activeSets[item.setKey][setIdx] = reps;
-              playBeep('setCheck');
-              startRestTimer(meta.restSec, `${meta.name} • ${meta.restSec}sn`);
-            } else if (val > 0) {
-              state.activeSets[item.setKey][setIdx] = val - 1;
-            } else {
-              state.activeSets[item.setKey][setIdx] = null;
-            }
-            saveState();
-            renderExercises();
+          btn.addEventListener('click', () => {
+            if (isSaved) return;
+            if (val === null) recordExerciseSet(item.setKey, setIdx, reps, stats.weight, true);
+            else openSetEditor(item, setIdx);
           });
-
-          setsGrid.appendChild(setBtn);
+          setsGrid.appendChild(btn);
         });
-
         card.appendChild(setsGrid);
+
+        const tips = document.createElement('details');
+        tips.className = 'border-t border-borderDark pt-2';
+        tips.innerHTML = `<summary class="text-xs text-gray-400 cursor-pointer py-1">Hareket tekniği ve dinlenme</summary>
+          <p class="text-xs text-gray-300 mt-2 leading-relaxed">${meta.tips}</p>
+          <p class="text-xs text-emerald-400 mt-1">${meta.restText}</p>`;
+        card.appendChild(tips);
         container.appendChild(card);
       });
+    }
 
-      document.getElementById('sessionProgressBadge').textContent = `${completedSetsCount}/${totalSetsCount} set`;
-      document.getElementById('sessionVolumePreview').textContent = `${Math.round(totalVolume)} kg hacim`;
+    function recordExerciseSet(setKey, setIdx, reps, weight, autoRest = false) {
+      const snapshot = getSessionSnapshot();
+      const item = snapshot.exercises.find(e => e.setKey === setKey);
+      if (snapshot.isSaved || !item || setIdx < 0 || setIdx >= item.sets ||
+          (reps !== null && (!Number.isInteger(reps) || reps < 0 || reps > 30)) ||
+          (reps !== null && (!Number.isFinite(weight) || weight < 0.5 || weight > 500))) return false;
+      const previous = item.setValues[setIdx];
+      state.activeSets[setKey][setIdx] = reps;
+      state.activeWeights[setKey][setIdx] = reps === null ? null : weight;
+      saveState();
+      if (autoRest && previous === null && reps !== null && reps > 0) {
+        playBeep('setCheck');
+        startRestTimer(item.meta.restSec, `${item.meta.name} · ${item.meta.restSec}sn`);
+      }
+      renderExercises();
+      return true;
+    }
+
+    let editingSet = null;
+    function closeSetEditor() {
+      const modal = document.getElementById('setEditModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      editingSet = null;
+    }
+
+    function openSetEditor(item, setIdx) {
+      if (state.completedSlots[`w${state.currentWeek}_d${state.currentDayIdx}`]) return;
+      editingSet = { setKey: item.setKey, setIdx, target: item.reps };
+      document.getElementById('setEditTitle').textContent = `${item.meta.name} · ${setIdx + 1}. Set`;
+      document.getElementById('setEditHint').textContent = `Hedef: ${item.reps} tekrar · gerçek yapılanı kaydet`;
+      document.getElementById('setEditReps').value = item.setValues[setIdx] ?? item.reps;
+      document.getElementById('setEditWeight').value = getRecordedWeight(item, setIdx);
+      const presetArea = document.getElementById('setEditPresets');
+      presetArea.innerHTML = '';
+      [...new Set([0, Math.max(0,item.reps-2), Math.max(0,item.reps-1), item.reps])].forEach(n => {
+        const preset = document.createElement('button');
+        preset.type = 'button';
+        preset.textContent = `${n} tekrar`;
+        preset.className = 'py-2 px-3 text-xs rounded-lg bg-oled border border-borderDark text-gray-200';
+        preset.addEventListener('click', () => { document.getElementById('setEditReps').value = String(n); });
+        presetArea.appendChild(preset);
+      });
+      const modal = document.getElementById('setEditModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('setEditReps').focus();
+    }
+
+    function saveSetEditor() {
+      if (!editingSet) return;
+      const repsRaw = document.getElementById('setEditReps').value.trim();
+      const weightRaw = document.getElementById('setEditWeight').value.trim();
+      const reps = Number(repsRaw);
+      const weight = Number(weightRaw);
+      if (!repsRaw || !weightRaw || !Number.isInteger(reps) || reps < 0 || reps > 30 ||
+          !Number.isFinite(weight) || weight < 0.5 || weight > 500) {
+        showToast('Tekrar 0–30, toplam ağırlık 0.5–500 kg olmalı.');
+        return;
+      }
+      if (recordExerciseSet(editingSet.setKey, editingSet.setIdx, reps, weight)) closeSetEditor();
     }
 
     function renderQuickTracker() {
@@ -1848,14 +1932,43 @@
       });
 
       // Complete & Reset Session
-      document.getElementById('completeWorkoutBtn').addEventListener('click', completeWorkoutSession);
+      document.getElementById('completeWorkoutBtn').addEventListener('click', openFinishPreview);
       document.getElementById('resetCurrentSessionBtn').addEventListener('click', () => {
+        if (getSessionSnapshot().recordedSets > 0 && !window.confirm('Bu seansın girilen tüm setlerini sıfırlamak istiyor musun?')) return;
+        if (state.completedSlots[`w${state.currentWeek}_d${state.currentDayIdx}`]) return;
         getActiveWorkoutExercises().forEach(item => {
           state.activeSets[item.setKey] = new Array(item.sets).fill(null);
+          state.activeWeights[item.setKey] = new Array(item.sets).fill(null);
         });
         saveState();
         renderExercises();
         showToast('Mevcut seans setleri sıfırlandı');
+      });
+
+      // Set editing and pre-save review dialogs
+      document.getElementById('closeSetEditBtn').addEventListener('click', closeSetEditor);
+      document.getElementById('cancelSetEditBtn').addEventListener('click', closeSetEditor);
+      document.getElementById('saveSetEditBtn').addEventListener('click', saveSetEditor);
+      document.getElementById('clearSetEditBtn').addEventListener('click', () => {
+        if (editingSet) {
+          recordExerciseSet(editingSet.setKey, editingSet.setIdx, null, null);
+          closeSetEditor();
+        }
+      });
+      document.getElementById('closeFinishPreviewBtn').addEventListener('click', closeFinishPreview);
+      document.getElementById('cancelFinishBtn').addEventListener('click', closeFinishPreview);
+      document.getElementById('confirmFinishBtn').addEventListener('click', () => {
+        if (getSessionSnapshot().ready) {
+          closeFinishPreview();
+          completeWorkoutSession();
+        }
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') { closeSetEditor(); closeFinishPreview(); }
+        if (event.key === 'Enter' && editingSet && document.getElementById('setEditModal').classList.contains('flex')) {
+          event.preventDefault();
+          saveSetEditor();
+        }
       });
 
       // Summary Modal Close
