@@ -1711,103 +1711,155 @@
     // =========================================================================
     // 7. COMPLETE WORKOUT & STRONGLIFTS PROGRESSION ENGINE
     // =========================================================================
+    function closeFinishPreview() {
+      const modal = document.getElementById('finishPreviewModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openFinishPreview() {
+      const snapshot = getSessionSnapshot();
+      if (snapshot.isSaved) {
+        showToast('Bu seans daha önce kaydedildi.');
+        return;
+      }
+      const container = document.getElementById('finishPreviewBody');
+      const missingHtml = snapshot.missing.length
+        ? `<div class="rounded-xl border border-amber-500/40 bg-amber-950/20 p-3">
+            <p class="text-amber-300 font-semibold mb-1">${snapshot.missing.length} setin tekrarı eksik</p>
+            <ul class="list-disc pl-5 text-xs space-y-1 text-amber-100">${snapshot.missing.map(x => `<li>${x}</li>`).join('')}</ul>
+            <p class="text-xs mt-2 text-amber-300">Eksik setler girilmeden seans kaydedilemez.</p>
+          </div>`
+        : `<p class="text-xs text-emerald-300">Bütün setler kaydedildi. Sonraki ağırlıkları onayla.</p>`;
+      const rows = snapshot.exercises.map(item => {
+        const decision = predictExerciseProgress(item);
+        const label = decision.kind === 'success' ? 'Artış'
+          : decision.kind === 'deload' ? 'Hafifletme'
+          : decision.kind === 'retry' ? 'Tekrar dene' : 'Henüz tamamlanmadı';
+        const recorded = item.setValues.map((v, i) => v === null ? '—' :
+          `${getRecordedWeight(item, i).toFixed(1)} kg × ${v}`).join(' · ');
+        return `<div class="rounded-xl border border-borderDark bg-oled p-3 space-y-1.5">
+          <div class="flex items-start justify-between gap-2">
+            <strong class="text-white text-xs">${item.meta.name}</strong>
+            <span class="text-xs text-emerald-300 font-mono whitespace-nowrap">${decision.nextWeight.toFixed(1)} kg</span>
+          </div>
+          <div class="text-[11px] text-gray-400">${recorded}</div>
+          <p class="text-[11px] text-gray-300">Sonraki hedef: ${label}</p>
+        </div>`;
+      }).join('');
+      container.innerHTML = `
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="rounded-lg bg-oled border border-borderDark p-2"><div class="font-mono font-bold text-white">${snapshot.recordedSets}/${snapshot.totalSets}</div><div class="text-[10px] text-gray-400">Set</div></div>
+          <div class="rounded-lg bg-oled border border-borderDark p-2"><div class="font-mono font-bold text-emerald-400">${snapshot.volume} kg</div><div class="text-[10px] text-gray-400">Hacim</div></div>
+          <div class="rounded-lg bg-oled border border-borderDark p-2"><div class="font-mono font-bold text-white">${snapshot.exercises.length}</div><div class="text-[10px] text-gray-400">Hareket</div></div>
+        </div>
+        ${missingHtml}
+        <div class="space-y-2">${rows}</div>`;
+      const saveBtn = document.getElementById('confirmFinishBtn');
+      saveBtn.disabled = !snapshot.ready;
+      const modal = document.getElementById('finishPreviewModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('cancelFinishBtn').focus();
+    }
+
     function completeWorkoutSession() {
-      const exercises = getActiveWorkoutExercises();
+      const snapshot = getSessionSnapshot();
+      const { exercises, ready, missing, isSaved, volume } = snapshot;
+      if (isSaved) {
+        showToast('Bu seans zaten kaydedildi; ikinci kez ilerletilemez.');
+        return false;
+      }
+      if (!ready) {
+        showToast(`${missing.length} set eksik: gerçek tekrar ve ağırlıkları kaydet.`);
+        return false;
+      }
+
       const wType = getActiveWorkoutType();
       const dayName = DAY_NAMES[state.currentDayIdx];
-      const slotKey = `w${state.currentWeek}_d${state.currentDayIdx}`;
-      if (state.completedSlots[slotKey]) {
-        showToast('Bu seans zaten kaydedildi; ağırlık tekrar artırılamaz.');
-        return;
-      }
-      if (exercises.some(item => item.setValues.some(v => v === null))) {
-        showToast('Kaydetmek için her sette yapılan tekrarları işaretle.');
-        return;
-      }
+      const week = state.currentWeek;
+      const dayIdx = state.currentDayIdx;
+      const slotKey = `w${week}_d${dayIdx}`;
       const summaryLines = [];
-      let sessionVolume = 0;
+      const recordedExercises = [];
+      const timestamp = new Date().toISOString();
 
       exercises.forEach(item => {
-        const { exId, meta, sets, reps, setValues, stats } = item;
-        // Only sets explicitly recorded by the user are saved.
-        const completedAllSets = setValues.every(v => v === reps);
-
-        // Calculate volume
-        setValues.forEach(v => {
-          sessionVolume += stats.weight * v;
-        });
-
-        const oldWeight = stats.weight;
-
-        if (completedAllSets) {
-          // Success! Apply StrongLifts progression rule
+        const { meta, sets, reps, setValues, stats } = item;
+        const beforeWeight = stats.weight;
+        const decision = predictExerciseProgress(item);
+        const actualSets = setValues.map((count, index) => ({
+          reps: count,
+          weight: getRecordedWeight(item, index)
+        }));
+        const lowestWeight = Math.min(...actualSets.map(set => set.weight));
+        const maxReps = Math.max(...setValues);
+        if (decision.kind === 'success') {
+          stats.weight = decision.nextWeight;
           stats.failStreak = 0;
-          const inc = reps === 5 ? stats.increment : Math.min(1.0, stats.increment);
-          stats.weight = +(stats.weight + inc).toFixed(1);
-          summaryLines.push(
-            `<strong class="text-white">${meta.name}</strong> (${sets}×${reps} tamamlandı): <span class="text-emerald-400 font-mono font-bold">${oldWeight} kg → ${stats.weight} kg (+${inc} kg)</span>`
-          );
+          summaryLines.push(`<strong class="text-white">${meta.name}</strong>: <span class="text-emerald-400">${lowestWeight.toFixed(1)} kg → ${stats.weight.toFixed(1)} kg</span>`);
+        } else if (decision.kind === 'deload') {
+          stats.weight = decision.nextWeight;
+          stats.failStreak = 0;
+          summaryLines.push(`<strong class="text-white">${meta.name}</strong>: <span class="text-rose-400">3 başarısız deneme; ${stats.weight.toFixed(1)} kg ile yeniden dene</span>`);
         } else {
-          // Failed to hit all target reps
           stats.failStreak = (stats.failStreak || 0) + 1;
-          if (stats.failStreak >= 3) {
-            // 3 consecutive fails -> 10% Deload!
-            const deloaded = Math.max(2, Math.round((stats.weight * 0.9) * 2) / 2);
-            stats.weight = deloaded;
-            stats.failStreak = 0;
-            summaryLines.push(
-              `<strong class="text-white">${meta.name}</strong> (3 seans üst üste başarısız): <span class="text-rose-400 font-mono font-bold">%10 Deload → ${stats.weight} kg</span>`
-            );
-          } else {
-            summaryLines.push(
-              `<strong class="text-white">${meta.name}</strong> (${sets}×${reps} tamamlanamadı - Seri ${stats.failStreak}/3): <span class="text-amber-300 font-mono font-bold">${stats.weight} kg tekrar denenecek</span>`
-            );
-          }
+          summaryLines.push(`<strong class="text-white">${meta.name}</strong>: <span class="text-amber-300">${beforeWeight.toFixed(1)} kg ile tekrar dene (${stats.failStreak}/3)</span>`);
         }
-
         stats.history.push({
-          date: `H${state.currentWeek} ${dayName.slice(0, 3)}`,
-          weight: oldWeight, // load actually lifted, not next session's prescription
-          reps: Math.max(...setValues)
+          date: `H${week} ${dayName.slice(0, 3)}`,
+          weight: lowestWeight,
+          reps: maxReps,
+          timestamp
         });
-
-        // Reset sets for next session
-        state.activeSets[item.setKey] = new Array(sets).fill(null);
+        recordedExercises.push({
+          exId: item.exId,
+          name: meta.name,
+          targetSets: sets,
+          targetReps: reps,
+          sets: actualSets,
+          nextWeight: stats.weight,
+          result: decision.kind
+        });
       });
 
       state.completedSlots[slotKey] = true;
-
       state.workoutLogs.push({
-        date: `Hafta ${state.currentWeek} • ${dayName}`,
+        id: slotKey,
+        timestamp,
+        date: `Hafta ${week} • ${dayName}`,
+        performedAt: new Date().toLocaleDateString('tr-TR'),
+        templateKey: state.templateKey,
         title: `Antrenman ${wType} (${wType === 'A' ? 'Biceps' : 'Triceps'})`,
-        volume: Math.round(sessionVolume),
-        details: summaryLines.map(s => s.replace(/<[^>]+>/g, ''))
+        volume,
+        exercises: recordedExercises,
+        details: summaryLines.map(line => line.replace(/<[^>]+>/g, ''))
       });
 
-      // Advance pointer to next day/week automatically
-      if (state.currentDayIdx < 2) {
+      // Advance only after the complete session has been persisted in memory.
+      if (dayIdx < 2) {
         state.currentDayIdx++;
-      } else if (state.currentWeek < 12) {
+      } else if (week < 12) {
         state.currentWeek++;
         state.currentDayIdx = 0;
       }
       state.overrideWorkoutType = null;
-
       saveState();
       resetRestTimer();
       renderAll();
 
-      // Show Summary Modal
       const body = document.getElementById('summaryModalBody');
       body.innerHTML = `
         <div class="p-3 rounded-xl bg-oled border border-borderDark space-y-1.5">
-          <div class="text-xs text-gray-400">Toplam Antrenman Hacmi: <strong class="text-emerald-400 font-mono">${Math.round(sessionVolume)} kg</strong></div>
+          <div class="text-xs text-gray-400">Gerçek Antrenman Hacmi:
+            <strong class="text-emerald-400 font-mono">${volume} kg</strong>
+          </div>
           <div class="space-y-1.5 pt-1">${summaryLines.map(line => `<div>• ${line}</div>`).join('')}</div>
-        </div>
-      `;
+        </div>`;
       const modal = document.getElementById('summaryModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+      return true;
     }
 
     // =========================================================================
