@@ -40,6 +40,13 @@
       overscroll-behavior-y: none;
     }
     nav { padding-bottom: max(0.375rem, env(safe-area-inset-bottom)); }
+    #viewWorkout { min-width: 0; }
+    #restTimerBar > * { max-width: 100%; }
+    button { touch-action: manipulation; }
+    @media (max-width: 390px) {
+      #restTimerBar { align-items: stretch; }
+      #restTimerBar > div:last-child { justify-content: flex-start; }
+    }
     button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #10b981; outline-offset: 2px; }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
     .set-btn {
@@ -67,7 +74,7 @@
   <div class="w-full max-w-md md:max-w-2xl min-h-screen flex flex-col bg-oled border-x border-borderDark/60 relative pb-28">
 
     <!-- Sticky Top Header -->
-    <header class="sticky top-0 z-30 bg-oled/90 backdrop-blur-md border-b border-borderDark px-4 py-3 flex items-center justify-between">
+    <header class="sticky top-0 z-30 bg-oled/90 backdrop-blur-md border-b border-borderDark px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-extrabold text-sm tracking-tighter">
           5×5
@@ -107,7 +114,7 @@
     </header>
 
     <!-- Floating / Sticky Rest Timer Bar (Shown always for quick gym timing) -->
-    <div id="restTimerBar" class="bg-card/95 border-b border-borderDark px-4 py-2.5 flex items-center justify-between gap-2">
+    <div id="restTimerBar" class="sticky top-[62px] z-20 bg-card/95 backdrop-blur-md border-b border-borderDark px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-2.5 min-w-0">
         <div id="timerPulseDot" class="w-2.5 h-2.5 rounded-full bg-gray-600 shrink-0"></div>
         <div class="truncate">
@@ -121,7 +128,7 @@
           </div>
         </div>
       </div>
-      <div class="flex items-center gap-1.5 shrink-0">
+      <div class="flex items-center gap-1.5 flex-wrap justify-end min-w-0">
         <button id="timerPreset90Btn" type="button" class="px-2 py-1 rounded-lg bg-oled border border-borderDark text-xs font-mono text-gray-300 hover:border-emerald-500/40 active:scale-95">90s</button>
         <button id="timerPreset150Btn" type="button" class="px-2 py-1 rounded-lg bg-oled border border-borderDark text-xs font-mono text-gray-300 hover:border-emerald-500/40 active:scale-95">2.5dk</button>
         <button id="timerAdd15Btn" type="button" class="px-2 py-1 rounded-lg bg-oled border border-borderDark text-xs font-mono text-gray-300 hover:border-emerald-500/40 active:scale-95">+15s</button>
@@ -142,24 +149,28 @@
       <!-- ========================================== -->
       <section id="viewWorkout" class="space-y-4">
 
-        <!-- Top Program Overview Strip (Matches Screenshot 3 top metrics) -->
-        <div class="grid grid-cols-3 gap-2">
-          <div class="bg-card border border-borderDark rounded-2xl p-2.5 text-center">
-            <div class="text-base font-extrabold text-white">12</div>
-            <div class="text-[11px] text-gray-400">Hafta Program</div>
+        <!-- Focus-first workout dashboard -->
+        <div class="bg-gradient-to-br from-[#10271d] to-card border border-emerald-500/30 rounded-2xl p-4 space-y-3" aria-label="Bugünkü antrenman ilerlemesi">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Bugünkü antrenman</div>
+              <h2 id="dashboardWorkoutTitle" class="text-xl font-extrabold tracking-tight text-white mt-1">Workout A · Biceps</h2>
+              <p id="dashboardWorkoutSubtitle" class="text-xs text-gray-300 mt-1">Hafta 1 / 12 • 3 hareket</p>
+            </div>
+            <span id="dashboardPercent" class="text-2xl font-mono font-bold text-emerald-400">0%</span>
           </div>
-          <div class="bg-card border border-borderDark rounded-2xl p-2.5 text-center">
-            <div class="text-base font-extrabold text-white">3</div>
-            <div class="text-[11px] text-gray-400">Gün / hafta</div>
+          <div class="h-2 rounded-full bg-emerald-950 overflow-hidden" id="sessionProgressTrack" role="progressbar" aria-label="Tamamlanan set oranı" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="sessionProgressFill" class="h-full rounded-full bg-emerald-400 transition-[width] duration-300" style="width:0%"></div>
           </div>
-          <div class="bg-card border border-borderDark rounded-2xl p-2.5 text-center">
-            <div class="text-base font-extrabold text-white">45–60</div>
-            <div class="text-[11px] text-gray-400">Dakika / seans</div>
+          <div class="flex justify-between gap-3 text-xs text-gray-300">
+            <span id="dashboardCompleted">0 / 13 set</span>
+            <span id="dashboardNext">Sıradaki hareket hazırlanıyor</span>
           </div>
         </div>
 
-        <!-- 1. Haftalık Program & Seans Seçici (Exact match to Screenshot 3) -->
-        <div class="bg-card border border-borderDark rounded-2xl p-3.5 space-y-3">
+        <details id="sessionPlanDetails" class="bg-card border border-borderDark rounded-2xl p-3.5 space-y-3">
+          <summary class="cursor-pointer text-sm font-semibold text-white py-1 focus-visible:outline-emerald-500">Program / gün / şablon seçimi <span class="font-normal text-gray-400">· isteğe bağlı</span></summary>
+        <div class="space-y-3 pt-3">
           <div class="flex items-center justify-between">
             <button id="prevWeekBtn" type="button" class="w-9 h-9 rounded-full border border-borderDark bg-oled flex items-center justify-center text-gray-300 hover:text-white active:scale-95 transition" title="Önceki Hafta">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -193,10 +204,10 @@
         </div>
 
         <!-- Template & Workout Mode Switcher Bar -->
-        <div class="bg-card border border-borderDark rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold text-gray-400">Şablon:</span>
-            <select id="templateSelect" class="bg-oled border border-borderDark rounded-xl px-2.5 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-emerald-500">
+        <div class="bg-oled border border-borderDark rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2 w-full min-w-0">
+            <label for="templateSelect" class="text-xs font-semibold text-gray-400 shrink-0">Şablon:</label>
+            <select id="templateSelect" class="min-w-0 w-full bg-oled border border-borderDark rounded-xl px-2.5 py-2 text-xs font-semibold text-white focus:outline-none focus:border-emerald-500">
               <option value="standard">ARM 5×5 (Orijinal Görsel Şablonu)</option>
               <option value="hybrid5x5">ARM 5×5 Hibrit (B1: 5×5 + İzolasyon)</option>
               <option value="stronglifts_arm">StrongLifts 5×5 + Kol Odaklı</option>
@@ -207,6 +218,8 @@
             <button id="forceWorkoutBBtn" type="button" class="px-2.5 py-1 rounded-lg text-xs font-bold transition">B (Triceps)</button>
           </div>
         </div>
+        </div>
+        </details>
 
         <!-- Active Workout Banner & Exercises Container -->
         <div class="space-y-3">
@@ -216,7 +229,7 @@
                 Antrenman A — Biceps ağırlıklı
               </h2>
               <p id="activeWorkoutHint" class="text-xs text-gray-400">
-                Set kutusuna 1 kez dokun: <span class="text-emerald-400 font-semibold">Tam tekrar (✓)</span> • Tekrar dokun: <span class="text-amber-400 font-semibold">Eksik tekrar düşür</span>
+                Bir dokunuşla hedef tekrarı kaydet. Tamamlanan sete yeniden dokunarak <span class="text-emerald-400 font-semibold">tekrar ve ağırlığı düzenle</span>.
               </p>
             </div>
             <span id="sessionProgressBadge" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-card border border-borderDark text-gray-300">
@@ -230,8 +243,10 @@
           </div>
         </div>
 
-        <!-- Standalone Quick 5x5 Set Tracker Widget (Exact match to Screenshot 1) -->
-        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+        <!-- Optional quick tracker: hidden during focused workout -->
+        <details class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <summary class="cursor-pointer text-sm font-bold text-white">Serbest 5×5 sayacı <span class="font-normal text-gray-400">· isteğe bağlı</span></summary>
+          <div class="space-y-3 pt-3">
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-sm font-bold text-white">Hızlı 5×5 Set Takipçisi (Serbest Sayaç)</h3>
@@ -253,7 +268,8 @@
           <button id="resetQuickTrackerBtn" type="button" class="w-full py-2.5 rounded-full border border-borderDark bg-oled hover:bg-cardHover text-xs font-semibold text-gray-200 active:scale-[0.99] transition">
             Yeni harekete geç / sıfırla
           </button>
-        </div>
+          </div>
+        </details>
 
         <!-- Finish & Save Session CTA -->
         <div class="bg-gradient-to-br from-emerald-950/60 to-card border border-emerald-500/40 rounded-2xl p-4 space-y-3">
@@ -262,15 +278,16 @@
               <div class="text-sm font-bold text-white">Seansı Tamamla & Ağırlıkları Güncelle</div>
               <div class="text-xs text-gray-300">StrongLifts kurallarına göre sonraki seans ağırlıklarını otomatik hesaplar.</div>
             </div>
-            <div id="sessionVolumePreview" class="text-right font-mono text-xs text-emerald-400 font-bold">
-              0 kg hacim
+            <div class="text-right shrink-0">
+              <div id="sessionVolumePreview" class="font-mono text-sm text-emerald-400 font-bold">0 kg hacim</div>
+              <div id="sessionRemainingPreview" class="text-[11px] text-gray-400" aria-live="polite">13 set kaldı</div>
             </div>
           </div>
           <div class="flex gap-2">
             <button id="completeWorkoutBtn" type="button" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-oled font-extrabold text-sm tracking-tight active:scale-[0.99] transition shadow-lg shadow-emerald-500/10">
-              Antrenmanı Bitir ve Kaydet
+              Seans Özeti ve Kaydet
             </button>
-            <button id="resetCurrentSessionBtn" type="button" class="px-3.5 py-3 rounded-xl bg-oled border border-borderDark text-xs font-semibold text-gray-300 hover:text-white active:scale-95 transition">
+            <button id="resetCurrentSessionBtn" type="button" aria-label="Mevcut seansı sıfırla" class="px-3.5 py-3 rounded-xl bg-oled border border-borderDark text-xs font-semibold text-gray-300 hover:text-white active:scale-95 transition">
               Sıfırla
             </button>
           </div>
@@ -576,6 +593,49 @@
       <button id="summaryModalOkBtn" type="button" class="w-full py-2.5 rounded-xl bg-emerald-500 text-oled font-extrabold text-sm hover:bg-emerald-400 transition">
         Harika, Sonraki Seansa İlerle
       </button>
+    </div>
+  </div>
+
+  <!-- Edit real set repetitions and weight without tap cycling -->
+  <div id="setEditModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="setEditTitle">
+    <div class="w-full max-w-sm bg-card border border-borderDark rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <h3 id="setEditTitle" class="text-lg font-bold text-white">Seti düzenle</h3>
+          <p id="setEditHint" class="text-xs text-gray-400 mt-1">Gerçek çalışma değerlerini gir.</p>
+        </div>
+        <button id="closeSetEditBtn" type="button" class="w-9 h-9 rounded-lg bg-oled border border-borderDark text-gray-300" aria-label="Düzenleyiciyi kapat">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block text-xs text-gray-300">Gerçek tekrar
+          <input id="setEditReps" type="number" inputmode="numeric" min="0" max="30" step="1" class="mt-1 w-full text-lg font-mono font-bold bg-oled border border-borderDark rounded-xl px-3 py-3 text-white" />
+        </label>
+        <label class="block text-xs text-gray-300">Toplam ağırlık (kg)
+          <input id="setEditWeight" type="number" inputmode="decimal" min="0.5" max="500" step="0.5" class="mt-1 w-full text-lg font-mono font-bold bg-oled border border-borderDark rounded-xl px-3 py-3 text-white" />
+        </label>
+      </div>
+      <div class="flex flex-wrap gap-2" id="setEditPresets" aria-label="Hızlı tekrar seçimi"></div>
+      <p class="text-[11px] text-gray-400">Dambıl kullanıyorsan uygulamadaki değer hareketin toplam yüküdür. Sağ ve sol eldeki ağırlıkların toplamını gir.</p>
+      <div class="grid grid-cols-3 gap-2">
+        <button id="clearSetEditBtn" type="button" class="rounded-xl py-3 bg-rose-950/30 border border-rose-500/30 text-rose-300 text-sm font-semibold">Sil</button>
+        <button id="cancelSetEditBtn" type="button" class="rounded-xl py-3 bg-oled border border-borderDark text-gray-200 text-sm font-semibold">Vazgeç</button>
+        <button id="saveSetEditBtn" type="button" class="rounded-xl py-3 bg-emerald-500 text-oled text-sm font-extrabold">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review before final commit to local history -->
+  <div id="finishPreviewModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="finishPreviewTitle">
+    <div class="w-full max-w-md max-h-[85vh] overflow-y-auto bg-card border border-borderDark rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between gap-2">
+        <h3 id="finishPreviewTitle" class="text-lg font-bold text-white">Seans Özeti</h3>
+        <button id="closeFinishPreviewBtn" type="button" class="w-9 h-9 rounded-lg bg-oled border border-borderDark text-gray-300" aria-label="Özeti kapat">✕</button>
+      </div>
+      <div id="finishPreviewBody" class="space-y-3 text-sm text-gray-200"></div>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="cancelFinishBtn" type="button" class="py-3 rounded-xl bg-oled border border-borderDark font-semibold text-gray-200">Geri Dön</button>
+        <button id="confirmFinishBtn" type="button" class="py-3 rounded-xl bg-emerald-500 text-oled font-extrabold disabled:opacity-40 disabled:cursor-not-allowed">Kaydet ve Bitir</button>
+      </div>
     </div>
   </div>
 
