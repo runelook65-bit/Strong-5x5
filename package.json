@@ -1,0 +1,12 @@
+{
+  "name": "arm-5x5",
+  "version": "0.1.1",
+  "private": true,
+  "description": "12 haftalık kol antrenmanı takipçisi",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
