@@ -1623,8 +1623,8 @@
 
         stats.history.push({
           date: `H${state.currentWeek} ${dayName.slice(0, 3)}`,
-          weight: stats.weight,
-          reps: reps
+          weight: oldWeight, // load actually lifted, not next session's prescription
+          reps: Math.max(...setValues)
         });
 
         // Reset sets for next session
