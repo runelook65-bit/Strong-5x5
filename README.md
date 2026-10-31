@@ -21,11 +21,11 @@ Ardından `http://localhost:8000` adresini ziyaret et.
 - Gerçek kayıtlara dayalı ağırlık ilerlemesi ve geçmiş
 - Plaka ve tahmini 1RM hesaplayıcıları
 - Kol çevresi ölçüm kaydı
-- Yerel depolama, JSON dışa aktarma ve içe aktarma
+- Yerel depolama ve panoya JSON yedekleme
 
 ## Gizlilik
 
-Veriler varsayılan olarak yalnızca tarayıcının `localStorage` alanında saklanır. Sunucu hesabı veya analitik bulunmaz. Tarayıcı verileri silinirse kayıtlar kaybolabilir; düzenli JSON yedeği al.
+Veriler varsayılan olarak yalnızca tarayıcının `localStorage` alanında saklanır. Sunucu hesabı veya analitik bulunmaz. Tarayıcı verileri silinirse kayıtlar kaybolabilir; düzenli JSON yedeği al. JSON dosyası içe aktarma henüz eklenmedi.
 
 ## Uyarı
 
