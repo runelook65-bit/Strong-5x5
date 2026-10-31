@@ -198,3 +198,15 @@ test('legacy exercise-only sets migrate into the scoped active session', () => {
   assert.equal(item.setValues[0], 5);
   assert.equal(app.getState().activeSets.barbell_curl, undefined);
 });
+
+test('week-seven recovery preserves the planned weight even after all sets are completed', () => {
+  const { app } = createApp();
+  const state = app.getState();
+  state.currentWeek = 7;
+  const before = state.exStats.barbell_curl.weight;
+  recordAll(app);
+  assert.equal(app.predictExerciseProgress(app.getActiveWorkoutExercises()[0]).kind, 'hold');
+  assert.equal(app.completeWorkoutSession(), true);
+  assert.equal(state.exStats.barbell_curl.weight, before);
+  assert.equal(state.workoutLogs[0].exercises[0].result, 'hold');
+});
