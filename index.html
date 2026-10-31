@@ -39,6 +39,9 @@
       font-family: 'Inter', sans-serif;
       overscroll-behavior-y: none;
     }
+    nav { padding-bottom: max(0.375rem, env(safe-area-inset-bottom)); }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #10b981; outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
     .set-btn {
       transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease, border-color 0.15s ease;
     }
@@ -399,7 +402,7 @@
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label for="armSizeInput" class="block text-[11px] text-gray-400 mb-1">Kol Çevresi (cm)</label>
-              <input id="armSizeInput" type="number" step="0.1" min="20" max="65" value="38.0" class="w-full bg-oled border border-borderDark rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-emerald-500" />
+              <input id="armSizeInput" type="number" step="0.1" min="20" max="65" placeholder="Örn. 38.0" class="w-full bg-oled border border-borderDark rounded-xl px-2.5 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-emerald-500" />
             </div>
             <div>
               <label for="armNoteInput" class="block text-[11px] text-gray-400 mb-1">Durum</label>
@@ -726,9 +729,7 @@
           weight: EXERCISE_DB[id].defaultWeight,
           increment: EXERCISE_DB[id].defaultInc,
           failStreak: 0,
-          history: [
-            { date: 'Başlangıç', weight: EXERCISE_DB[id].defaultWeight, reps: EXERCISE_DB[id].defaultReps }
-          ]
+          history: []
         };
       });
 
@@ -739,13 +740,11 @@
         overrideWorkoutType: null, // null or 'A' or 'B'
         soundEnabled: true,
         activeSets: {}, // keyed by exId -> array of null or completed rep count
-        quickTracker: [true, true, false, false, false], // matches screenshot 1 (2/5 checked initially)
+        quickTracker: [false, false, false, false, false], // start with zero real sets
         completedSlots: {}, // e.g. "w1_d0": true
         exStats: exStats,
         workoutLogs: [],
-        armMeasurements: [
-          { date: '1. Hafta Başlangıç', cm: 37.5, note: 'Soğuk' }
-        ]
+        armMeasurements: []
       };
     }
 
@@ -764,9 +763,17 @@
                 weight: EXERCISE_DB[id].defaultWeight,
                 increment: EXERCISE_DB[id].defaultInc,
                 failStreak: 0,
-                history: [{ date: 'Başlangıç', weight: EXERCISE_DB[id].defaultWeight, reps: EXERCISE_DB[id].defaultReps }]
+                history: []
               };
             }
+          });
+          // Keep unfinished set records from the first (exercise-only) format.
+          Object.keys(EXERCISE_DB).forEach(id => {
+            const scopedKey = getSetStorageKey(id);
+            if (Array.isArray(state.activeSets?.[id]) && !Array.isArray(state.activeSets[scopedKey])) {
+              state.activeSets[scopedKey] = state.activeSets[id];
+            }
+            delete state.activeSets[id];
           });
         }
       } catch (e) {
@@ -812,6 +819,10 @@
       return baseSets;
     }
 
+    function getSetStorageKey(exId) {
+      return `w${state.currentWeek}_d${state.currentDayIdx}_${state.templateKey}_${getActiveWorkoutType()}_${exId}`;
+    }
+
     function getActiveWorkoutExercises() {
       const tpl = TEMPLATES[state.templateKey] || TEMPLATES.standard;
       const wType = getActiveWorkoutType();
@@ -819,17 +830,19 @@
       return list.map((item, idx) => {
         const meta = EXERCISE_DB[item.exId];
         const effectiveSets = getEffectiveSetsCount(item.sets);
-        if (!Array.isArray(state.activeSets[item.exId]) || state.activeSets[item.exId].length !== effectiveSets) {
-          state.activeSets[item.exId] = new Array(effectiveSets).fill(null);
+        const setKey = getSetStorageKey(item.exId);
+        if (!Array.isArray(state.activeSets[setKey]) || state.activeSets[setKey].length !== effectiveSets) {
+          state.activeSets[setKey] = new Array(effectiveSets).fill(null);
         }
         return {
           index: idx + 1,
           exId: item.exId,
+          setKey: setKey,
           meta: meta,
           baseSets: item.sets,
           sets: effectiveSets,
           reps: item.reps,
-          setValues: state.activeSets[item.exId],
+          setValues: state.activeSets[setKey],
           stats: state.exStats[item.exId]
         };
       });
@@ -880,6 +893,7 @@
     let timerRemainingSec = 90;
     let timerDefaultSec = 90;
     let timerRunning = false;
+    let timerEndsAt = null;
 
     function formatTime(sec) {
       const s = Math.max(0, Math.floor(sec));
@@ -923,29 +937,32 @@
         document.getElementById('timerPresetLabel').textContent = '(' + labelText + ')';
       }
       timerRunning = true;
+      timerEndsAt = Date.now() + timerRemainingSec * 1000;
       updateTimerUI();
+      timerInterval = setInterval(syncRestTimer, 250);
+    }
 
-      timerInterval = setInterval(() => {
-        if (timerRemainingSec > 0) {
-          timerRemainingSec--;
-          updateTimerUI();
-          if (timerRemainingSec === 0) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            timerRunning = false;
-            playBeep('timerDone');
-            showToast('Dinlenme süresi tamamlandı! Sıradaki sete hazırsın.');
-            updateTimerUI();
-          }
-        }
-      }, 1000);
+    function syncRestTimer() {
+      if (!timerRunning || timerEndsAt === null) return;
+      timerRemainingSec = Math.max(0, Math.ceil((timerEndsAt - Date.now()) / 1000));
+      if (timerRemainingSec === 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerEndsAt = null;
+        timerRunning = false;
+        playBeep('timerDone');
+        showToast('Dinlenme süresi tamamlandı! Sıradaki sete hazırsın.');
+      }
+      updateTimerUI();
     }
 
     function toggleRestTimer() {
       if (timerRunning) {
+        syncRestTimer();
         clearInterval(timerInterval);
         timerInterval = null;
         timerRunning = false;
+        timerEndsAt = null;
         updateTimerUI();
       } else {
         if (timerRemainingSec <= 0) timerRemainingSec = timerDefaultSec || 90;
@@ -957,6 +974,7 @@
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = null;
       timerRunning = false;
+      timerEndsAt = null;
       if (typeof newDefaultSec === 'number') {
         timerDefaultSec = newDefaultSec;
       }
@@ -1181,13 +1199,13 @@
           setBtn.addEventListener('click', () => {
             // Cycle: null -> reps (Full) -> reps-1 -> ... -> 0 -> null
             if (val === null) {
-              state.activeSets[exId][setIdx] = reps;
+              state.activeSets[item.setKey][setIdx] = reps;
               playBeep('setCheck');
               startRestTimer(meta.restSec, `${meta.name} • ${meta.restSec}sn`);
             } else if (val > 0) {
-              state.activeSets[exId][setIdx] = val - 1;
+              state.activeSets[item.setKey][setIdx] = val - 1;
             } else {
-              state.activeSets[exId][setIdx] = null;
+              state.activeSets[item.setKey][setIdx] = null;
             }
             saveState();
             renderExercises();
@@ -1387,7 +1405,7 @@
         const sign = delta >= 0 ? '+' : '';
         document.getElementById('armGrowthDeltaBadge').textContent = `${sign}${delta.toFixed(1)} cm`;
       } else {
-        document.getElementById('armGrowthDeltaBadge').textContent = `+0.0 cm`;
+        document.getElementById('armGrowthDeltaBadge').textContent = `—`;
       }
 
       measures.slice().reverse().forEach(m => {
@@ -1553,24 +1571,31 @@
       const exercises = getActiveWorkoutExercises();
       const wType = getActiveWorkoutType();
       const dayName = DAY_NAMES[state.currentDayIdx];
+      const slotKey = `w${state.currentWeek}_d${state.currentDayIdx}`;
+      if (state.completedSlots[slotKey]) {
+        showToast('Bu seans zaten kaydedildi; ağırlık tekrar artırılamaz.');
+        return;
+      }
+      if (exercises.some(item => item.setValues.some(v => v === null))) {
+        showToast('Kaydetmek için her sette yapılan tekrarları işaretle.');
+        return;
+      }
       const summaryLines = [];
       let sessionVolume = 0;
 
       exercises.forEach(item => {
         const { exId, meta, sets, reps, setValues, stats } = item;
-        // Treat unclicked sets as full if the user clicks Finish Workout, or evaluate actual clicked sets
+        // Only sets explicitly recorded by the user are saved.
         const completedAllSets = setValues.every(v => v === reps);
-        const anySetTracked = setValues.some(v => v !== null);
 
         // Calculate volume
         setValues.forEach(v => {
-          const actualReps = v === null ? reps : v;
-          sessionVolume += stats.weight * actualReps;
+          sessionVolume += stats.weight * v;
         });
 
         const oldWeight = stats.weight;
 
-        if (completedAllSets || !anySetTracked) {
+        if (completedAllSets) {
           // Success! Apply StrongLifts progression rule
           stats.failStreak = 0;
           const inc = reps === 5 ? stats.increment : Math.min(1.0, stats.increment);
@@ -1603,10 +1628,9 @@
         });
 
         // Reset sets for next session
-        state.activeSets[exId] = new Array(sets).fill(null);
+        state.activeSets[item.setKey] = new Array(sets).fill(null);
       });
 
-      const slotKey = `w${state.currentWeek}_d${state.currentDayIdx}`;
       state.completedSlots[slotKey] = true;
 
       state.workoutLogs.push({
@@ -1692,6 +1716,9 @@
       loadState();
       renderAll();
       updateTimerUI();
+      document.addEventListener('visibilitychange', syncRestTimer);
+      document.getElementById('soundIconOn').classList.toggle('hidden', !state.soundEnabled);
+      document.getElementById('soundIconOff').classList.toggle('hidden', state.soundEnabled);
 
       // Nav tabs
       document.querySelectorAll('.nav-tab-btn').forEach(btn => {
@@ -1748,6 +1775,7 @@
       document.getElementById('timerPreset150Btn').addEventListener('click', () => startRestTimer(150, '5×5 Ana Hareket • 150sn'));
       document.getElementById('timerAdd15Btn').addEventListener('click', () => {
         timerRemainingSec += 15;
+        if (timerRunning && timerEndsAt !== null) timerEndsAt += 15000;
         updateTimerUI();
       });
 
@@ -1762,8 +1790,8 @@
       // Complete & Reset Session
       document.getElementById('completeWorkoutBtn').addEventListener('click', completeWorkoutSession);
       document.getElementById('resetCurrentSessionBtn').addEventListener('click', () => {
-        Object.keys(state.activeSets).forEach(k => {
-          state.activeSets[k] = state.activeSets[k].map(() => null);
+        getActiveWorkoutExercises().forEach(item => {
+          state.activeSets[item.setKey] = new Array(item.sets).fill(null);
         });
         saveState();
         renderExercises();
@@ -1807,6 +1835,7 @@
       });
 
       document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+        if (!window.confirm('Antrenman geçmişini kalıcı olarak temizlemek istiyor musun?')) return;
         state.workoutLogs = [];
         saveState();
         renderProgressTab();
@@ -1850,6 +1879,7 @@
       }
 
       document.getElementById('resetAllDataBtn').addEventListener('click', () => {
+        if (!window.confirm('Tüm antrenman ve ölçüm kayıtları silinecek. Devam edilsin mi?')) return;
         state = getDefaultState();
         saveState();
         renderAll();
