@@ -17,7 +17,11 @@ Ardından `http://localhost:8000` adresini ziyaret et.
 ## Özellikler
 
 - 12 haftalık A/B/A – B/A/B programı; 7. hafta hacim azaltımı
-- Hareket bazında set ve tekrar kaydı, dinlenme zamanlayıcısı
+- Odaklanmış seans ekranı: set ilerlemesi, sıradaki hareket, ısınma ve teknik notları
+- Tek dokunuşla set tamamlama; kaydı tekrar açıp gerçek tekrar ve ağırlığı düzenleme
+- Hareket ve set bazında gerçek ağırlık/hacim hesabı, dinlenme zamanlayıcısı
+- Kaydetmeden önce eksik set kontrolü, bir sonraki çalışma ağırlığı önizlemesi
+- 7. haftada hafifletilmiş set sayısı ve yük artışının durdurulması
 - Gerçek kayıtlara dayalı ağırlık ilerlemesi ve geçmiş
 - Plaka ve tahmini 1RM hesaplayıcıları
 - Kol çevresi ölçüm kaydı
@@ -30,6 +34,10 @@ Veriler varsayılan olarak yalnızca tarayıcının `localStorage` alanında sak
 ## Uyarı
 
 Bu uygulama tıbbi danışmanlık sağlamaz. Antrenman yükünü ve hareketleri kapasitenize göre ayarlayın. Aşırı ağrı durumunda egzersizi bırakın.
+
+## Kontrol
+
+Node.js 20+ ile `npm test` komutu 11 regresyon testini çalıştırır. Gerçek iPhone/Android tarayıcı kabul testi henüz yapılmadı. Bu aşamada canlı dağıtım etkin değil.
 
 ## Geliştirme
 
