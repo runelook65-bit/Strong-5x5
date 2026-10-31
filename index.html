@@ -284,7 +284,7 @@
             </div>
           </div>
           <div class="flex gap-2">
-            <button id="completeWorkoutBtn" type="button" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-oled font-extrabold text-sm tracking-tight active:scale-[0.99] transition shadow-lg shadow-emerald-500/10">
+            <button id="completeWorkoutBtn" type="button" aria-haspopup="dialog" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-oled font-extrabold text-sm tracking-tight active:scale-[0.99] transition shadow-lg shadow-emerald-500/10">
               Seans Özeti ve Kaydet
             </button>
             <button id="resetCurrentSessionBtn" type="button" aria-label="Mevcut seansı sıfırla" class="px-3.5 py-3 rounded-xl bg-oled border border-borderDark text-xs font-semibold text-gray-300 hover:text-white active:scale-95 transition">
@@ -580,7 +580,7 @@
   <!-- ========================================== -->
   <!-- MODAL 2: SEANS ÖZETİ / ONAY MODALI         -->
   <!-- ========================================== -->
-  <div id="summaryModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div id="summaryModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="summaryModalTitle">
     <div class="w-full max-w-md bg-card border border-borderDark rounded-2xl p-5 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -927,6 +927,10 @@
         return { kind: 'pending', nextWeight: item.stats.weight };
       }
       const success = item.setValues.every(v => Number.isInteger(v) && v >= item.reps);
+      // The scheduled week-7 recovery week must not increase prescribed loads.
+      if (state.currentWeek === 7) {
+        return { kind: 'hold', nextWeight: item.stats.weight };
+      }
       if (success) {
         const lowestCompletedWeight = Math.min(...item.setValues.map((_, i) => getRecordedWeight(item, i)));
         const increment = item.reps === 5 ? item.stats.increment : Math.min(1, item.stats.increment);
@@ -1297,6 +1301,7 @@
         tips.className = 'border-t border-borderDark pt-2';
         tips.innerHTML = `<summary class="text-xs text-gray-400 cursor-pointer py-1">Hareket tekniği ve dinlenme</summary>
           <p class="text-xs text-gray-300 mt-2 leading-relaxed">${meta.tips}</p>
+          <p class="text-xs text-gray-300 mt-1"><strong>Isınma:</strong> İlk çalışma setinden önce eklemleri hazırlayan hafif yükle 1–2 kontrollü set uygula. Bunları ana setlere dahil etme.</p>
           <p class="text-xs text-emerald-400 mt-1">${meta.restText}</p>`;
         card.appendChild(tips);
         container.appendChild(card);
@@ -1734,6 +1739,7 @@
       const rows = snapshot.exercises.map(item => {
         const decision = predictExerciseProgress(item);
         const label = decision.kind === 'success' ? 'Artış'
+          : decision.kind === 'hold' ? '7. hafta toparlanma · ağırlık korunur'
           : decision.kind === 'deload' ? 'Hafifletme'
           : decision.kind === 'retry' ? 'Tekrar dene' : 'Henüz tamamlanmadı';
         const recorded = item.setValues.map((v, i) => v === null ? '—' :
@@ -1794,7 +1800,9 @@
         }));
         const lowestWeight = Math.min(...actualSets.map(set => set.weight));
         const maxReps = Math.max(...setValues);
-        if (decision.kind === 'success') {
+        if (decision.kind === 'hold') {
+          summaryLines.push(`<strong class="text-white">${meta.name}</strong>: <span class="text-sky-300">Toparlanma haftası · ağırlık korunur (${stats.weight.toFixed(1)} kg)</span>`);
+        } else if (decision.kind === 'success') {
           stats.weight = decision.nextWeight;
           stats.failStreak = 0;
           summaryLines.push(`<strong class="text-white">${meta.name}</strong>: <span class="text-emerald-400">${lowestWeight.toFixed(1)} kg → ${stats.weight.toFixed(1)} kg</span>`);
