@@ -1,0 +1,49 @@
+# ARM 5×5 — v0.9 Mobile UI / shadcn-informed redesign
+
+## Why this exists
+
+In the supplied iPhone screenshots, the earlier version displayed oversized artwork and cards, competing glows, redundant navigation surfaces and workouts that required excess scrolling. The design priority is task clarity rather than decorative effects.
+
+We are **using shadcn/ui's accessible design conventions and component hierarchy as a reference**, but the current app uses plain HTML/CSS/JS; **the shadcn React components are not installed**. The official Vite integration uses React and a Tailwind-oriented component project, which requires a separate, staged migration. See https://ui.shadcn.com/docs/installation/vite and https://github.com/shadcn-ui/ui (MIT).
+
+## Implemented on design/shadcn-mobile-v09
+
+### 1. Today — short primary action
+- Next-session card shows Workout A/B, real exercise/set counts, current recorded status and a single prominent **Antrenmanı Başlat / Devam Et** action.
+- The three numbers (week, sessions, arm circumference change) share **one compact neutral strip**, instead of three large competing cards.
+- Exercises remain an actual clickable list from the user's selected program template, with consistent small SVG symbols. No hero photographic overlay.
+- Last recorded workout stays below today's plan, as a quiet secondary item.
+
+### 2. Active Workout — direct set entry
+- A compact exercise heading presents the current movement and **actual completed/total sets**.
+- **Total KG** and **Tekrar** are displayed side-by-side in two contained inputs.
+- Tapping a number opens the existing numeric editor; -/+ adjust values. Min tap target 44px.
+- **Seti Tamamla** remains the sole primary action, using the original `recordExerciseSet` and timer logic.
+- Set progress, optional recovery, previous/next movement and finish confirmation are preserved.
+- All workout record and backup schemas stay unchanged.
+
+### 3. Design system
+- Neutral surfaces, one emerald primary color, clear type scaling and 13px card radius.
+- `src/ui-v09.css` is the **only active application UI theme**, loaded after structural `src/v7.css`. Historical `v7-glass.css` and `ui-system.css` are **not loaded**.
+- Opaque metric surfaces ensure keyboard-entry readability; small transparency only in fixed navigation.
+- Real icons are retained, but photo covers are not in the workout experience.
+
+## Not yet done
+
+- [ ] Actual React + shadcn/ui component installation and engine adapter — do **not** attempt this by replacing the workout engine before data migration and behavior tests.
+- [ ] Browser screenshots at 320/375/390/430 CSS pixels; verify no horizontal overflow and no obscured form controls.
+- [ ] iOS Safari/ChatGPT browser bottom toolbar / home indicator / safe-area integration.
+- [ ] VoiceOver and enlarged text QA; keyboard number editor focus.
+- [ ] Test resumed workout, week-7 deload, older JSON import/export and undo in real browsers.
+- [ ] Independent `npm install && npm test && npm run build` in a Node 20.19+ checkout.
+- [ ] Performance and contrast audit with actual device screenshots.
+- [ ] User approval before merging or publishing.
+
+## Release boundary
+
+Only development branch `design/shadcn-mobile-v09` is changed.
+- `main`: preserved
+- `https://arm-5x5.vercel.app`: preserved
+- New source version: `0.9.0-dev`
+
+The code-level regression simulations are not a substitute for real mobile device testing.
