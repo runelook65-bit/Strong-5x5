@@ -58,7 +58,7 @@ function createApp(saved) {
       getDefaultState, loadState, getScheduledWorkoutType, getActiveWorkoutExercises,
       getSessionSnapshot, getSetStorageKey, predictExerciseProgress, recordExerciseSet,
       getSessionReadiness, setSessionReadiness, calculateWeekMuscleVolume, renderMuscleVolume, TEMPLATES,
-      openFinishPreview, completeWorkoutSession, renderExercises,
+      openFinishPreview, completeWorkoutSession, renderExercises, renderProgressTab,
       getState: () => state,
       setState: next => { state = next; }
     };
@@ -353,4 +353,24 @@ test('Readiness stays within the selected week and day', () => {
   assert.deepEqual(app.getSessionReadiness(), {energy: 'unreported', jointDiscomfort: false});
   state.currentDayIdx = 0;
   assert.deepEqual(app.getSessionReadiness(), {energy: 'good', jointDiscomfort: true});
+});
+
+test('Progress chart does not invent a strength history before first session', () => {
+  const { app, document } = createApp();
+  app.renderProgressTab();
+  assert.equal(document.getElementById('statEst1RM').textContent, '—');
+  assert.match(document.getElementById('progressionSvgChart').innerHTML, /Henüz gerçek antrenman kaydı yok/);
+});
+
+test('Progress chart and estimated 1RM derive from recorded sets', () => {
+  const { app, document } = createApp();
+  const state = app.getState();
+  recordAll(app);
+  assert.equal(app.completeWorkoutSession(), true);
+  app.renderProgressTab();
+  const measured = document.getElementById('statEst1RM').textContent;
+  assert.notEqual(measured, '—');
+  assert.match(measured, /kg$/);
+  assert.equal(state.exStats.barbell_curl.history.length, 1);
+  assert.match(document.getElementById('progressionSvgChart').innerHTML, /circle/);
 });
