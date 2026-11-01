@@ -990,24 +990,58 @@
       return Number.isFinite(recorded) && recorded > 0 ? recorded : item.stats.weight;
     }
 
+    function getReadinessKey() {
+      return `w${state.currentWeek}_d${state.currentDayIdx}_${state.templateKey}_${getActiveWorkoutType()}`;
+    }
+
+    function getSessionReadiness() {
+      const raw = state.readinessBySlot?.[getReadinessKey()];
+      const energy = ['good', 'normal', 'low'].includes(raw?.energy) ? raw.energy : 'unreported';
+      return { energy, jointDiscomfort: raw?.jointDiscomfort === true };
+    }
+
+    function setSessionReadiness(energy, jointDiscomfort) {
+      if (state.completedSlots[`w${state.currentWeek}_d${state.currentDayIdx}`]) return false;
+      if (!['unreported', 'good', 'normal', 'low'].includes(energy)) return false;
+      if (!state.readinessBySlot) state.readinessBySlot = {};
+      state.readinessBySlot[getReadinessKey()] = { energy, jointDiscomfort: !!jointDiscomfort };
+      saveState();
+      renderReadinessControls();
+      renderExercises();
+      return true;
+    }
+
     function predictExerciseProgress(item) {
-      if (item.setValues.some(v => v === null)) {
-        return { kind: 'pending', nextWeight: item.stats.weight };
+      const base = item.stats.weight;
+      if (item.setValues.some(v => v === null)) return { kind: 'pending', nextWeight: base };
+      if (state.currentWeek === 7) return { kind: 'hold', nextWeight: base, reason: 'recovery' };
+      const readiness = getSessionReadiness();
+      if (readiness.jointDiscomfort) return { kind: 'hold', nextWeight: base, reason: 'joint' };
+      if (readiness.energy === 'low') return { kind: 'hold', nextWeight: base, reason: 'fatigue' };
+
+      const isGrowth = state.templateKey === 'growth';
+      if (isGrowth && readiness.energy === 'unreported') {
+        return { kind: 'hold', nextWeight: base, reason: 'readiness' };
       }
-      const success = item.setValues.every(v => Number.isInteger(v) && v >= item.reps);
-      // The scheduled week-7 recovery week must not increase prescribed loads.
-      if (state.currentWeek === 7) {
-        return { kind: 'hold', nextWeight: item.stats.weight };
-      }
-      if (success) {
-        const lowestCompletedWeight = Math.min(...item.setValues.map((_, i) => getRecordedWeight(item, i)));
+      const lowestCompletedWeight = Math.min(...item.setValues.map((_, i) => getRecordedWeight(item, i)));
+      const allAboveUpper = item.setValues.every(v => Number.isInteger(v) && v >= item.reps);
+      const aboveLower = item.setValues.every(v => Number.isInteger(v) && v >= item.minReps);
+      const atWorkingLoad = lowestCompletedWeight >= base - 0.001;
+
+      if (allAboveUpper && atWorkingLoad) {
         const increment = item.reps === 5 ? item.stats.increment : Math.min(1, item.stats.increment);
-        return { kind: 'success', nextWeight: +(lowestCompletedWeight + increment).toFixed(1), increment };
+        return { kind: 'success', nextWeight: +(base + increment).toFixed(1), increment };
       }
+
+      if (isGrowth && aboveLower) {
+        return { kind: 'build', nextWeight: base, reason: atWorkingLoad ? 'reps' : 'weight' };
+      }
+      // A deliberately reduced working load should not count as a failed session.
+      if (!atWorkingLoad) return { kind: 'hold', nextWeight: base, reason: 'weight' };
       if ((item.stats.failStreak || 0) + 1 >= 3) {
-        return { kind: 'deload', nextWeight: Math.max(2, Math.round(item.stats.weight * 0.9 * 2) / 2) };
+        return { kind: 'deload', nextWeight: Math.max(0.5, Math.round(base * 0.9 * 2) / 2) };
       }
-      return { kind: 'retry', nextWeight: item.stats.weight };
+      return { kind: 'retry', nextWeight: base };
     }
 
     function getSessionSnapshot() {
@@ -1244,6 +1278,87 @@
         });
         grid.appendChild(btn);
       });
+    }
+
+    function renderReadinessControls() {
+      const data = getSessionReadiness();
+      const saved = !!state.completedSlots[`w${state.currentWeek}_d${state.currentDayIdx}`];
+      const select = document.getElementById('readinessEnergy');
+      const discomfort = document.getElementById('jointDiscomfort');
+      select.value = data.energy;
+      discomfort.checked = data.jointDiscomfort;
+      select.disabled = saved;
+      discomfort.disabled = saved;
+      const advice = document.getElementById('readinessAdvice');
+      advice.textContent = data.jointDiscomfort
+        ? 'Eklem rahatsızlığında yük artışı önerilmez. Ağrıyı artıran egzersize devam etme.'
+        : data.energy === 'low'
+          ? 'Bugün yük artışı durdurulacak. Daha hafif bir çalışma veya dinlenme seçebilirsin.'
+          : data.energy === 'unreported' && state.templateKey === 'growth'
+            ? 'Growth modunda ağırlık artırmak için önce durumunu seç.'
+            : 'Tekrar aralığı ve önceki set performansın üzerinden öneri hazırlanır.';
+    }
+
+    function calculateWeekMuscleVolume(week) {
+      const result = {
+        biceps: { sets: 0, volume: 0 },
+        triceps: { sets: 0, volume: 0 },
+        sessions: 0,
+        legacySessions: 0
+      };
+      for (const log of state.workoutLogs || []) {
+        if (!log || typeof log.id !== 'string' || !/^w\d+_d[0-2]$/.test(log.id)) continue;
+        if (Number(log.id.match(/^w(\d+)_d/)[1]) !== week) continue;
+        result.sessions++;
+        if (!Array.isArray(log.exercises)) {
+          result.legacySessions++;
+          continue;
+        }
+        for (const ex of log.exercises) {
+          const muscle = EXERCISE_MUSCLES[ex.exId];
+          if (!muscle || !Array.isArray(ex.sets)) continue;
+          const floor = Number.isInteger(ex.targetMinReps) && ex.targetMinReps > 0
+            ? ex.targetMinReps : Number.isInteger(ex.targetReps) ? ex.targetReps : null;
+          if (floor === null) continue;
+          for (const set of ex.sets) {
+            if (Number.isInteger(set.reps) && set.reps >= floor && Number.isFinite(set.weight) && set.weight > 0) {
+              result[muscle].sets += 1;
+              result[muscle].volume += set.reps * set.weight;
+            }
+          }
+        }
+      }
+      result.biceps.volume = Math.round(result.biceps.volume);
+      result.triceps.volume = Math.round(result.triceps.volume);
+      return result;
+    }
+
+    function renderMuscleVolume() {
+      const select = document.getElementById('volumeWeekSelect');
+      const selected = Number(select.value);
+      const week = Number.isInteger(selected) && selected >= 1 && selected <= 12 ? selected : state.currentWeek;
+      select.innerHTML = '';
+      for (let w = 1; w <= 12; w++) {
+        const option = document.createElement('option');
+        option.value = String(w);
+        option.textContent = `Hafta ${w}`;
+        select.appendChild(option);
+      }
+      select.value = String(week);
+      const data = calculateWeekMuscleVolume(week);
+      const cards = document.getElementById('muscleVolumeCards');
+      cards.innerHTML = '';
+      [['biceps', 'Biceps'], ['triceps', 'Triceps']].forEach(([key, title]) => {
+        const cell = document.createElement('div');
+        cell.className = 'rounded-xl bg-oled border border-borderDark p-3 space-y-1';
+        cell.innerHTML = `<div class="text-xs text-gray-400">${title} · doğrudan</div>
+          <div class="font-mono font-bold text-2xl text-emerald-400">${data[key].sets} <span class="text-xs text-gray-400">set</span></div>
+          <div class="text-xs text-gray-300">${data[key].volume} kg · tekrar hacmi</div>`;
+        cards.appendChild(cell);
+      });
+      document.getElementById('volumeCoverageNote').textContent =
+        data.sessions === 0 ? 'Bu program haftasında henüz kayıt yok.'
+        : `${data.sessions} kayıtlı seans · ${data.legacySessions ? data.legacySessions + ' eski seansın set verisi bulunmuyor. ' : ''}Bu sayılar yalnızca alt tekrar hedefini karşılayan doğrudan çalışma setleridir. Diğer antrenmanlarda alınan dolaylı yük dahil değildir.`;
     }
 
     function renderExercises() {
@@ -1807,10 +1922,19 @@
         : `<p class="text-xs text-emerald-300">Bütün setler kaydedildi. Sonraki ağırlıkları onayla.</p>`;
       const rows = snapshot.exercises.map(item => {
         const decision = predictExerciseProgress(item);
-        const label = decision.kind === 'success' ? 'Artış'
-          : decision.kind === 'hold' ? '7. hafta toparlanma · ağırlık korunur'
-          : decision.kind === 'deload' ? 'Hafifletme'
-          : decision.kind === 'retry' ? 'Tekrar dene' : 'Henüz tamamlanmadı';
+        const holdLabels = {
+          recovery: '7. hafta · ağırlık korunur',
+          joint: 'Eklem rahatsızlığı · artış durduruldu',
+          fatigue: 'Düşük toparlanma · artış durduruldu',
+          readiness: 'Önce toparlanma durumunu seç',
+          weight: 'Daha hafif yük kullanıldı · artış yok'
+        };
+        const label = decision.kind === 'success' ? 'Üst aralık tamamlandı · ağırlık artışı'
+          : decision.kind === 'build' ? 'Aralık içinde ilerle · ağırlık sabit'
+          : decision.kind === 'hold' ? (holdLabels[decision.reason] || 'Ağırlık korunur')
+          : decision.kind === 'deload' ? 'Tekrarlayan başarısızlık · yükü azalt'
+          : decision.kind === 'retry' ? 'Alt hedefe ulaşılmadı · yeniden dene'
+          : 'Henüz tamamlanmadı';
         const recorded = item.setValues.map((v, i) => v === null ? '—' :
           `${getRecordedWeight(item, i).toFixed(1)} kg × ${v}`).join(' · ');
         return `<div class="rounded-xl border border-borderDark bg-oled p-3 space-y-1.5">
@@ -1870,7 +1994,10 @@
         const lowestWeight = Math.min(...actualSets.map(set => set.weight));
         const maxReps = Math.max(...setValues);
         if (decision.kind === 'hold') {
-          summaryLines.push(`<strong class="text-white">${meta.name}</strong>: <span class="text-sky-300">Toparlanma haftası · ağırlık korunur (${stats.weight.toFixed(1)} kg)</span>`);
+          summaryLines.push(`<strong class="text-white">${meta.name}</strong>: <span class="text-sky-300">Ağırlık korunur (${stats.weight.toFixed(1)} kg) · ${decision.reason || 'koruma'}</span>`);
+        } else if (decision.kind === 'build') {
+          stats.failStreak = 0;
+          summaryLines.push(`<strong class="text-white">${meta.name}</strong>: <span class="text-emerald-300">Tekrar aralığında ilerleme · ${stats.weight.toFixed(1)} kg korunur</span>`);
         } else if (decision.kind === 'success') {
           stats.weight = decision.nextWeight;
           stats.failStreak = 0;
@@ -1894,6 +2021,7 @@
           name: meta.name,
           targetSets: sets,
           targetReps: reps,
+          targetMinReps: item.minReps,
           sets: actualSets,
           nextWeight: stats.weight,
           result: decision.kind
@@ -1909,6 +2037,7 @@
         templateKey: state.templateKey,
         title: `Antrenman ${wType} (${wType === 'A' ? 'Biceps' : 'Triceps'})`,
         volume,
+        readiness: getSessionReadiness(),
         exercises: recordedExercises,
         details: summaryLines.map(line => line.replace(/<[^>]+>/g, ''))
       });
@@ -1968,7 +2097,7 @@
       });
 
       if (tabName === 'program') renderProgramTab();
-      if (tabName === 'progress') renderProgressTab();
+      if (tabName === 'progress') { renderProgressTab(); renderMuscleVolume(); }
       if (tabName === 'tools') {
         updateOneRmCalculator();
         renderWeightsConfig();
@@ -1977,10 +2106,12 @@
 
     function renderAll() {
       renderHeaderAndWeek();
+      renderReadinessControls();
       renderExercises();
       renderQuickTracker();
       renderProgramTab();
       renderProgressTab();
+      renderMuscleVolume();
       updateOneRmCalculator();
       renderWeightsConfig();
     }
@@ -1992,6 +2123,15 @@
       document.addEventListener('visibilitychange', syncRestTimer);
       document.getElementById('soundIconOn').classList.toggle('hidden', !state.soundEnabled);
       document.getElementById('soundIconOff').classList.toggle('hidden', state.soundEnabled);
+
+      // Readiness observations are local-only and scoped to the selected session.
+      document.getElementById('readinessEnergy').addEventListener('change', event => {
+        setSessionReadiness(event.target.value, document.getElementById('jointDiscomfort').checked);
+      });
+      document.getElementById('jointDiscomfort').addEventListener('change', event => {
+        setSessionReadiness(document.getElementById('readinessEnergy').value, event.target.checked);
+      });
+      document.getElementById('volumeWeekSelect').addEventListener('change', renderMuscleVolume);
 
       // Nav tabs
       document.querySelectorAll('.nav-tab-btn').forEach(btn => {
