@@ -1,6 +1,11 @@
 name: Verify shadcn Settings Pilot
 on:
-  workflow_dispatch: # never publish or deploy automatically
+  pull_request:
+    paths:
+      - 'pilot/**'
+      - 'docs/SHADCN_PILOT.md'
+      - '.github/workflows/verify-shadcn-pilot.yml'
+  workflow_dispatch:
 jobs:
   verify-pilot:
     runs-on: ubuntu-latest
