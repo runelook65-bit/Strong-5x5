@@ -885,9 +885,10 @@ test('Precision Glass navigation uses scalable vector icons in focus and footer'
 });
 
 test('Visual Covers: five distinct cover surfaces are mounted in correct pages', () => {
-  for (const cls of ['arm-cover-home','arm-cover-program','arm-cover-progress','arm-cover-settings']) {
+  for (const cls of ['arm-cover-home','arm-cover-program','arm-cover-settings']) {
     assert.match(html,new RegExp('class="[^"]*'+cls));
   }
+  assert.ok(!html.includes('class="v7-hero v7-progress-cover'), 'Progress is a data dashboard without a decorative hero');
   assert.match(html,/id="v7FocusHero" class="v7-hero v7-exercise-hero ui9-exercise-header"/);
   assert.ok(html.includes("v7Element('v7FocusHero').classList.toggle('arm-cover-focus'"));
 });
@@ -1028,7 +1029,7 @@ test('v0.9 Program roadmap preserves 7th-week deload and original week switching
 test('v0.9 progress uses no fake scores on an empty fresh install', () => {
   const {app,document}=createApp();
   app.v7RenderProgress();
-  assert.equal(document.getElementById('v7ProgressSessions').textContent,0);
+  assert.equal(document.getElementById('v7ProgressSessions').textContent,'0');
   assert.equal(document.getElementById('v7ProgressVolume').textContent,'—');
   assert.equal(document.getElementById('v7ProgressArm').textContent,'—');
   assert.match(document.getElementById('v9ProgressStatus').textContent,/İlk antrenmanını/);
@@ -1046,7 +1047,7 @@ test('v0.9 progress cards calculate recorded volume, actual PRs and cold measure
   s.armMeasurements=[{note:'Soğuk',cm:34},{note:'Pump',cm:36},{note:'Soğuk',cm:35.5}];
   s.exStats.barbell_curl.history=[{weight:20,reps:5,date:'2026-10-20'},{weight:22,reps:5,date:'2026-10-25'}];
   app.v7RenderProgress();
-  assert.equal(document.getElementById('v7ProgressSessions').textContent,2);
+  assert.equal(document.getElementById('v7ProgressSessions').textContent,'2');
   assert.equal(document.getElementById('v7ProgressVolume').textContent,'1.678 kg');
   assert.equal(document.getElementById('v7ProgressArm').textContent,'+1.5 cm');
   assert.equal(document.getElementById('v9StrengthNote').textContent,'Son 2 kayıt gösteriliyor');
