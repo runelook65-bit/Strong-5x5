@@ -52,7 +52,7 @@ Bu uygulama tıbbi danışmanlık sağlamaz. Antrenman yükünü ve hareketleri 
 
 ## Kontrol
 
-Node.js 20+ ile `npm test` komutu regresyon testlerini çalıştırır. Kod düzeyindeki 21 senaryonun JavaScript test simülasyonunda geçtiği kontrol edilmiştir; GitHub Actions / gerçek tarayıcı CI henüz kurulmadı. Gerçek iPhone/Android tarayıcı kabul testi henüz yapılmadı. Bu aşamada canlı dağıtım etkin değil.
+Node.js 20+ ile `npm test` komutu regresyon testlerini çalıştırır. Kod düzeyindeki 23 senaryonun JavaScript test simülasyonunda geçtiği kontrol edilmiştir; GitHub Actions / gerçek tarayıcı CI henüz kurulmadı. Gerçek iPhone/Android tarayıcı kabul testi henüz yapılmadı. Bu aşamada canlı dağıtım etkin değil.
 
 ## Geliştirme
 
