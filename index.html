@@ -2835,10 +2835,11 @@
 }
 
     function v7ArtworkMarkup(exId, fallbackSrc){
+  // Unified icon surfaces for the list; full motion references remain in the exercise library.
+  // Mixed generated thumbnails and GIFs made the program list visually inconsistent.
   const known={barbell_curl:'barbell',hammer_curl:'hammer',skull_crusher:'skull'};
-  const type=known[exId];
-  if(type) return `<span class="v7-exercise-art arm-thumb arm-thumb-${type}" aria-hidden="true"></span>`;
-  return `<img src="${fallbackSrc}" alt="" loading="lazy"/>`;
+  const type=known[exId] || 'generic';
+  return `<span class="v7-exercise-art arm-thumb arm-thumb-${type} ui-exercise-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4m3-6v8m3-4h6m3-4v8m3-6v4"/><path d="M9 12h6"/></svg></span>`;
 }
 
 function v7RenderToday(){
