@@ -5,13 +5,15 @@ export default defineConfig({
   base: './',
   plugins: [
     VitePWA({
-      registerType: 'prompt', // preserve uninterrupted workouts during an update
+      registerType: 'autoUpdate', // activate newer offline assets instead of leaving a waiting worker with no prompt UI
       injectRegister: 'auto',
       includeAssets: ['icons/arm-5x5.svg'],
       workbox: {
         globPatterns: ['**/*.{html,js,css,svg,png,jpg,webp,woff2}'],
         navigateFallback: 'index.html',
-        cleanupOutdatedCaches: true
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true
       },
       manifest: {
         name: 'ARM 5×5 — Kol Antrenmanı',
