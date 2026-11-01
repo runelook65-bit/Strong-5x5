@@ -61,7 +61,7 @@ Referans: daha önce konuşmada seçilen beş ekran mockup'ı. Tasarım dili: ne
 - `STORAGE_KEY`, `workoutLogs`, `activeSets`, `activeWeights`, `completedSlots` ve exStats profillerinin eski yapısı değiştirilmedi.
 - Çalışma ağırlığı/tekrar önerisi ve 7. hafta davranışı eski hesaplama fonksiyonlarını kullanır.
 - İlk açılış **Bugün**; aktif seans setleri yerel veride saklanır.
-- Kullanıcının önceki Vercel production sürümü **v0.6.1** olarak kalır; v0.7.0 yalnızca GitHub'da kaydedilmiştir.
+- v0.7.0, Vercel'e manuel olarak yayınlanmıştır (**READY**, `dpl_DBPXGjteu7ZyqcmAnupThZGWEgC2`). Otomatik GitHub dağıtımı kapalıdır. Gerçek cihaz doğrulamaları sürmektedir.
 - Otomatik GitHub push → Vercel production deployment yoktur.
 
 ## Test durumu ve açık kabul kriterleri
