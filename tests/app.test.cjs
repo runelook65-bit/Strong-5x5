@@ -652,11 +652,11 @@ test('Inline logger uses nonsticky rest panel and never duplicates set entry for
   assert.ok(!html.includes('Sıradaki set · 1/5'));
 });
 
-test('PWA release 0.7.1 exposes new five-screen architecture and update UI', () => {
+test('PWA release 0.7.2 exposes new five-screen architecture and update UI', () => {
   for (const id of ['v7Today','v7Focus','v7Program','v7Progress','v7Settings','v7ToolDetail']) {
     assert.match(html, new RegExp('id="'+id+'"'));
   }
-  assert.match(html, /<meta name="application-version" content="0\.7\.1"/);
+  assert.match(html, /<meta name="application-version" content="0\.7\.2"/);
   assert.match(html, /id="appUpdateBanner"/);
   assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
 });
@@ -882,4 +882,36 @@ test('Precision Glass navigation uses scalable vector icons in focus and footer'
     assert.ok(index>=0);
     assert.match(html.slice(index,index+450), /<svg /);
   }
+});
+
+test('Visual Covers: five distinct cover surfaces are mounted in correct pages', () => {
+  for (const cls of ['arm-cover-home','arm-cover-program','arm-cover-progress','arm-cover-settings']) {
+    assert.match(html,new RegExp('class="[^"]*'+cls));
+  }
+  assert.match(html,/id="v7FocusHero" class="v7-hero v7-exercise-hero"/);
+  assert.match(html,/id="v7FocusHero"\)\.classList\.toggle\('arm-cover-focus'/);
+});
+
+test('Visual Covers: generated illustrations map to specific existing workouts only', () => {
+  assert.match(html,/function v7ArtworkMarkup\(exId, fallbackSrc\)/);
+  assert.match(html,/barbell_curl:'barbell'/);
+  assert.match(html,/hammer_curl:'hammer'/);
+  assert.match(html,/skull_crusher:'skull'/);
+  const { app, document } = createApp();
+  app.v7RenderToday();
+  assert.equal(document.getElementById('v7TodayExercises').children.length,3);
+  app.v7EnterFocus(0);
+  assert.equal(document.getElementById('v7FocusHero').classList.contains('arm-cover-focus'),true);
+  app.v7SelectExercise(1);
+  assert.equal(document.getElementById('v7FocusHero').classList.contains('arm-cover-focus'),false);
+});
+
+test('Visual Covers: session data remains independent of imagery', () => {
+  const { app }=createApp();
+  const before=app.getSessionSnapshot().recordedSets;
+  app.v7RenderToday(); app.v7RenderProgram(); app.v7RenderProgress();
+  assert.equal(app.getSessionSnapshot().recordedSets,before);
+  const first=app.getActiveWorkoutExercises()[0];
+  assert.equal(app.recordExerciseSet(first.setKey,0,5,27.5),true);
+  assert.equal(app.getSessionSnapshot().recordedSets,1);
 });
