@@ -858,3 +858,28 @@ test('Precision Glass settings keeps semantic tool IDs and SVG icons', () => {
   const settings=html.slice(start,end);
   assert.ok((settings.match(/<svg /g)||[]).length>=8);
 });
+
+test('Home hero displays Ready, In progress, and Completed truthfully', () => {
+  const { app, document } = createApp();
+  app.v7RenderToday();
+  assert.equal(document.getElementById('v8HeroState').textContent, 'Hazır');
+  const first = app.getActiveWorkoutExercises()[0];
+  app.recordExerciseSet(first.setKey, 0, 5, first.stats.weight);
+  app.v7RenderToday();
+  assert.equal(document.getElementById('v8HeroState').textContent, 'Devam ediyor');
+  assert.equal(document.getElementById('v7StartLabel').textContent, 'Antrenmana Devam Et');
+  recordAll(app);
+  assert.equal(app.completeWorkoutSession(), true);
+  app.getState().currentDayIdx = 0; // inspect completed session, not the next scheduled day
+  app.v7RenderToday();
+  assert.equal(document.getElementById('v8HeroState').textContent, 'Tamamlandı');
+  assert.equal(document.getElementById('v7StartLabel').textContent, 'Kaydedilen Seansı Gör');
+});
+
+test('Precision Glass navigation uses scalable vector icons in focus and footer', () => {
+  for (const id of ['v7FocusBackBtn','v7FocusMoreBtn','v7PreviousExerciseBtn','v7NextExerciseBtn']) {
+    const index = html.indexOf('id="'+id+'"');
+    assert.ok(index>=0);
+    assert.match(html.slice(index,index+450), /<svg /);
+  }
+});
