@@ -545,8 +545,8 @@ body .app-shell {
 .app-shell .ui9-metric .ui9-value-row .v7-stepper {
   width:100%;
   min-width:0;
-  min-height:40px;
-  height:40px;
+  min-height:44px;
+  height:44px;
   border-radius:9px;
   background:#1b2625;
   color:#beeacb;
