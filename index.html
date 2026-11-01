@@ -1133,6 +1133,7 @@
         templateKey: 'standard',
         overrideWorkoutType: null, // null or 'A' or 'B'
         soundEnabled: true,
+        v7RestSeconds: 0, // 0 = use each exercise's prescribed rest
         activeSets: {}, // scoped by week/day/template/workout/exercise
         activeWeights: {}, // actual weight per completed set (null until recorded)
         quickTracker: [false, false, false, false, false], // start with zero real sets
@@ -1209,6 +1210,7 @@
         templateKey: src.templateKey,
         overrideWorkoutType: src.overrideWorkoutType === 'A' || src.overrideWorkoutType === 'B' ? src.overrideWorkoutType : null,
         soundEnabled: src.soundEnabled !== false,
+        v7RestSeconds: [0,90,120,150,180].includes(src.v7RestSeconds) ? src.v7RestSeconds : 0,
         workoutLogs: src.workoutLogs,
         armMeasurements: src.armMeasurements
       };
@@ -1341,6 +1343,7 @@
               };
             }
           });
+          state.v7RestSeconds = [0,90,120,150,180].includes(state.v7RestSeconds) ? state.v7RestSeconds : 0;
           state.activeSets = state.activeSets && typeof state.activeSets === 'object' ? state.activeSets : {};
           state.activeWeights = state.activeWeights && typeof state.activeWeights === 'object' ? state.activeWeights : {};
           state.readinessBySlot = state.readinessBySlot && typeof state.readinessBySlot === 'object' ? state.readinessBySlot : {};
@@ -2093,7 +2096,7 @@
       saveState();
       if (autoRest && previous === null && reps !== null && reps > 0) {
         playBeep('setCheck');
-        startRestTimer(item.meta.restSec, `${item.meta.name} · ${item.meta.restSec}sn`);
+        startRestTimer(state.v7RestSeconds || item.meta.restSec, `${item.meta.name} · dinlenme`);
       }
       renderExercises();
       if(v7Page==='focus'){v7DraftKey='';v7RenderFocus();}
@@ -3079,6 +3082,88 @@
   return true;
 }
 
+    function v7BindUI(){
+  const bind=(id,fn)=>v7Element(id).addEventListener('click',fn);
+  document.querySelectorAll('[data-v7tab]').forEach(btn=>{
+    btn.addEventListener('click',()=>v7Navigate(btn.getAttribute('data-v7tab')));
+  });
+  bind('v7StartBtn',()=>v7EnterFocus());
+  bind('v7OpenProgramBtn',()=>v7Navigate('program'));
+  bind('v7FocusBackBtn',()=>v7Navigate('today'));
+  bind('v7FocusMoreBtn',()=>{
+    if(!window.confirm('Bu seansın girilen setlerini sıfırla? Bu işlem yalnızca mevcut seansı etkiler.'))return;
+    if(getSessionSnapshot().isSaved){showToast('Kaydedilen seans sıfırlanamaz.');return;}
+    getActiveWorkoutExercises().forEach(item=>{
+      state.activeSets[item.setKey]=new Array(item.sets).fill(null);
+      state.activeWeights[item.setKey]=new Array(item.sets).fill(null);
+    });
+    v7DraftKey='';v7ChosenSet=null;saveState();renderAll();showToast('Mevcut seansın setleri sıfırlandı.');
+  });
+  bind('v7PreviousExerciseBtn',()=>v7SelectExercise(-1));
+  bind('v7NextExerciseBtn',()=>v7SelectExercise(1));
+  bind('v7WeightMinus',()=>v7EditValue('weight',-.5));
+  bind('v7WeightPlus',()=>v7EditValue('weight',.5));
+  bind('v7RepsMinus',()=>v7EditValue('reps',-1));
+  bind('v7RepsPlus',()=>v7EditValue('reps',1));
+  bind('v7LogSetBtn',v7LogCurrentSet);
+  bind('v7FinishBtn',openFinishPreview);
+  bind('v7EditSetBtn',v7EditCurrentSet);
+  bind('v7ExerciseInfoBtn',v7OpenExerciseInfo);
+  bind('v7RestPause',toggleRestTimer);
+  bind('v7RestSkip',()=>resetRestTimer());
+  bind('v7RestMinus',()=>{
+    timerRemainingSec=Math.max(0,timerRemainingSec-15);
+    if(timerRunning&&timerEndsAt!==null)timerEndsAt-=15000;
+    if(timerRemainingSec===0){resetRestTimer();return;}
+    updateTimerUI();
+  });
+  bind('v7RestPlus',()=>{
+    timerRemainingSec+=15;
+    if(timerRunning&&timerEndsAt!==null)timerEndsAt+=15000;
+    updateTimerUI();
+  });
+  v7Element('v7TemplateSelect').addEventListener('change',event=>{
+    const key=event.target.value;
+    if(!Object.prototype.hasOwnProperty.call(TEMPLATES,key)){v7RenderProgram();return;}
+    if(key!==state.templateKey&&getSessionSnapshot().recordedSets>0&&
+       !window.confirm('Mevcut seansın setleri eski şablonda saklanacak. Şablon değiştirilsin mi?')){
+      v7RenderProgram();return;
+    }
+    state.templateKey=key;state.overrideWorkoutType=null;v7DraftKey='';
+    saveState();renderAll();showToast('Program şablonu güncellendi.');
+  });
+  v7Element('v7ChartExercise').addEventListener('change',v7RenderProgress);
+  bind('v7MeasureBtn',()=>v7OpenTool('measure'));
+  bind('v7HistoryBtn',()=>v7OpenTool('history'));
+  bind('v7ToolBackBtn',()=>v7Navigate('settings'));
+  bind('v7CalcBtn',()=>v7OpenTool('calc'));
+  bind('v7WeightsBtn',()=>v7OpenTool('weights'));
+  bind('v7MeasurementsBtn',()=>v7OpenTool('measure'));
+  bind('v7PlateBtn',()=>openPlateCalculator());
+  bind('v7SoundBtn',()=>{
+    v7Element('soundToggleBtn').click();
+    v7RenderSettings();
+  });
+  bind('v7RestPrefBtn',()=>{
+    const options=[0,90,120,150,180];
+    const next=(options.indexOf(state.v7RestSeconds||0)+1)%options.length;
+    state.v7RestSeconds=options[next];saveState();v7RenderSettings();
+  });
+  bind('v7ExportBtn',()=>v7Element('exportDataBtn').click());
+  bind('v7ImportBtn',()=>v7Element('importDataBtn').click());
+  bind('v7ResetBtn',()=>v7Element('resetAllDataBtn').click());
+  const focus=v7Element('v7Focus');
+  let startX=0,startY=0;
+  focus.addEventListener('touchstart',e=>{
+    startX=e.changedTouches[0]?.clientX||0;startY=e.changedTouches[0]?.clientY||0;
+  },{passive:true});
+  focus.addEventListener('touchend',e=>{
+    const dx=(e.changedTouches[0]?.clientX||0)-startX;
+    const dy=(e.changedTouches[0]?.clientY||0)-startY;
+    if(Math.abs(dx)>85&&Math.abs(dy)<55)v7SelectExercise(dx<0?1:-1);
+  },{passive:true});
+}
+
     function switchTab(tabName) {
       const views = {
         workout: document.getElementById('viewWorkout'),
@@ -3134,6 +3219,8 @@
       loadState();
       renderAll();
       updateTimerUI();
+      v7BindUI();
+      v7Navigate('today');
       // PWA registration can be controlled by an older cached app.
       // Explicitly check for a newer worker when this version is visible.
       if ('serviceWorker' in navigator) {
@@ -3285,6 +3372,7 @@
         const modal = document.getElementById('summaryModal');
         modal.classList.add('hidden');
         modal.classList.remove('flex');
+        if(v7Page==='focus')v7Navigate('today');
       };
       document.getElementById('closeSummaryModalBtn').addEventListener('click', closeSummary);
       document.getElementById('summaryModalOkBtn').addEventListener('click', closeSummary);
