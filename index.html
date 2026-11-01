@@ -2645,7 +2645,10 @@
         document.getElementById('appUpdateReloadBtn').addEventListener('click', () => {
           window.location.reload();
         });
-        navigator.serviceWorker.addEventListener('controllerchange', showReloadPrompt);
+        const hadControllerOnLoad = !!navigator.serviceWorker.controller;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (hadControllerOnLoad) showReloadPrompt();
+        });
         navigator.serviceWorker.ready.then(registration => {
           registration.update().catch(() => {});
           document.addEventListener('visibilitychange', () => {
