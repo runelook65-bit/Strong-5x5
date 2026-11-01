@@ -52,6 +52,24 @@
 - [ ] Egzersiz görselleri için kaynak/izin envanteri; hakları belirsiz üçüncü taraf animasyonları kullanmama.
 - [ ] Açık kaynak lisansı kararı: repo public olsa da şu anda kodu otomatik olarak açık kaynak lisanslı değildir.
 
+## v0.6 — Performance Logger (GitHub'da kod tamamlandı; gerçek telefon QA bekliyor)
+
+- [x] iPhone'da kesilen sticky dinlenme şeridi yerine Workout içinde katlanabilir timer.
+- [x] Header dar alanda küçüldü; safe-area ve sabit alt navigasyon boşlukları düzenlendi.
+- [x] Klavye açılıp set inputuna odaklanıldığında alt navigasyon gizlenir.
+- [x] Tek set giriş yöntemi: SET / ÖNCEKİ / KG / TEKRAR / ONAY.
+- [x] Önceki sütun yalnızca aynı şablonun gerçek kaydedilmiş setinden doldurulur.
+- [x] Dolu set düzenlenebilir; detay editörü set silme için korunur.
+- [x] Aktif egzersiz önde, geri kalan egzersizler katlanabilir.
+- [x] Program 36 seans ilerleme göstergesi; açıklamalar katlanabilir.
+- [x] İlerleme ekranında seans, gerçek hacim ve soğuk kol ölçümü.
+- [x] Türkçe ondalık virgül ve aria-current ile erişilebilirlik iyileştirmeleri.
+- [x] 45 kod düzeyi regresyon testi.
+- [ ] iPhone Safari (320–430px, büyütülmüş yazı, klavye, alt sekme) kabul testi.
+- [ ] Android/TalkBack, iOS VoiceOver, PWA ve timer gerçek cihaz testleri.
+- [ ] Bağımsız Node npm test + Vite production build kontrolü.
+- [ ] Vercel dağıtımı; kullanıcı istemediği sürece yapılmaz.
+
 ## Yayın kriterleri
 
 Yayına çıkmadan önce:
