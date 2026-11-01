@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Production CSS is bundled locally so the workout UI works without a CDN. */
