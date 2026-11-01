@@ -1,8 +1,8 @@
 # ARM 5×5 — Workout Tracker
 
-**Canlı uygulama (v0.5.0): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
+**Canlı uygulama (v0.6.1): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
 
-**v0.6.0 (geliştirme sürümü; Vercel'deki canlı sürüm henüz v0.5.0)** · 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
+**v0.6.1 (Vercel production)** · 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
 
 Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım manuel olarak yapılmıştır; sonraki güncellemeler otomatik yayınlanmaz.
 
@@ -69,7 +69,7 @@ Uygulama deposuna henüz bir genel açık kaynak **LICENSE** dosyası eklenmedi;
 ## Kalite durumu
 
 - Regresyon testleri `tests/app.test.cjs` dosyasında, Node'un test çalıştırıcısını kullanır.
-- 45 senaryo kod simülasyonunda geçti. Uygulama HTML denge ve JavaScript syntax kontrolleri yapıldı.
+- 46 senaryo kod simülasyonunda geçti. Uygulama HTML denge ve JavaScript syntax kontrolleri yapıldı.
 - Manuel GitHub Actions workflow eklendi; workflow çalıştırıldığı doğrulanmadı.
 - Gerçek cihaz, VoiceOver, uzun süreli offline ve soğuk başlatma testleri henüz tamamlanmadı.
 
@@ -88,3 +88,13 @@ Ayrıntılar için `docs/ROADMAP.md`, `docs/DESIGN.md` ve `docs/OPEN_SOURCE.md` 
 - 45 JavaScript regresyon senaryosu geçti. Gerçek iPhone/Android ve üretim build doğrulaması devam ediyor.
 - Önceki yerel kayıt şeması ve ağırlık artırma algoritması değiştirilmedi.
 - **Vercel v0.5.0 üretim adresine dokunulmadı.** Yeni sürüm ancak ayrıca yayınlanırsa canlıya çıkar.
+
+## v0.6.1 — PWA önbellek düzeltmesi
+
+- Eski `prompt` konfigürasyonu, kullanıcıya güncelleme onayı sunulmadan service worker'ı bekletebiliyordu.
+- `vite-plugin-pwa` `autoUpdate`, `skipWaiting` ve `clientsClaim` kullanıyor.
+- `vercel.json` HTML, SW ve kayıt dosyalarında uygun HTTP önbellek kontrolü uyguluyor.
+- Antrenman panosunda **Yeni arayüz · v0.6.1** etiketi, kullanıcının doğru sürümü gördüğünü anlamasını sağlar.
+- Uygulamaya yeni SW kontrolü geçerse kullanıcı kontrollü Yenile butonu gösterilir.
+- Yeni üretim deployment: `dpl_EKMiL4n2Q9qJTBR2x3k8hN8oDyHc` (**READY**). Otomatik Git deploy hâlâ kapalı.
+- Eski SW'ı tutan iPhone için farklı deployment alan adı ayrı bir tarayıcı origin'i olduğundan anında karşılaştırma yapmakta işe yarar, fakat **orijinal domain'deki localStorage kayıtları bu test alan adına otomatik taşınmaz**.
