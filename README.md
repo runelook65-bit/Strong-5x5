@@ -1,8 +1,8 @@
 # ARM 5×5 — Workout Tracker
 
-**Canlı uygulama (v0.6.1): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
+**Canlı uygulama (v0.7.0): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
 
-**GitHub geliştirme sürümü: v0.7.0** · Canlı Vercel sürümü: **v0.6.1**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
+**GitHub sürümü: v0.7.0** · Canlı Vercel sürümü: **v0.7.0**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
 
 Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım manuel olarak yapılmıştır; sonraki güncellemeler otomatik yayınlanmaz.
 
@@ -87,7 +87,7 @@ Ayrıntılar için `docs/ROADMAP.md`, `docs/DESIGN.md` ve `docs/OPEN_SOURCE.md` 
 - Türkçe ondalık virgül formatlı ağırlık girişi desteklenir.
 - 45 JavaScript regresyon senaryosu geçti. Gerçek iPhone/Android ve üretim build doğrulaması devam ediyor.
 - Önceki yerel kayıt şeması ve ağırlık artırma algoritması değiştirilmedi.
-- **Vercel v0.5.0 üretim adresine dokunulmadı.** Yeni sürüm ancak ayrıca yayınlanırsa canlıya çıkar.
+- **v0.5.0 ve v0.6.1 sürümleri artık eski üretim sürümleridir.** Yeni sürüm ancak ayrıca yayınlanırsa canlıya çıkar.
 
 ## v0.6.1 — PWA önbellek düzeltmesi
 
@@ -99,7 +99,7 @@ Ayrıntılar için `docs/ROADMAP.md`, `docs/DESIGN.md` ve `docs/OPEN_SOURCE.md` 
 - Yeni üretim deployment: `dpl_EKMiL4n2Q9qJTBR2x3k8hN8oDyHc` (**READY**). Otomatik Git deploy hâlâ kapalı.
 - Eski SW'ı tutan iPhone için farklı deployment alan adı ayrı bir tarayıcı origin'i olduğundan anında karşılaştırma yapmakta işe yarar, fakat **orijinal domain'deki localStorage kayıtları bu test alan adına otomatik taşınmaz**.
 
-## v0.7.0 — Beş ekranlı yeni arayüz (GitHub'da; **henüz canlı değil**)
+## v0.7.0 — Beş ekranlı yeni arayüz (Vercel'de yayında)
 
 Önceki her şeyin aynı sayfada olduğu yoğun deneyim yerine kullanıcı tarafından seçilen görsel tasarım esas alınarak yeni ekran mimarisi uygulandı:
 
@@ -111,4 +111,13 @@ Ayrıntılar için `docs/ROADMAP.md`, `docs/DESIGN.md` ve `docs/OPEN_SOURCE.md` 
 
 `src/v7.css` yeniden tasarımın bağımsız responsive stilini içerir. Veri motoru ve mevcut `localStorage` anahtarı korunmuştur. **61/61 kod düzeyi regresyon simülasyonu geçti**, fakat gerçek iPhone Safari QA, gerçek `npm run build` ve görsel karşılaştırma tamamlanmadı.
 
-Ayrıntılar: [v0.7 UI ve kabul kriterleri](docs/V07_UX.md). Kod güncellemesi otomatik Vercel yayınını tetiklemez.
+Ayrıntılar: [v0.7 UI ve kabul kriterleri](docs/V07_UX.md). Vercel'e manuel olarak v0.7.0 üretim dağıtımı yapılmıştır; yeni GitHub kodları otomatik yayınlanmaz.
+
+### v0.7.0 üretim dağıtımı
+
+- **URL:** https://arm-5x5.vercel.app
+- **Deployment ID:** `dpl_DBPXGjteu7ZyqcmAnupThZGWEgC2`
+- **Durum:** READY, production alias bağlandı.
+- Vite build logunda `dist/index.html`, `assets/index-6ouLSsWs.css`, `sw.js` ve `manifest.webmanifest` üretimi doğrulandı.
+- 61 kod simülasyonu geçti; gerçek iPhone Safari, VoiceOver ve PWA offline acceptance testleri henüz tamamlanmadı.
+- Git bağlantısı olmadığı için yeni commitler otomatik dağıtılmıyor.
