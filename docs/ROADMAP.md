@@ -70,6 +70,23 @@
 - [ ] Bağımsız Node npm test + Vite production build kontrolü.
 - [ ] Vercel dağıtımı; kullanıcı istemediği sürece yapılmaz.
 
+## v0.7 — Home-first Workout Redesign (kaynak kod tamamlandı)
+
+- [x] **Adım 1: Bugün** — ayrı, sade açılış ekranı ve gerçek Workout A/B özeti.
+- [x] **Adım 2: Aktif Antrenman** — tam odak modu, kg/tekrar düzenleme, timer, set ilerleme, geri/ileri ve seans onayı.
+- [x] **Adım 3: Program** — A/B hafta düzeni, 12 haftalık yol haritası, mevcut şablonlar ve deload.
+- [x] **Adım 4: İlerleme** — gerçek kayıtlardan KPI, çizgi/çubuk grafikleri, PR ve ölçümler.
+- [x] **Adım 5: Ayarlar** — araçlar bağımsız alt ekranlarda, veriler ve ayarlar ayrı bölümlerde.
+- [x] Mevcut antrenman motoru, JSON yedeği ve kayıt anahtarı korundu.
+- [x] 61/61 JavaScript test simülasyonu geçti.
+- [ ] Bağımsız Node `npm test && npm run build` ve Vite CSS üretimi doğrulaması.
+- [ ] iPhone Safari/Android Chrome UI davranışları, modal klavye, safe-area, küçük ekran ve VoiceOver.
+- [ ] v0.6.1'den veri taşıma/geriye uyum ve offline PWA cold-start testi.
+- [ ] Mockuplarla gerçek görsel karşılaştırma; özellikle fotoğrafik hero varlıkları mevcutta CSS/yerleşik hareket görselleriyle temsil ediliyor.
+- [ ] **Vercel production yayını kullanıcı açıkça isteyince.**
+
+Ayrıntılar için [v0.7 tasarım spesifikasyonu](V07_UX.md).
+
 ## Yayın kriterleri
 
 Yayına çıkmadan önce:
