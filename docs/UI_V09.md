@@ -28,6 +28,14 @@ We are **using shadcn/ui's accessible design conventions and component hierarchy
 - Opaque metric surfaces ensure keyboard-entry readability; small transparency only in fixed navigation.
 - Real icons are retained, but photo covers are not in the workout experience.
 
+### 4. Program — compact weekly planner
+- One progress summary shows the actual recorded completed slots, current week, and 36-session progress indicator.
+- Weekly A/B/A or B/A/B days show separate selected/completed states with accessible labels.
+- Workout A/B cards display the selected template’s actual exercises and set×rep goals; they continue using the existing override confirmation.
+- The original template selector, deload/week controls, and workout engine remain unchanged in behavior and storage format.
+- The 12-week roadmap and training rationale move to expandable disclosure cards to reduce initial scroll.
+- CSS scoped to `#v7Program` / `ui9-program-*`; tap targets are at least 44 CSS pixels.
+
 ## Not yet done
 
 - [ ] Actual React + shadcn/ui component installation and engine adapter — do **not** attempt this by replacing the workout engine before data migration and behavior tests.
