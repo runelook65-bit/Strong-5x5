@@ -299,25 +299,56 @@
       </section>
 
       <section id="v7Progress" class="v7-screen v7-page space-y-5 hidden" aria-labelledby="v7ProgressTitle">
-        <div class="v7-page-header"><div><h1 id="v7ProgressTitle" class="v7-title">İlerleme</h1><p class="v7-muted text-sm">ARM 5×5 · Gerçek antrenman kayıtları</p></div></div>
-        <div class="v7-stats ui-stats">
-          <div class="v7-stat"><span class="v7-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg></span><span class="v7-muted text-xs">Seans</span><strong id="v7ProgressSessions">0</strong></div>
-          <div class="v7-stat"><span class="v7-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h17M8 15l4-4 4 2 4-7"/></svg></span><span class="v7-muted text-xs">Hacim</span><strong id="v7ProgressVolume">—</strong></div>
-          <div class="v7-stat"><span class="v7-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4"/></svg></span><span class="v7-muted text-xs">Kol değişimi</span><strong id="v7ProgressArm">—</strong></div>
+        <div class="v7-page-header">
+          <div>
+            <p class="v8-header-overline">GERÇEK ANTRENMAN VERİLERİN</p>
+            <h1 id="v7ProgressTitle" class="v7-title">İlerleme</h1>
+            <p id="v9ProgressStatus" class="v7-muted ui9-progress-status" role="status" aria-live="polite">İlk antrenman kaydını bekliyor</p>
+          </div>
         </div>
-        <div class="v7-hero v7-progress-cover arm-cover arm-cover-progress ui-panel ui-progress-summary">
-          <div class="v7-eyebrow">GÜÇ VE KAS GELİŞİMİ</div>
-          <h2 class="v7-section-title mt-2">İlerlemen Devam Ediyor</h2>
-          <p class="v7-muted text-xs mt-2">Her kayıt, gelişimini görünür kılar.</p>
+        <div class="ui9-progress-kpis" role="group" aria-label="Antrenman özeti">
+          <div class="ui9-progress-kpi">
+            <span class="ui9-progress-kpi-label">Kaydedilen seans</span>
+            <strong id="v7ProgressSessions">0</strong>
+          </div>
+          <div class="ui9-progress-kpi">
+            <span class="ui9-progress-kpi-label">Toplam hacim</span>
+            <strong id="v7ProgressVolume">—</strong>
+          </div>
+          <div class="ui9-progress-kpi">
+            <span class="ui9-progress-kpi-label">Kol değişimi</span>
+            <strong id="v7ProgressArm">—</strong>
+          </div>
         </div>
-        <div class="v7-card p-4">
-          <div class="flex flex-wrap justify-between gap-2 items-center mb-4"><h2 class="v7-section-title">Güç Gelişimi</h2><select id="v7ChartExercise" aria-label="Grafikteki hareket" class="v7-select v7-compact-select"></select></div>
-          <div id="v7StrengthChart" class="v7-chart-area"></div>
-        </div>
-        <div class="v7-card p-4"><h2 class="v7-section-title mb-4">Haftalık Hacim</h2><div id="v7VolumeChart" class="v7-chart-area"></div></div>
-        <div><h2 class="v7-section-title mb-3">Kişisel Rekorlar</h2><div id="v7PersonalRecords" class="v7-card divide-y divide-[#2b3339]"></div></div>
-        <div class="v7-card p-4 space-y-3"><h2 class="v7-section-title">Son Ölçümler</h2><div id="v7LastMeasurements" class="space-y-2 text-sm"></div><button id="v7MeasureBtn" type="button" class="v7-secondary-cta">Kol Ölçümü Kaydet</button></div>
-        <button id="v7HistoryBtn" type="button" class="v7-text-link">Antrenman geçmişini görüntüle ›</button>
+        <section class="v7-card ui9-progress-card" aria-labelledby="v9StrengthTitle">
+          <div class="ui9-progress-card-heading">
+            <div><h2 id="v9StrengthTitle" class="v7-section-title">Güç gelişimi</h2><p class="v7-muted ui9-progress-hint">Kaydedilen çalışma ağırlıkları</p></div>
+            <label class="ui9-progress-filter" for="v7ChartExercise"><span class="sr-only">Hareket seç</span><select id="v7ChartExercise" aria-label="Grafikteki hareket" class="v7-select v7-compact-select"></select></label>
+          </div>
+          <p id="v9StrengthNote" class="v7-muted ui9-progress-meta">Hareket geçmişi henüz boş</p>
+          <div id="v7StrengthChart" class="v7-chart-area ui9-progress-chart"></div>
+        </section>
+        <section class="v7-card ui9-progress-card" aria-labelledby="v9VolumeTitle">
+          <div class="ui9-progress-card-heading">
+            <div><h2 id="v9VolumeTitle" class="v7-section-title">Haftalık hacim</h2><p class="v7-muted ui9-progress-hint">12 haftalık kaydedilmiş antrenman yükü</p></div>
+          </div>
+          <p id="v9VolumeNote" class="v7-muted ui9-progress-meta">Henüz kaydedilmiş hacim yok</p>
+          <div id="v7VolumeChart" class="v7-chart-area ui9-progress-chart"></div>
+        </section>
+        <section class="v7-card ui9-progress-card ui9-progress-record-card" aria-labelledby="v9RecordsTitle">
+          <div class="ui9-progress-card-heading">
+            <div><h2 id="v9RecordsTitle" class="v7-section-title">Kişisel rekorlar</h2><p id="v9RecordsNote" class="v7-muted ui9-progress-hint">Kaydedilmiş setlerde en yüksek ağırlık</p></div>
+          </div>
+          <div id="v7PersonalRecords" class="ui9-progress-records"></div>
+        </section>
+        <section class="v7-card ui9-progress-card" aria-labelledby="v9MeasurementsTitle">
+          <div class="ui9-progress-card-heading">
+            <div><h2 id="v9MeasurementsTitle" class="v7-section-title">Kol ölçümleri</h2><p class="v7-muted ui9-progress-hint">Soğuk ve antrenman sonrası ölçümler</p></div>
+          </div>
+          <div id="v7LastMeasurements" class="ui9-progress-measurements"></div>
+          <button id="v7MeasureBtn" type="button" class="v7-secondary-cta ui9-progress-measure-btn">Ölçüm ekle</button>
+        </section>
+        <button id="v7HistoryBtn" type="button" class="v7-text-link ui9-progress-history">Tüm antrenman geçmişi <span aria-hidden="true">›</span></button>
       </section>
 
       <section id="v7Settings" class="v7-screen v7-page space-y-5 hidden" aria-labelledby="v7SettingsTitle">
@@ -3128,13 +3159,18 @@ function v7RenderToday(){
 }
 
     function v7RenderProgress(){
-  const logs=state.workoutLogs||[];
+  const logs=Array.isArray(state.workoutLogs)?state.workoutLogs:[];
   v7SetText('v7ProgressSessions',logs.length);
   const volume=logs.reduce((sum,l)=>sum+(Number.isFinite(l?.volume)?l.volume:0),0);
   v7SetText('v7ProgressVolume',volume?`${Math.round(volume).toLocaleString('tr-TR')} kg`:'—');
   const cold=(state.armMeasurements||[]).filter(m=>m.note==='Soğuk'&&Number.isFinite(m.cm));
   const diff=cold.length>1?cold.at(-1).cm-cold[0].cm:null;
   v7SetText('v7ProgressArm',diff===null?'—':`${diff>=0?'+':''}${diff.toFixed(1)} cm`);
+  const lastLog=logs.at(-1);
+  v7SetText('v9ProgressStatus',lastLog?
+    `${logs.length} seans kaydedildi · Son: ${lastLog.title||'Antrenman'}`:
+    'İlk antrenmanını tamamladığında gelişimini burada göreceksin.');
+
   const select=v7Element('v7ChartExercise');
   const selected=select.value&&EXERCISE_DB[select.value]?select.value:'barbell_curl';
   select.innerHTML='';
@@ -3142,29 +3178,41 @@ function v7RenderToday(){
     const opt=document.createElement('option');opt.value=meta.id;opt.textContent=meta.name;select.appendChild(opt);
   }
   select.value=selected;
+  const history=(getExerciseStats(selected)?.history||[]).filter(h=>Number.isFinite(h.weight)&&h.weight>0);
+  v7SetText('v9StrengthNote',history.length?`Son ${Math.min(12,history.length)} kayıt gösteriliyor`:'Bu hareket için kayıtlı çalışma ağırlığı yok.');
   v7SetMarkup('v7StrengthChart',v7BuildStrengthChart(selected));
+
+  const coveredWeeks=new Set(logs.filter(l=>Number.isFinite(l?.volume)&&l.volume>0&&typeof l.id==='string')
+    .map(l=>l.id.match(/^w(1[0-2]|[1-9])_d[0-2](?:_|$)/))
+    .filter(Boolean).map(match=>Number(match[1])));
+  v7SetText('v9VolumeNote',coveredWeeks.size?
+    `${coveredWeeks.size} haftada kaydedilmiş hacim · kg`:
+    'Antrenman kaydedildikten sonra hacim grafiği oluşur.');
   v7SetMarkup('v7VolumeChart',v7BuildVolumeChart());
+
   const prs=v7Element('v7PersonalRecords');prs.innerHTML='';
   let count=0;
   for(const meta of Object.values(EXERCISE_DB)){
-    const records=logs.flatMap(log=>(log.exercises||[]))
-      .filter(ex=>ex?.exId===meta.id).flatMap(ex=>ex.sets||[])
-      .filter(set=>Number.isFinite(set.weight)&&set.weight>0&&Number.isInteger(set.reps)&&set.reps>0);
+    const records=logs.flatMap(log=>Array.isArray(log?.exercises)?log.exercises:[])
+      .filter(ex=>ex?.exId===meta.id).flatMap(ex=>Array.isArray(ex.sets)?ex.sets:[])
+      .filter(set=>Number.isFinite(set?.weight)&&set.weight>0&&Number.isInteger(set.reps)&&set.reps>0);
     if(!records.length)continue;
     const best=Math.max(...records.map(x=>x.weight));count++;
-    const row=document.createElement('div');row.className='v7-exercise-row';
-    row.innerHTML=`${v7ArtworkMarkup(meta.id,meta.img)}<span class="v7-ex-name flex-1 min-w-0">${escapeHTML(meta.name)}</span><span class="v7-chip">${best.toFixed(1)} kg</span>`;
+    const row=document.createElement('div');row.className='v7-exercise-row ui9-progress-record-row';
+    row.innerHTML=`${v7ArtworkMarkup(meta.id,meta.img)}<span class="v7-ex-name flex-1 min-w-0">${escapeHTML(meta.name)}</span><span class="ui9-progress-record-value">${best.toFixed(1)} kg</span>`;
     prs.appendChild(row);
   }
-  if(!count)prs.innerHTML='<div class="p-4 text-sm v7-muted">Henüz kişisel rekor kaydın yok.</div>';
+  if(!count)prs.innerHTML='<div class="ui9-progress-empty">Kayıtlı set oluşturduğunda kişisel rekorların burada görünecek.</div>';
+  v7SetText('v9RecordsNote',count?`${count} hareket · kaydedilmiş setlerde en yüksek ağırlık`:'Kaydedilmiş setlerde en yüksek ağırlık');
+
   const measures=v7Element('v7LastMeasurements');measures.innerHTML='';
   for(const [name,kind] of [['Soğuk kol','Soğuk'],['Pump kol','Pump']]){
-    const last=(state.armMeasurements||[]).filter(m=>m.note===kind).at(-1);
+    const last=(state.armMeasurements||[]).filter(m=>m.note===kind&&Number.isFinite(m.cm)).at(-1);
     measures.innerHTML+=`<div class="v7-measure-line"><span class="v7-muted">${name}</span><strong>${last?Number(last.cm).toFixed(1)+' cm':'—'}</strong></div>`;
   }
 }
 
-    function v7RenderSettings(){
+      function v7RenderSettings(){
   v7SetText('v7SoundValue',state.soundEnabled?'Açık':'Kapalı');
   v7SetText('v7RestPrefValue',state.v7RestSeconds?`${state.v7RestSeconds} sn ›`:'Harekete göre ›');
 }
