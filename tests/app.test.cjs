@@ -60,7 +60,7 @@ function createApp(saved) {
       getSessionReadiness, setSessionReadiness, calculateWeekMuscleVolume, renderMuscleVolume, TEMPLATES,
       openFinishPreview, completeWorkoutSession, renderExercises, renderProgressTab,
       makeBackupJSON, parseBackupJSON, restoreBackupJSON, undoLastWorkout,
-      escapeHTML, renderMuscleVolume,
+      escapeHTML, renderMuscleVolume, renderProgramTab, parseWorkoutWeight,
       getState: () => state,
       setState: next => { state = next; }
     };
@@ -587,4 +587,63 @@ test('Mobile layout keeps timer inside workout and footer safe-area accessible',
   assert.match(html, /\.app-shell\s*\{\s*padding-bottom:\s*calc\(114px \+ env\(safe-area-inset-bottom/);
   assert.match(html, /\.app-bottom-nav\s*\{[^}]*env\(safe-area-inset-bottom/);
   assert.match(html, /className = 'workout-set-heading'/);
+});
+
+test('Weight entry accepts Turkish decimal comma without accepting malformed input', () => {
+  const { app } = createApp();
+  assert.equal(app.parseWorkoutWeight('27,5'), 27.5);
+  assert.equal(app.parseWorkoutWeight('27.5'), 27.5);
+  assert.equal(app.parseWorkoutWeight(' 12,25 '), 12.25);
+  assert.ok(Number.isNaN(app.parseWorkoutWeight('27,5abc')));
+  assert.ok(Number.isNaN(app.parseWorkoutWeight('')));
+});
+
+test('Program hero shows only actual saved-session completion and week sequence', () => {
+  const { app, document } = createApp();
+  app.renderProgramTab();
+  assert.equal(document.getElementById('programHeroCounter').textContent, '0 / 36');
+  assert.equal(document.getElementById('programHeroTitle').textContent, 'Hafta 1 · A/B/A');
+  app.getState().currentWeek = 2;
+  app.renderProgramTab();
+  assert.equal(document.getElementById('programHeroTitle').textContent, 'Hafta 2 · B/A/B');
+  app.getState().completedSlots.w1_d0 = true;
+  app.renderProgramTab();
+  assert.equal(document.getElementById('programHeroCounter').textContent, '1 / 36');
+});
+
+test('Progress overview starts without fake volume or arm growth', () => {
+  const { app, document } = createApp();
+  app.renderProgressTab();
+  assert.equal(document.getElementById('progressTotalSessions').textContent, '0');
+  assert.equal(document.getElementById('progressTotalVolume').textContent, '—');
+  assert.equal(document.getElementById('progressColdDelta').textContent, '—');
+});
+
+test('Progress overview reports recorded weight volume and consistent cold measurements', () => {
+  const { app, document } = createApp();
+  recordAll(app);
+  const actual = app.getSessionSnapshot().volume;
+  assert.equal(app.completeWorkoutSession(), true);
+  app.getState().armMeasurements = [
+    {date:'Hafta 1',cm:34,note:'Soğuk'},
+    {date:'Hafta 1',cm:37,note:'Pump'},
+    {date:'Hafta 2',cm:34.5,note:'Soğuk'}
+  ];
+  app.renderProgressTab();
+  assert.equal(document.getElementById('progressTotalSessions').textContent, '1');
+  assert.equal(document.getElementById('progressColdDelta').textContent, '+0.5 cm');
+  assert.ok(document.getElementById('progressTotalVolume').textContent.includes('kg'));
+  assert.ok(actual > 0);
+});
+
+test('Inline logger uses nonsticky rest panel and never duplicates set entry forms', () => {
+  const { app, document } = createApp();
+  app.renderExercises();
+  const card = document.getElementById('exerciseCardsContainer').children[0];
+  const body = card.children[1];
+  const rowContainer = body.children[2];
+  assert.equal(rowContainer.children.length, 5);
+  assert.match(html, /<details id="restTimerBar"/);
+  assert.ok(!/<div id="restTimerBar" class="sticky/.test(html));
+  assert.ok(!html.includes('Sıradaki set · 1/5'));
 });
