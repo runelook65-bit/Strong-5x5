@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ARM 5×5 — 12 Haftalık Kol Büyütme & Antrenman Takipçisi</title>
   <meta name="theme-color" content="#07080a" />
+  <meta name="application-version" content="0.6.1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ARM 5×5" />
@@ -142,6 +143,11 @@
       </div>
     </header>
 
+    <!-- Explicit reload action when a newer service worker takes control -->
+    <div id="appUpdateBanner" class="hidden fixed inset-x-3 top-3 z-[80] max-w-md mx-auto rounded-2xl bg-[#173d2d] border border-emerald-400/60 shadow-2xl p-3 items-center gap-3" role="status" aria-live="polite">
+      <div class="flex-1 min-w-0 text-sm text-white">ARM 5×5 güncellendi. Yeni tasarımı yüklemek için yenile.</div>
+      <button id="appUpdateReloadBtn" class="rounded-xl bg-emerald-400 text-[#082016] px-3 py-2.5 text-xs font-bold shrink-0" type="button">Yenile</button>
+    </div>
     <!-- MAIN CONTENT VIEWS -->
     <main class="app-main flex-1 px-3.5 pt-3.5 space-y-4">
 
@@ -154,7 +160,10 @@
         <div class="bg-gradient-to-br from-[#10271d] to-card border border-emerald-500/30 rounded-2xl p-4 space-y-3" aria-label="Seçili antrenman ilerlemesi">
           <div class="flex items-center justify-between gap-2">
             <div>
-              <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Seçili antrenman</div>
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Seçili antrenman</div>
+                <span id="appReleaseBadge" class="px-2 py-0.5 text-[10px] font-bold rounded-md border border-emerald-500/40 bg-emerald-500/15 text-emerald-300" aria-label="Yayınlanan uygulama sürümü">Yeni arayüz · v0.6.1</span>
+              </div>
               <h2 id="dashboardWorkoutTitle" class="text-xl font-extrabold tracking-tight text-white mt-1">Workout A · Biceps</h2>
               <p id="dashboardWorkoutSubtitle" class="text-xs text-gray-300 mt-1">Hafta 1 / 12 • 3 hareket</p>
             </div>
@@ -2622,6 +2631,29 @@
       loadState();
       renderAll();
       updateTimerUI();
+      // PWA registration can be controlled by an older cached app.
+      // Explicitly check for a newer worker when this version is visible.
+      if ('serviceWorker' in navigator) {
+        let updateNoticeShown = false;
+        const showReloadPrompt = () => {
+          if (updateNoticeShown) return;
+          updateNoticeShown = true;
+          const banner = document.getElementById('appUpdateBanner');
+          banner.classList.remove('hidden');
+          banner.classList.add('flex');
+        };
+        document.getElementById('appUpdateReloadBtn').addEventListener('click', () => {
+          window.location.reload();
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', showReloadPrompt);
+        navigator.serviceWorker.ready.then(registration => {
+          registration.update().catch(() => {});
+          document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) registration.update().catch(() => {});
+          });
+        }).catch(() => {});
+      }
+
       document.addEventListener('visibilitychange', syncRestTimer);
       document.getElementById('soundIconOn').classList.toggle('hidden', !state.soundEnabled);
       document.getElementById('soundIconOff').classList.toggle('hidden', state.soundEnabled);
