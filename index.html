@@ -168,7 +168,7 @@
         </div>
         <div class="v7-hero v7-home-hero">
           <div class="v8-hero-watermark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 17c0-4 2-6 5-6V7l2-3 3 2-1 5h3l3-2 2 3-2 5c-2 3-5 4-9 4-3 0-5-1-6-4Z"/></svg></div>
-          <div class="v8-hero-context"><span class="v7-eyebrow">SIRADAKİ ANTRENMAN</span><span class="v8-hero-status"><span class="v8-status-dot"></span> Hazır</span></div>
+          <div class="v8-hero-context"><span class="v7-eyebrow">SIRADAKİ ANTRENMAN</span><span class="v8-hero-status"><span class="v8-status-dot"></span><span id="v8HeroState">Hazır</span></span></div>
           <h2 id="v7HeroTitle" class="v7-hero-title">Workout A</h2>
           <p id="v7HeroSubtitle" class="v7-muted mt-2 mb-6">3 hareket · 13 set</p>
           <button id="v7StartBtn" type="button" class="v7-cta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 6 10 6-10 6V6Z"/></svg><span id="v7StartLabel">Antrenmanı Başlat</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h16m-7-7 7 7-7 7"/></svg></button>
@@ -188,9 +188,9 @@
 
       <section id="v7Focus" class="v7-screen v7-page v7-focus hidden" aria-label="Aktif antrenman">
         <div class="flex justify-between items-center gap-3">
-          <button id="v7FocusBackBtn" type="button" class="v7-icon-button" aria-label="Antrenmandan Bugün ekranına dön">‹</button>
+          <button id="v7FocusBackBtn" type="button" class="v7-icon-button" aria-label="Antrenmandan Bugün ekranına dön"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
           <div class="flex-1 min-w-0"><h1 id="v7FocusTitle" class="v7-title truncate">Workout A</h1><p id="v7FocusSubtitle" class="v7-muted text-xs">1 / 3 hareket</p></div>
-          <button id="v7FocusMoreBtn" type="button" class="v7-icon-button v8-focus-more" aria-label="Antrenman seçenekleri">···</button>
+          <button id="v7FocusMoreBtn" type="button" class="v7-icon-button v8-focus-more" aria-label="Antrenman seçenekleri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
         </div>
         <div class="v7-thin-track" role="progressbar" aria-label="Antrenman ilerleme yüzdesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="v7FocusTrack"><div id="v7FocusFill"></div></div>
         <div class="v7-hero v7-exercise-hero">
@@ -231,9 +231,9 @@
           <button id="v7ExerciseInfoBtn" type="button" class="v7-text-link">ⓘ &nbsp;Hareket bilgisi</button>
         </div>
         <div class="v7-bottom-preview">
-          <button id="v7PreviousExerciseBtn" type="button" class="v7-small-nav" aria-label="Önceki hareket">‹</button>
+          <button id="v7PreviousExerciseBtn" type="button" class="v7-small-nav" aria-label="Önceki hareket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
           <div id="v7ExercisePosition" class="min-w-0 flex-1 text-center text-sm font-semibold">1 / 3</div>
-          <button id="v7NextExerciseBtn" type="button" class="v7-small-nav" aria-label="Sonraki hareket">›</button>
+          <button id="v7NextExerciseBtn" type="button" class="v7-small-nav" aria-label="Sonraki hareket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
         </div>
         <details class="v7-card p-4 space-y-2">
           <summary class="text-sm font-semibold cursor-pointer text-gray-300">Toparlanma durumu · isteğe bağlı</summary>
@@ -2834,6 +2834,7 @@
   v7SetText('v7HeroTitle',`Workout ${wType}`);
   v7SetText('v7HeroSubtitle',`${snapshot.exercises.length} hareket · ${snapshot.totalSets} set · Hafta ${state.currentWeek}`);
   v7SetText('v7StartLabel',snapshot.recordedSets ? 'Antrenmana Devam Et' : snapshot.isSaved ? 'Kaydedilen Seansı Gör' : 'Antrenmanı Başlat');
+  v7SetText('v8HeroState', snapshot.isSaved ? 'Tamamlandı' : snapshot.recordedSets ? 'Devam ediyor' : 'Hazır');
   v7SetText('v7StatWeek',`${state.currentWeek} / 12`);
   v7SetText('v7StatSessions',`${[0,1,2].filter(idx=>state.completedSlots[`w${state.currentWeek}_d${idx}`]).length} / 3`);
   const cold=(state.armMeasurements||[]).filter(m=>m.note==='Soğuk'&&Number.isFinite(m.cm));
