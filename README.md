@@ -1,8 +1,8 @@
 # ARM 5×5 — Workout Tracker
 
-**Canlı uygulama (v0.7.0): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
+**Canlı uygulama (son doğrulanan v0.7.2): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
 
-**GitHub geliştirme sürümü: v0.7.2 (Visual Covers)** · Canlı Vercel sürümü: **v0.7.0**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
+**GitHub geliştirme sürümü: v0.8.0 (Minimal UI)** · Canlı Vercel sürümü: **v0.7.2**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
 
 Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım manuel olarak yapılmıştır; sonraki güncellemeler otomatik yayınlanmaz.
 
@@ -152,3 +152,20 @@ Ayrıntılar: [v0.7 UI ve kabul kriterleri](docs/V07_UX.md). Vercel'e manuel ola
 Görseller çevrimdışı PWA statik içerik kapsamındadır. **Gerçek iPhone, VoiceOver ve bağımsız Vite üretim testi henüz yapılmadı.** [Görsel varlık eşleme ve QA rehberi](docs/V072_VISUAL_ASSETS.md).
 
 **Yayın ayrımı:** v0.7.2 yalnızca GitHub'da; kullanıcı ayrıca istemeden Vercel production güncellenmez.
+
+## v0.8.0 — Minimal UI (GitHub'da, henüz Vercel'e yayınlanmadı)
+
+iPhone ekranındaki iri görseller, fazla yüksek kartlar ve büyük yüzen gezinmenin yerine **kompakt, göreve odaklı bir ekran sistemi** eklendi.
+
+- `src/ui-system.css`: shadcn/ui tasarım ilkelerine göre oluşturulmuş token tabanlı kart, düğme, durum ve gezinme stili. **React shadcn/ui bileşenleri henüz yüklenmedi**; çünkü uygulamanın mevcut çalışma zamanı vanilla JavaScript ve önce veri motoru ayrıştırılmalı.
+- Bugün: daha kısa seans kartı, dengeli istatistikler ve küçük hareket satırları.
+- Aktif Antrenman: büyük fotoğraf yerine egzersiz kimliği ve kg/tekrar kontrollü kompakt kayıt ekranı.
+- Program: kısa hafta özeti, seçilebilir günler, 12 haftalık matris.
+- İlerleme: gereksiz dekoratif banner kaldırıldı, gerçek grafiklere odaklanıldı.
+- Ayarlar: sade satırlar, küçük simgeler ve daha kısa başlık.
+- Ana egzersiz listelerinde tutarlı yerel SVG işaretleri; görsel verileri ve antrenman motoru korunur.
+- **79/79 kod düzeyi test başarılı**. Gerçek `npm run build` ve iPhone kabul testi henüz yapılmadı.
+
+Tasarım ayrıntıları, teknik geçiş sınırı ve testler için [v0.8 UI tasarım dokümanı](docs/UI_V08.md).
+
+**Yayın ayrımı:** Bu v0.8.0 geliştirmesi otomatik olarak canlı yayına alınmaz. Kullanıcı yayın talep ederse Vercel üretim dağıtımı ayrıca doğrulanır.
