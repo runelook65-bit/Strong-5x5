@@ -2,7 +2,7 @@
 
 **Canlı uygulama (v0.6.1): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
 
-**v0.6.1 (Vercel production)** · 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
+**GitHub geliştirme sürümü: v0.7.0** · Canlı Vercel sürümü: **v0.6.1**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
 
 Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım manuel olarak yapılmıştır; sonraki güncellemeler otomatik yayınlanmaz.
 
@@ -69,7 +69,7 @@ Uygulama deposuna henüz bir genel açık kaynak **LICENSE** dosyası eklenmedi;
 ## Kalite durumu
 
 - Regresyon testleri `tests/app.test.cjs` dosyasında, Node'un test çalıştırıcısını kullanır.
-- 46 senaryo kod simülasyonunda geçti. Uygulama HTML denge ve JavaScript syntax kontrolleri yapıldı.
+- 61 senaryo kod simülasyonunda geçti. Uygulama HTML denge ve JavaScript syntax kontrolleri yapıldı.
 - Manuel GitHub Actions workflow eklendi; workflow çalıştırıldığı doğrulanmadı.
 - Gerçek cihaz, VoiceOver, uzun süreli offline ve soğuk başlatma testleri henüz tamamlanmadı.
 
@@ -98,3 +98,17 @@ Ayrıntılar için `docs/ROADMAP.md`, `docs/DESIGN.md` ve `docs/OPEN_SOURCE.md` 
 - Uygulamaya yeni SW kontrolü geçerse kullanıcı kontrollü Yenile butonu gösterilir.
 - Yeni üretim deployment: `dpl_EKMiL4n2Q9qJTBR2x3k8hN8oDyHc` (**READY**). Otomatik Git deploy hâlâ kapalı.
 - Eski SW'ı tutan iPhone için farklı deployment alan adı ayrı bir tarayıcı origin'i olduğundan anında karşılaştırma yapmakta işe yarar, fakat **orijinal domain'deki localStorage kayıtları bu test alan adına otomatik taşınmaz**.
+
+## v0.7.0 — Beş ekranlı yeni arayüz (GitHub'da; **henüz canlı değil**)
+
+Önceki her şeyin aynı sayfada olduğu yoğun deneyim yerine kullanıcı tarafından seçilen görsel tasarım esas alınarak yeni ekran mimarisi uygulandı:
+
+1. **Bugün:** Sıradaki Workout A/B, Başlat/Devam Et, hafta/seans/soğuk kol gelişimi, yalnızca üç hareket ve son gerçek seans.
+2. **Aktif Antrenman:** Sekmeler gizlenir; tek egzersiz, kg/tekrar, doğrudan sayı düzenleme, Seti Tamamla, set göstergesi, timer, hareket ileri/geri ve seans özeti. Growth toparlanma girişi katlanabilir.
+3. **Program:** Gerçek A/B/A haftalık sırası, 12 hafta, 7. hafta hafifletme, mevcut şablonların hareketleri ve şablon seçimi.
+4. **İlerleme:** Gerçek seanslar, hacim, soğuk ölçümler, performans grafiği, kişisel rekorlar ve boş veri durumları.
+5. **Ayarlar:** Dinlenme, ses, kg, ayrı plaka/kol ölçümü/1RM/ağırlık araçları, JSON yedekleri.
+
+`src/v7.css` yeniden tasarımın bağımsız responsive stilini içerir. Veri motoru ve mevcut `localStorage` anahtarı korunmuştur. **61/61 kod düzeyi regresyon simülasyonu geçti**, fakat gerçek iPhone Safari QA, gerçek `npm run build` ve görsel karşılaştırma tamamlanmadı.
+
+Ayrıntılar: [v0.7 UI ve kabul kriterleri](docs/V07_UX.md). Kod güncellemesi otomatik Vercel yayınını tetiklemez.
