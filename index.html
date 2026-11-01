@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ARM 5×5 — 12 Haftalık Kol Büyütme & Antrenman Takipçisi</title>
   <meta name="theme-color" content="#07080a" />
-  <meta name="application-version" content="0.6.1" />
+  <meta name="application-version" content="0.7.0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ARM 5×5" />
@@ -163,7 +163,7 @@
             <img src="/icons/arm-5x5.svg" alt="" class="v7-logo" />
             <div><h1 id="v7TodayTitle" class="v7-title">ARM 5×5</h1><p class="v7-muted text-sm">Bugün · Antrenman planın</p></div>
           </div>
-          <span class="v7-version">v0.7 taslak</span>
+          <span class="v7-version">v0.7.0</span>
         </div>
         <div class="v7-hero v7-home-hero">
           <div class="v7-eyebrow">SIRADAKİ ANTRENMAN</div>
@@ -200,12 +200,12 @@
         <div class="v7-card v7-work-control">
           <div class="v7-value-row">
             <button id="v7WeightMinus" class="v7-stepper" type="button" aria-label="Ağırlığı azalt">−</button>
-            <div class="text-center min-w-0"><span id="v7WeightText" class="v7-value">27.5</span><span class="v7-unit"> kg</span></div>
+            <button id="v7WeightValueBtn" type="button" class="text-center min-w-0 rounded-xl focus-visible:outline focus-visible:outline-emerald-400" aria-label="Ağırlığı elle gir"><span id="v7WeightText" class="v7-value">27.5</span><span class="v7-unit"> kg</span></button>
             <button id="v7WeightPlus" class="v7-stepper" type="button" aria-label="Ağırlığı artır">+</button>
           </div>
           <div class="v7-value-row mt-1">
             <button id="v7RepsMinus" class="v7-stepper" type="button" aria-label="Tekrarı azalt">−</button>
-            <div class="text-center min-w-0"><span id="v7RepsText" class="v7-value">5</span><span class="v7-unit"> tekrar</span></div>
+            <button id="v7RepsValueBtn" type="button" class="text-center min-w-0 rounded-xl focus-visible:outline focus-visible:outline-emerald-400" aria-label="Tekrar sayısını elle gir"><span id="v7RepsText" class="v7-value">5</span><span class="v7-unit"> tekrar</span></button>
             <button id="v7RepsPlus" class="v7-stepper" type="button" aria-label="Tekrarı artır">+</button>
           </div>
           <p id="v7SetHint" class="v7-muted text-xs text-center my-4">Önerilen çalışma seti</p>
@@ -231,6 +231,20 @@
           <div id="v7ExercisePosition" class="min-w-0 flex-1 text-center text-sm font-semibold">1 / 3</div>
           <button id="v7NextExerciseBtn" type="button" class="v7-small-nav" aria-label="Sonraki hareket">›</button>
         </div>
+        <details class="v7-card p-4 space-y-2">
+          <summary class="text-sm font-semibold cursor-pointer text-gray-300">Toparlanma durumu · isteğe bağlı</summary>
+          <div class="pt-3 space-y-3">
+            <label for="v7Energy" class="block text-xs v7-muted">Bugünkü enerji</label>
+            <select id="v7Energy" class="v7-select">
+              <option value="unreported">Belirtmedim</option>
+              <option value="good">İyi, dinlenmiş</option>
+              <option value="normal">Normal</option>
+              <option value="low">Yorgun / toparlanamadım</option>
+            </select>
+            <label class="flex gap-2 text-xs text-gray-300 items-start"><input id="v7Joint" type="checkbox" class="mt-1 accent-emerald-400"/>Dirsek veya bilek rahatsızlığım var (yük artışını durdur)</label>
+            <p class="v7-muted text-xs">Growth şablonunda yük artışı önerisi bu değerlere göre ayarlanır.</p>
+          </div>
+        </details>
         <button id="v7FinishBtn" type="button" class="v7-secondary-cta">Seans Özeti ve Kaydet</button>
       </section>
 
@@ -300,7 +314,7 @@
             <button id="v7ImportBtn" type="button" class="v7-setting-row"><span class="v7-accent">⇩</span><span>Yedekten Geri Yükle</span><span class="v7-row-end">›</span></button>
             <button id="v7ResetBtn" type="button" class="v7-setting-row v7-destructive"><span>⌫</span><span>Verileri Sıfırla</span><span class="v7-row-end">›</span></button>
           </div></div>
-        <div class="v7-info">ⓘ &nbsp; Sürüm 0.7 · Yeni deneyim taslağı</div>
+        <div class="v7-info">ⓘ &nbsp; Sürüm 0.7.0 · Home-first Workout</div>
       </section>
 
       <section id="v7ToolDetail" class="v7-screen v7-page hidden" aria-labelledby="v7ToolTitle">
@@ -935,6 +949,23 @@
       <div class="grid grid-cols-2 gap-2">
         <button id="cancelFinishBtn" type="button" class="py-3 rounded-xl bg-oled border border-borderDark font-semibold text-gray-200">Geri Dön</button>
         <button id="confirmFinishBtn" type="button" class="py-3 rounded-xl bg-emerald-500 text-oled font-extrabold disabled:opacity-40 disabled:cursor-not-allowed">Kaydet ve Bitir</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="v7ValueModal" class="hidden fixed inset-0 z-[65] bg-black/80 backdrop-blur-sm items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="v7ValueTitle">
+    <div class="w-full max-w-sm bg-[#16201e] border border-[#3a6051] rounded-2xl p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between gap-2 items-center">
+        <h2 id="v7ValueTitle" class="text-lg font-extrabold text-white">Değeri düzenle</h2>
+        <button id="v7ValueCancelTop" type="button" aria-label="Kapat" class="v7-icon-button">×</button>
+      </div>
+      <label for="v7ValueInput" class="block text-xs v7-muted">Gerçek çalışma değeri</label>
+      <input id="v7ValueInput" type="text" inputmode="decimal" class="v7-select text-2xl font-mono" autocomplete="off"/>
+      <p id="v7ValueHelp" class="text-xs v7-muted"></p>
+      <div class="grid grid-cols-2 gap-3">
+        <button id="v7ValueCancel" type="button" class="v7-secondary-cta">Vazgeç</button>
+        <button id="v7ValueSave" type="button" class="v7-cta">Uygula</button>
       </div>
     </div>
   </div>
@@ -2754,6 +2785,7 @@
     let v7DraftKey='';
     let v7DraftWeight=0;
     let v7DraftReps=0;
+    let v7EditingField=null;
 
     function v7SetText(id,value){document.getElementById(id).textContent=String(value);}
 
@@ -2871,6 +2903,11 @@
     dot.setAttribute('aria-label',`${i+1}. set: ${value!==null?`${value} tekrar kaydedildi, düzenle`:'Henüz tamamlanmadı'}`);
     dot.addEventListener('click',()=>v7SelectSet(i));dots.appendChild(dot);
   });
+  const readiness=getSessionReadiness();
+  v7Element('v7Energy').value=readiness.energy;
+  v7Element('v7Joint').checked=readiness.jointDiscomfort;
+  v7Element('v7Energy').disabled=snapshot.isSaved;
+  v7Element('v7Joint').disabled=snapshot.isSaved;
   v7SetText('v7ExerciseProgress',`${item.setValues.filter(x=>x!==null).length} / ${item.sets} set · toplam ${snapshot.recordedSets} / ${snapshot.totalSets}`);
   v7Element('v7PreviousExerciseBtn').disabled=v7FocusIndex===0;
   v7Element('v7NextExerciseBtn').disabled=v7FocusIndex>=list.length-1;
@@ -3106,6 +3143,21 @@
   bind('v7RepsMinus',()=>v7EditValue('reps',-1));
   bind('v7RepsPlus',()=>v7EditValue('reps',1));
   bind('v7LogSetBtn',v7LogCurrentSet);
+  bind('v7WeightValueBtn',()=>v7OpenValueModal('weight'));
+  bind('v7RepsValueBtn',()=>v7OpenValueModal('reps'));
+  bind('v7ValueCancelTop',v7CloseValueModal);
+  bind('v7ValueCancel',v7CloseValueModal);
+  bind('v7ValueSave',v7SaveValueModal);
+  v7Element('v7ValueInput').addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();v7SaveValueModal();}
+    if(e.key==='Escape'){e.preventDefault();v7CloseValueModal();}
+  });
+  v7Element('v7Energy').addEventListener('change',e=>{
+    setSessionReadiness(e.target.value,v7Element('v7Joint').checked);
+  });
+  v7Element('v7Joint').addEventListener('change',e=>{
+    setSessionReadiness(v7Element('v7Energy').value,e.target.checked);
+  });
   bind('v7FinishBtn',openFinishPreview);
   bind('v7EditSetBtn',v7EditCurrentSet);
   bind('v7ExerciseInfoBtn',v7OpenExerciseInfo);
@@ -3162,6 +3214,36 @@
     const dy=(e.changedTouches[0]?.clientY||0)-startY;
     if(Math.abs(dx)>85&&Math.abs(dy)<55)v7SelectExercise(dx<0?1:-1);
   },{passive:true});
+}
+
+    function v7OpenValueModal(field){
+  if(field!=='weight'&&field!=='reps')return;
+  if(getSessionSnapshot().isSaved)return;
+  v7EditingField=field;
+  v7SetText('v7ValueTitle',field==='weight'?'Toplam ağırlık (kg)':'Gerçek tekrar');
+  v7SetText('v7ValueHelp',field==='weight'?'0.5–500 kg · örn. 27,5':'0–30 arasında tam sayı');
+  const input=v7Element('v7ValueInput');
+  input.value=String(field==='weight'?v7DraftWeight:v7DraftReps);
+  input.inputMode=field==='weight'?'decimal':'numeric';
+  const modal=v7Element('v7ValueModal');modal.classList.remove('hidden');modal.classList.add('flex');
+  input.focus();
+}
+
+    function v7CloseValueModal(){
+  const modal=v7Element('v7ValueModal');modal.classList.add('hidden');modal.classList.remove('flex');v7EditingField=null;
+}
+
+    function v7SaveValueModal(){
+  if(!v7EditingField)return;
+  const raw=String(v7Element('v7ValueInput').value).trim();
+  const value=v7EditingField==='weight'?parseWorkoutWeight(raw):Number(raw);
+  const valid=v7EditingField==='weight'?(Number.isFinite(value)&&value>=.5&&value<=500):(/^\d+$/.test(raw)&&Number.isInteger(value)&&value>=0&&value<=30);
+  if(!valid){showToast('Lütfen geçerli bir değer gir.');return;}
+  if(v7EditingField==='weight')v7DraftWeight=value;
+  else v7DraftReps=value;
+  v7SetText('v7WeightText',Number(v7DraftWeight).toFixed(1).replace(/\.0$/,''));
+  v7SetText('v7RepsText',v7DraftReps);
+  v7CloseValueModal();
 }
 
     function switchTab(tabName) {
