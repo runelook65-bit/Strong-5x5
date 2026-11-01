@@ -970,7 +970,8 @@
           }
           for (const h of entry.history) {
             if (!isObject(h) || !Number.isFinite(h.weight) || h.weight < 0.5 || h.weight > 500 ||
-                !Number.isFinite(h.reps) || h.reps < 0 || h.reps > 30) {
+                !Number.isFinite(h.reps) || h.reps < 0 || h.reps > 30 ||
+                typeof h.date !== 'string' || h.date.length > 120) {
               throw new Error('Hareket geçmişi geçersiz.');
             }
           }
@@ -1017,6 +1018,7 @@
       const sessionIds = new Set();
       for (const log of clean.workoutLogs) {
         if (!isObject(log) || typeof log.title !== 'string' || log.title.length > 150 ||
+            typeof log.date !== 'string' || log.date.length > 120 ||
             !Array.isArray(log.details) || log.details.length > 30 ||
             log.details.some(x => typeof x !== 'string' || x.length > 500) ||
             !Number.isFinite(log.volume) || log.volume < 0 || log.volume > 1000000 ||
@@ -1643,7 +1645,7 @@
               ${stats.failStreak ? `<span class="text-[10px] font-medium text-amber-300">Başarısız seri ${stats.failStreak}/3</span>` : ''}
               ${state.currentWeek === 7 ? '<span class="text-[10px] text-sky-300">Hafif hafta</span>' : ''}
             </div>
-            <p class="text-[11px] text-gray-400">${previous ? `Son kayıt: ${Number(previous.weight).toFixed(1)} kg × ${previous.reps} · ${previous.date}` : 'İlk kayıt · başlangıç ağırlığını ayarla'}</p>
+            <p class="text-[11px] text-gray-400">${previous ? `Son kayıt: ${Number(previous.weight).toFixed(1)} kg × ${previous.reps} · ${escapeHTML(previous.date)}` : 'İlk kayıt · başlangıç ağırlığını ayarla'}</p>
           </div>
         `;
         card.appendChild(heading);
@@ -2060,7 +2062,7 @@
           row.innerHTML = `
             <div class="flex items-center justify-between">
               <span class="text-xs font-extrabold text-white"> ${escapeHTML(log.title)}</span>
-              <span class="text-[11px] font-mono text-emerald-400">${log.volume} kg • ${log.date}</span>
+              <span class="text-[11px] font-mono text-emerald-400">${log.volume} kg • ${escapeHTML(log.date)}</span>
             </div>
             <div class="text-[11px] text-gray-400 space-y-0.5">${log.details.map(d => `<div>• ${escapeHTML(d)}</div>`).join('')}</div>
           `;
