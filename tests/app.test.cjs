@@ -64,7 +64,7 @@ function createApp(saved) {
       v7RenderToday, v7EnterFocus, v7Navigate, v7RenderFocus, v7SelectExercise, v7LogCurrentSet,
       v7EditValue, v7ChangeWeek, v7ChangeDay, v7RenderProgram, v7RenderProgress,
       v7RenderSettings, v7BuildStrengthChart, v7BuildVolumeChart, v7OpenValueModal,
-      v7SaveValueModal, v7CloseValueModal, v7RenderSettings,
+      v7SaveValueModal, v7CloseValueModal, v7RenderSettings, v7OpenTool, v7SelectSet,
       getState: () => state,
       setState: next => { state = next; }
     };
@@ -785,4 +785,49 @@ test('Settings displays actual persisted sound and rest preferences', () => {
   app.v7RenderSettings();
   assert.equal(document.getElementById('v7SoundValue').textContent, 'Kapalı');
   assert.equal(document.getElementById('v7RestPrefValue').textContent, '150 sn ›');
+});
+
+test('Focused workout automatically moves to next exercise after all current sets', () => {
+  const { app, document } = createApp();
+  app.v7EnterFocus(0);
+  for (let i=0; i<5; i++) assert.equal(app.v7LogCurrentSet(), true);
+  assert.equal(app.getSessionSnapshot().recordedSets, 5);
+  assert.equal(document.getElementById('v7ExerciseName').textContent, 'Close-Grip Dumbbell Bench Press');
+  assert.equal(document.getElementById('v7FocusSubtitle').textContent, '2 / 3 hareket · Hafta 1');
+});
+
+test('Tool pages restore original mounted widgets to avoid losing event bindings', () => {
+  const { app, document } = createApp();
+  const node = new FakeElement();
+  const origin = new FakeElement();
+  node.parentElement = origin;
+  document.getElementById('armSizeInput').closest = () => node;
+  assert.equal(app.v7OpenTool('measure'), true);
+  assert.equal(document.getElementById('v7ToolContent').children[0], node);
+  app.v7Navigate('settings');
+  assert.equal(origin.children[0], node);
+});
+
+test('Settings and workout are separate screens, with no nested legacy navigation', () => {
+  assert.match(html, /id="v7Today"/);
+  assert.match(html, /id="v7Focus"/);
+  assert.match(html, /id="v7Settings"/);
+  assert.match(html, /<nav id="v7Nav"/);
+  assert.match(html, /class="hidden app-header/);
+  assert.match(html, /class="hidden app-bottom-nav/);
+});
+
+test('Growth readiness remains independently associated with each training day', () => {
+  const { app, document } = createApp();
+  const state=app.getState();
+  state.templateKey='growth';
+  app.v7EnterFocus();
+  app.setSessionReadiness('low',true);
+  app.v7RenderFocus();
+  assert.equal(document.getElementById('v7Energy').value,'low');
+  assert.equal(document.getElementById('v7Joint').checked,true);
+  app.v7ChangeDay(1);
+  app.v7EnterFocus();
+  assert.equal(document.getElementById('v7Energy').value,'unreported');
+  assert.equal(document.getElementById('v7Joint').checked,false);
 });
