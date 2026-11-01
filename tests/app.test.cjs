@@ -652,11 +652,11 @@ test('Inline logger uses nonsticky rest panel and never duplicates set entry for
   assert.ok(!html.includes('Sıradaki set · 1/5'));
 });
 
-test('PWA release 0.7.2 exposes new five-screen architecture and update UI', () => {
+test('PWA release 0.8.0 exposes five-screen architecture and update UI', () => {
   for (const id of ['v7Today','v7Focus','v7Program','v7Progress','v7Settings','v7ToolDetail']) {
     assert.match(html, new RegExp('id="'+id+'"'));
   }
-  assert.match(html, /<meta name="application-version" content="0\.7\.2"/);
+  assert.match(html, /<meta name="application-version" content="0\.8\.0"/);
   assert.match(html, /id="appUpdateBanner"/);
   assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
 });
