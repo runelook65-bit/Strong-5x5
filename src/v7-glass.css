@@ -603,3 +603,79 @@ body {
   from { opacity:.86; transform:translateY(5px); }
   to { opacity:1; transform:translateY(0); }
 }
+
+
+/* v0.7.2 — Original generated cover artwork is packed in two local WebP atlases.
+   Five landscape frames (480x270) and three square exercise frames (160x160)
+   are extracted with background-position; no third-party runtime calls. */
+.arm-cover {
+  position: relative;
+  isolation: isolate;
+  background-color: #081d18;
+  background-image:
+    linear-gradient(90deg,rgba(2,14,13,.87) 0%,rgba(4,20,18,.78) 32%,rgba(3,23,17,.25) 71%,rgba(4,18,16,.08) 100%),
+    url('/visual-assets/arm-covers-atlas.webp');
+  background-size: 100% 100%, 500% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0, 0% center;
+  border-color: rgba(92,241,166,.46);
+  box-shadow: 0 18px 42px rgba(0,0,0,.32), inset 0 1px 0 rgba(198,255,226,.18);
+}
+.arm-cover > :not(.v8-hero-watermark) { position: relative; z-index: 1; }
+.arm-cover-home { background-position: 0 0, 0% center; }
+.arm-cover-focus { background-position: 0 0, 25% center; }
+.arm-cover-program { background-position: 0 0, 50% center; }
+.arm-cover-progress { background-position: 0 0, 75% center; }
+.arm-cover-settings { background-position: 0 0, 100% center; }
+.arm-cover::before,
+.arm-cover::after,
+.arm-cover .v8-hero-watermark { display:none !important; }
+.arm-cover-home .v7-hero-title,
+.arm-cover-program .v7-hero-title,
+.arm-cover-focus .v7-hero-title { text-shadow:0 2px 16px rgba(0,0,0,.35); }
+.arm-cover-home .v7-cta { max-width: 85%; }
+.arm-cover-home .v8-hero-context { max-width: 79%; }
+.arm-cover-home .v7-hero-title,
+.arm-cover-home > .v7-muted { max-width: 70%; }
+.arm-cover-home .v7-text-link { margin-left:0; margin-right:0; max-width:88%; }
+.arm-cover-focus .v7-exercise-image { display:none; }
+.arm-cover-focus .v7-hero-title { max-width:64%; }
+.v7-progress-cover {
+  padding: 25px 22px;
+  border-radius: 22px;
+  min-height: 148px;
+}
+.v7-progress-cover .v7-section-title { font-size: 21px; max-width: 65%; }
+.v7-progress-cover .v7-muted { max-width: 58%; }
+.arm-cover-settings { min-height: 152px; padding-right: 35%; }
+.arm-cover-settings .v7-logo { flex-shrink:0; }
+.arm-cover-settings > div { min-width:0; }
+.arm-thumb {
+  display:inline-block;
+  flex:0 0 49px;
+  width:49px;
+  height:49px;
+  border-radius:13px;
+  border:1px solid rgba(164,239,199,.18);
+  background-image:url('/visual-assets/arm-exercises-atlas.webp');
+  background-size:300% 100%;
+  background-repeat:no-repeat;
+  background-color:#121d1a;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.arm-thumb-barbell { background-position:0% center; }
+.arm-thumb-hammer { background-position:50% center; }
+.arm-thumb-skull { background-position:100% center; }
+@media (max-width:390px) {
+  .arm-cover-home .v7-cta { max-width:100%; }
+  .arm-cover-home .v8-hero-context { max-width:100%; }
+  .arm-cover-home .v7-hero-title,.arm-cover-home>.v7-muted { max-width:72%; }
+  .arm-cover-home .v7-hero-title { font-size:32px; }
+  .arm-cover-focus .v7-hero-title { max-width:67%; font-size:25px; }
+  .arm-cover-settings { padding-right:25%; }
+  .arm-cover-settings h2 { font-size:20px; }
+  .v7-progress-cover .v7-section-title { font-size:18px; }
+}
+@media (prefers-reduced-transparency:reduce) {
+  .arm-cover { backdrop-filter:none; -webkit-backdrop-filter:none; }
+}
