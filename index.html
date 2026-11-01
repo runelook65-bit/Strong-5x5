@@ -55,9 +55,7 @@
     <!-- Sticky Top Header -->
     <header class="sticky top-0 z-30 bg-oled/90 backdrop-blur-md border-b border-borderDark px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-extrabold text-sm tracking-tighter">
-          5×5
-        </div>
+        <img src="/icons/arm-5x5.svg" alt="ARM 5×5" class="w-9 h-9 rounded-xl border border-emerald-500/35 bg-oled" />
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-base font-extrabold tracking-tight text-white">ARM 5×5</h1>
@@ -1684,6 +1682,52 @@
           setsGrid.appendChild(btn);
         });
         card.appendChild(setsGrid);
+
+        // A single compact input row for the next unrecorded set; fast even with gloves.
+        const nextSetIndex = setValues.findIndex(value => value === null);
+        if (!isSaved && nextSetIndex !== -1) {
+          const quickRow = document.createElement('div');
+          quickRow.className = 'rounded-xl bg-[#17221d] border border-emerald-500/25 p-3';
+          const rowLabel = document.createElement('div');
+          rowLabel.className = 'text-xs font-bold text-emerald-300 mb-2';
+          rowLabel.textContent = `Sıradaki set · ${nextSetIndex + 1}/${sets}`;
+          quickRow.appendChild(rowLabel);
+          const fields = document.createElement('div');
+          fields.className = 'grid grid-cols-[1fr_1fr_auto] gap-2 items-end';
+          const makeInput = (labelText, value, step) => {
+            const wrapper = document.createElement('label');
+            wrapper.className = 'text-[11px] text-gray-300 min-w-0';
+            wrapper.textContent = labelText;
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.inputMode = step === 1 ? 'numeric' : 'decimal';
+            input.min = String(step === 1 ? 0 : 0.5);
+            input.max = String(step === 1 ? 30 : 500);
+            input.step = String(step);
+            input.value = String(value);
+            input.className = 'mt-1 w-full bg-oled border border-borderDark rounded-xl px-2 py-2.5 text-sm font-mono text-white';
+            wrapper.appendChild(input);
+            fields.appendChild(wrapper);
+            return input;
+          };
+          const weightInput = makeInput('Toplam kg', stats.weight, 0.5);
+          const repsInput = makeInput('Tekrar', reps, 1);
+          const commit = document.createElement('button');
+          commit.type = 'button';
+          commit.textContent = 'Kaydet ✓';
+          commit.className = 'bg-emerald-500 text-oled font-bold rounded-xl px-3 py-3 text-xs whitespace-nowrap';
+          commit.setAttribute('aria-label', `${meta.name} ${nextSetIndex + 1}. setini kaydet`);
+          commit.addEventListener('click', () => {
+            const count = Number(repsInput.value);
+            const weight = Number(weightInput.value);
+            if (!repsInput.value || !weightInput.value || !recordExerciseSet(item.setKey, nextSetIndex, count, weight, true)) {
+              showToast('Geçerli tekrar (0–30) ve ağırlık (0.5–500 kg) gir.');
+            }
+          });
+          fields.appendChild(commit);
+          quickRow.appendChild(fields);
+          card.appendChild(quickRow);
+        }
 
         const tips = document.createElement('details');
         tips.className = 'border-t border-borderDark pt-2';
