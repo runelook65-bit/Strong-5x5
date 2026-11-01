@@ -473,6 +473,7 @@
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-sm font-extrabold text-white">Kol Çevresi (cm) Ölçüm Kaydı</h3>
+                <p class="text-[10px] text-emerald-300">Gelişim farkı yalnızca soğuk ölçümlerle hesaplanır.</p>
               <p class="text-xs text-gray-400">12 haftalık kol büyüme takibi (Soğuk / Pump)</p>
             </div>
             <span id="armGrowthDeltaBadge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
@@ -1960,24 +1961,34 @@
       const armList = document.getElementById('armMeasurementsList');
       armList.innerHTML = '';
       const measures = state.armMeasurements || [];
-      if (measures.length >= 2) {
-        const delta = measures[measures.length - 1].cm - measures[0].cm;
+      const coldMeasurements = measures.filter(m => m.note === 'Soğuk');
+      if (coldMeasurements.length >= 2) {
+        const delta = coldMeasurements[coldMeasurements.length - 1].cm - coldMeasurements[0].cm;
         const sign = delta >= 0 ? '+' : '';
         document.getElementById('armGrowthDeltaBadge').textContent = `${sign}${delta.toFixed(1)} cm`;
       } else {
         document.getElementById('armGrowthDeltaBadge').textContent = `—`;
       }
 
-      measures.slice().reverse().forEach(m => {
+      measures.slice().reverse().forEach((m, reverseIndex) => {
+        const index = measures.length - 1 - reverseIndex;
         const item = document.createElement('div');
-        item.className = 'flex items-center justify-between bg-oled border border-borderDark rounded-xl px-3 py-2 text-xs';
+        item.className = 'flex items-center justify-between bg-oled border border-borderDark rounded-xl px-3 py-2 text-xs gap-2';
         item.innerHTML = `
-          <div>
-            <span class="font-semibold text-white"> ${escapeHTML(m.date)}</span>
-            <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-card border border-borderDark text-gray-400"> ${escapeHTML(m.note)}</span>
+          <div class="min-w-0">
+            <span class="font-semibold text-white">${escapeHTML(m.date)}</span>
+            <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-card border border-borderDark text-gray-400">${escapeHTML(m.note)}</span>
           </div>
-          <span class="font-mono font-bold text-emerald-400">${Number(m.cm).toFixed(1)} cm</span>
+          <span class="font-mono font-bold text-emerald-400 ml-auto whitespace-nowrap">${Number(m.cm).toFixed(1)} cm</span>
+          <button type="button" aria-label="Ölçümü sil" class="text-rose-300 hover:text-rose-200 border border-rose-500/25 rounded-lg px-2 py-1">Sil</button>
         `;
+        item.querySelector('button').addEventListener('click', () => {
+          if (!window.confirm('Bu tek kol çevresi ölçümünü silmek istiyor musun?')) return;
+          state.armMeasurements.splice(index, 1);
+          saveState();
+          renderProgressTab();
+          showToast('Ölçüm silindi');
+        });
         armList.appendChild(item);
       });
 
