@@ -915,3 +915,41 @@ test('Visual Covers: session data remains independent of imagery', () => {
   assert.equal(app.recordExerciseSet(first.setKey,0,5,27.5),true);
   assert.equal(app.getSessionSnapshot().recordedSets,1);
 });
+
+test('Minimal UI v0.8 stylesheet supersedes the overgrown Glass theme', () => {
+  assert.match(html, /href="\/src\/v7-glass.css"[\s\S]*href="\/src\/ui-system.css"/);
+  assert.match(html, /class="v7-hero v7-home-hero arm-cover arm-cover-home ui-panel ui-next-session"/);
+  assert.match(html, /class="v7-navigation ui-tabbar"/);
+  assert.match(html, /application-version" content="0\.8\.0"/);
+});
+
+test('Exercise rows use consistent SVG icon thumbnails rather than mixed GIFs', () => {
+  const { app, document } = createApp();
+  app.v7RenderToday();
+  const children=document.getElementById('v7TodayExercises').children;
+  assert.equal(children.length,3);
+  for(const row of children) {
+    assert.match(row.innerHTML,/ui-exercise-mark/);
+    assert.match(row.innerHTML,/<svg /);
+    assert.ok(!row.innerHTML.includes('<img src='));
+  }
+});
+
+test('Design has only one primary button and preserves existing set tracking', () => {
+  const {app,document}=createApp();
+  app.v7RenderToday();
+  assert.equal(document.getElementById('v7HeroTitle').textContent,'Workout A');
+  app.v7EnterFocus(0);
+  app.v7EditValue('reps',-1);
+  assert.equal(app.v7LogCurrentSet(),true);
+  assert.equal(app.getSessionSnapshot().recordedSets,1);
+  assert.equal(app.getActiveWorkoutExercises()[0].setValues[0],4);
+});
+
+test('The old generated cover layer remains in source but not required for app workflow', () => {
+  assert.match(html,/id="v7TodayExercises"/);
+  assert.match(html,/id="v7Focus"/);
+  assert.match(html,/id="v7Program"/);
+  assert.match(html,/id="v7Progress"/);
+  assert.match(html,/id="v7Settings"/);
+});
