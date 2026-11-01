@@ -1598,6 +1598,7 @@
         dot.className = 'w-2.5 h-2.5 rounded-full bg-gray-600 shrink-0';
         btn.textContent = 'Başlat';
       }
+      if(v7Page==='focus')v7UpdateRest();
     }
 
     function startRestTimer(seconds, labelText) {
@@ -2095,6 +2096,7 @@
         startRestTimer(item.meta.restSec, `${item.meta.name} · ${item.meta.restSec}sn`);
       }
       renderExercises();
+      if(v7Page==='focus'){v7DraftKey='';v7RenderFocus();}
       return true;
     }
 
@@ -2743,6 +2745,180 @@
     // =========================================================================
     // 8. NAVIGATION & EVENT BINDINGS
     // =========================================================================
+    let v7Page='today';
+    let v7FocusIndex=0;
+    let v7ChosenSet=null;
+    let v7DraftKey='';
+    let v7DraftWeight=0;
+    let v7DraftReps=0;
+
+    function v7SetText(id,value){document.getElementById(id).textContent=String(value);}
+
+    function v7Element(id){return document.getElementById(id);}
+
+    function v7SetMarkup(id,html){v7Element(id).innerHTML=html;}
+
+    function v7GoalText(item){return `${item.sets} × ${item.minReps < item.reps ? `${item.minReps}–${item.reps}` : item.reps}`;}
+
+    function v7CurrentSnapshot(){return getSessionSnapshot();}
+
+    function v7Navigate(page){
+  const pages={today:"v7Today",focus:"v7Focus",program:"v7Program",progress:"v7Progress",settings:"v7Settings",tool:"v7ToolDetail"};
+  if(!Object.prototype.hasOwnProperty.call(pages,page))return false;
+  v7Page=page;
+  Object.entries(pages).forEach(([key,id])=>v7Element(id).classList.toggle('hidden',key!==page));
+  v7Element('v7Nav').classList.toggle('hidden',page==='focus'||page==='tool');
+  if(typeof document.querySelectorAll==='function')document.querySelectorAll('[data-v7tab]').forEach(btn=>{
+    const active=btn.getAttribute('data-v7tab')===page;
+    btn.classList.toggle('is-active',active);
+    btn.setAttribute('aria-current',active?'page':'false');
+  });
+  if(page==='focus')v7RenderFocus();
+  if(page==='today')v7RenderToday();
+  if(page==='program')v7RenderProgram();
+  if(page==='progress')v7RenderProgress();
+  if(page==='settings')v7RenderSettings();
+  if(typeof window.scrollTo==='function')window.scrollTo(0,0);
+  return true;
+}
+
+    function v7RenderToday(){
+  const snapshot=v7CurrentSnapshot();
+  const wType=getActiveWorkoutType();
+  v7SetText('v7HeroTitle',`Workout ${wType}`);
+  v7SetText('v7HeroSubtitle',`${snapshot.exercises.length} hareket · ${snapshot.totalSets} set · Hafta ${state.currentWeek}`);
+  v7SetText('v7StartLabel',snapshot.recordedSets ? 'Antrenmana Devam Et' : snapshot.isSaved ? 'Kaydedilen Seansı Gör' : 'Antrenmanı Başlat');
+  v7SetText('v7StatWeek',`${state.currentWeek} / 12`);
+  v7SetText('v7StatSessions',`${[0,1,2].filter(idx=>state.completedSlots[`w${state.currentWeek}_d${idx}`]).length} / 3`);
+  const cold=(state.armMeasurements||[]).filter(m=>m.note==='Soğuk'&&Number.isFinite(m.cm));
+  const delta=cold.length>=2?cold.at(-1).cm-cold[0].cm:null;
+  v7SetText('v7StatArm',delta===null?'—':`${delta>=0?'+':''}${delta.toFixed(1)} cm`);
+  const list=v7Element('v7TodayExercises');list.innerHTML='';
+  snapshot.exercises.forEach((item,i)=>{
+    const row=document.createElement('button');
+    row.type='button';row.className='v7-exercise-row';
+    row.innerHTML=`<img src="${item.meta.img}" alt="" loading="lazy"/><span class="flex-1 min-w-0"><span class="v7-ex-name block">${i+1}. ${escapeHTML(item.meta.name)}</span><span class="v7-chip">${v7GoalText(item)} tekrar</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
+    row.setAttribute('aria-label',`${item.meta.name}, ${v7GoalText(item)}. Antrenmana geç`);
+    row.addEventListener('click',()=>v7EnterFocus(i));
+    list.appendChild(row);
+  });
+  const last=state.workoutLogs?.at(-1);
+  if(last){
+    const header=escapeHTML(last.title||'Antrenman kaydedildi');
+    v7SetMarkup('v7LastWorkout',`<div class="flex gap-3 items-center"><span class="text-2xl text-emerald-300" aria-hidden="true">✓</span><div class="min-w-0"><span class="text-[10px] tracking-wider text-gray-400">SON SEANS</span><strong>${header}</strong><span class="v7-muted text-xs">${Math.round(last.volume||0).toLocaleString('tr-TR')} kg toplam hacim</span></div></div>`);
+  }else{
+    v7SetMarkup('v7LastWorkout','<div class="text-emerald-300 font-semibold">İlk antrenmanını başlat</div><p class="v7-muted text-xs mt-1">Seansını tamamladığında gelişimini burada göreceksin.</p>');
+  }
+}
+
+    function v7EnterFocus(index){
+  const items=getSessionSnapshot().exercises;
+  const defaultIndex=items.findIndex(x=>x.setValues.some(v=>v===null));
+  v7FocusIndex=Number.isInteger(index)?Math.max(0,Math.min(items.length-1,index)):Math.max(0,defaultIndex);
+  v7ChosenSet=null;v7DraftKey='';
+  return v7Navigate('focus');
+}
+
+    function v7SelectExercise(delta){
+  const length=getSessionSnapshot().exercises.length;
+  v7FocusIndex=Math.max(0,Math.min(length-1,v7FocusIndex+delta));
+  v7ChosenSet=null;v7DraftKey='';
+  v7RenderFocus();
+}
+
+    function v7SelectSet(index){
+  const item=getSessionSnapshot().exercises[v7FocusIndex];
+  if(!item||index<0||index>=item.sets)return;
+  if(item.setValues[index]!==null){openSetEditor(item,index);return;}
+  v7ChosenSet=index;v7DraftKey='';v7RenderFocus();
+}
+
+    function v7RenderFocus(){
+  const snapshot=getSessionSnapshot();const list=snapshot.exercises;if(!list.length)return;
+  v7FocusIndex=Math.max(0,Math.min(list.length-1,v7FocusIndex));
+  const item=list[v7FocusIndex];
+  const wType=getActiveWorkoutType();
+  v7SetText('v7FocusTitle',`Workout ${wType}`);
+  v7SetText('v7FocusSubtitle',`${v7FocusIndex+1} / ${list.length} hareket · Hafta ${state.currentWeek}`);
+  v7SetText('v7ExerciseName',item.meta.name);
+  v7SetText('v7ExercisePrescription',`${v7GoalText(item)} tekrar`);
+  const img=v7Element('v7ExerciseImage');img.src=item.meta.img;img.alt='';
+  const pct=snapshot.totalSets ? Math.round(snapshot.recordedSets/snapshot.totalSets*100):0;
+  v7Element('v7FocusFill').style.width=`${pct}%`;
+  v7Element('v7FocusTrack').setAttribute('aria-valuenow',String(pct));
+  const firstMissing=item.setValues.findIndex(v=>v===null);
+  let index=firstMissing<0?item.sets-1:firstMissing;
+  if(Number.isInteger(v7ChosenSet)&&item.setValues[v7ChosenSet]===null)index=v7ChosenSet;
+  const key=`${item.setKey}:${index}`;
+  if(key!==v7DraftKey){
+    v7DraftKey=key;
+    v7DraftWeight=item.setValues[index]===null?item.stats.weight:getRecordedWeight(item,index);
+    v7DraftReps=item.setValues[index]===null?item.reps:item.setValues[index];
+  }
+  v7SetText('v7WeightText',Number(v7DraftWeight).toFixed(1).replace(/\.0$/,''));
+  v7SetText('v7RepsText',v7DraftReps);
+  v7SetText('v7SetHint',snapshot.isSaved?'Bu seans zaten kaydedildi':firstMissing<0?'Bu hareketin tüm setleri kaydedildi':`${index+1}. çalışma seti · gerçek değerleri ayarlayabilirsin`);
+  const log=v7Element('v7LogSetBtn');
+  log.disabled=firstMissing<0||snapshot.isSaved;
+  log.textContent=firstMissing<0?'✓ Hareket Tamamlandı':'✓  Seti Tamamla';
+  const dots=v7Element('v7SetDots');dots.innerHTML='';
+  item.setValues.forEach((value,i)=>{
+    const dot=document.createElement('button');dot.type='button';dot.className=`v7-dot ${value!==null?'is-done':i===index?'is-current':''}`;
+    dot.textContent=value!==null?'✓':String(i+1);
+    dot.setAttribute('aria-label',`${i+1}. set: ${value!==null?`${value} tekrar kaydedildi, düzenle`:'Henüz tamamlanmadı'}`);
+    dot.addEventListener('click',()=>v7SelectSet(i));dots.appendChild(dot);
+  });
+  v7SetText('v7ExerciseProgress',`${item.setValues.filter(x=>x!==null).length} / ${item.sets} set · toplam ${snapshot.recordedSets} / ${snapshot.totalSets}`);
+  v7Element('v7PreviousExerciseBtn').disabled=v7FocusIndex===0;
+  v7Element('v7NextExerciseBtn').disabled=v7FocusIndex>=list.length-1;
+  v7SetText('v7ExercisePosition',`${v7FocusIndex+1} / ${list.length} · ${v7FocusIndex<list.length-1?'Sıradaki: '+list[v7FocusIndex+1].meta.name:'Son hareket'}`);
+  const finish=v7Element('v7FinishBtn');finish.disabled=!snapshot.ready;
+  finish.textContent=snapshot.ready?'✓ Seansı Bitir ve Kaydet':snapshot.isSaved?'Seans Kaydedildi':`${snapshot.missing.length} set kaldı · Seans Özeti`;
+  v7UpdateRest();
+}
+
+    function v7EditValue(field,delta){
+  if(field==='weight')v7DraftWeight=Math.max(.5,Math.min(500,Math.round((v7DraftWeight+delta)*2)/2));
+  else v7DraftReps=Math.max(0,Math.min(30,v7DraftReps+delta));
+  v7SetText('v7WeightText',Number(v7DraftWeight).toFixed(1).replace(/\.0$/,''));
+  v7SetText('v7RepsText',v7DraftReps);
+}
+
+    function v7LogCurrentSet(){
+  const snapshot=getSessionSnapshot();
+  const item=snapshot.exercises[v7FocusIndex];if(!item||snapshot.isSaved)return false;
+  const first=item.setValues.findIndex(v=>v===null);
+  const idx=Number.isInteger(v7ChosenSet)&&item.setValues[v7ChosenSet]===null?v7ChosenSet:first;
+  if(idx<0)return false;
+  const success=recordExerciseSet(item.setKey,idx,v7DraftReps,v7DraftWeight,true);
+  if(success){
+    v7ChosenSet=null;v7DraftKey='';
+    const fresh=getSessionSnapshot();const next=fresh.exercises.findIndex(x=>x.setValues.some(v=>v===null));
+    if(fresh.exercises[v7FocusIndex].setValues.every(x=>x!==null)&&next>=0)v7FocusIndex=next;
+    v7RenderFocus();v7RenderToday();
+  }
+  return success;
+}
+
+    function v7UpdateRest(){
+  const card=v7Element('v7RestCard');
+  card.classList.toggle('hidden',!timerRunning&&timerRemainingSec>=timerDefaultSec);
+  v7SetText('v7RestTime',formatTime(timerRemainingSec));
+  v7SetText('v7RestPause',timerRunning?'Duraklat':'Devam Et');
+}
+
+    function v7OpenExerciseInfo(){
+  const item=getSessionSnapshot().exercises[v7FocusIndex];if(!item)return;
+  window.alert(`${item.meta.name}\n\n${item.meta.tips||''}\n\nDinlenme: ${item.meta.restSec} saniye.`);
+}
+
+    function v7EditCurrentSet(){
+  const item=getSessionSnapshot().exercises[v7FocusIndex];if(!item)return;
+  const i=item.setValues.findLastIndex(v=>v!==null);
+  if(i>=0)openSetEditor(item,i);
+  else showToast('Önce bir set kaydet.');
+}
+
     function switchTab(tabName) {
       const views = {
         workout: document.getElementById('viewWorkout'),
@@ -2787,6 +2963,11 @@
       renderMuscleVolume();
       updateOneRmCalculator();
       renderWeightsConfig();
+      v7RenderToday();
+      v7RenderProgram();
+      v7RenderProgress();
+      v7RenderSettings();
+      if(v7Page==='focus')v7RenderFocus();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
