@@ -889,7 +889,7 @@ test('Visual Covers: five distinct cover surfaces are mounted in correct pages',
     assert.match(html,new RegExp('class="[^"]*'+cls));
   }
   assert.match(html,/id="v7FocusHero" class="v7-hero v7-exercise-hero"/);
-  assert.match(html,/id="v7FocusHero"\)\.classList\.toggle\('arm-cover-focus'/);
+  assert.ok(html.includes("v7Element('v7FocusHero').classList.toggle('arm-cover-focus'"));
 });
 
 test('Visual Covers: generated illustrations map to specific existing workouts only', () => {
