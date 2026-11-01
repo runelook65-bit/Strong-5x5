@@ -70,7 +70,7 @@ function createApp(saved) {
     localStorage,
     () => 1, () => {}, () => 1, () => {}
   );
-  return { app, document, storage };
+  return { app, document, storage, localStorage };
 }
 
 function recordAll(app, partialExercise = null) {
@@ -420,15 +420,15 @@ test('legacy v0.3 state is accepted and missing growth profile is restored', () 
   assert.deepEqual(app.getState().workoutLogs, []);
 });
 
-test('valid backup state is not applied when localStorage write fails', () => {
-  const { app } = createApp();
+test('valid backup does not overwrite memory when persistent storage fails', () => {
+  const { app, localStorage } = createApp();
   const backup = app.makeBackupJSON();
   const original = app.getState();
-  const { app: second } = createApp();
-  // storage failure is tested indirectly by incompatible JSON; native storage
-  // exception behavior follows the implementation's write-before-swap order.
-  assert.equal(second.restoreBackupJSON(backup), true);
+  original.currentWeek = 8;
+  localStorage.setItem = () => { throw new Error('Quota exceeded'); };
+  assert.throws(() => app.restoreBackupJSON(backup));
   assert.equal(app.getState(), original);
+  assert.equal(app.getState().currentWeek, 8);
 });
 
 test('undo last saved workout restores weights, set entries and completion pointer', () => {
@@ -470,4 +470,45 @@ test('muscle chart renders actual records, not synthetic volumes', () => {
   assert.equal(document.getElementById('weeklyVolumeGraph').children.length, 12);
   assert.equal(document.getElementById('bicepsMuscleShare').textContent, '—');
   assert.equal(document.getElementById('tricepsMuscleShare').textContent, '—');
+});
+
+test('backup refuses nested invalid exercise logs and duplicated session IDs', () => {
+  const { app } = createApp();
+  const base = app.getDefaultState();
+  base.workoutLogs.push({ id: 'w1_d0', title:'Session A', volume:20, details:[], exercises:[null] });
+  assert.throws(() => app.restoreBackupJSON(JSON.stringify(base)));
+  base.workoutLogs[0].exercises = [{exId:'barbell_curl',sets:[{reps:300,weight:5}]}];
+  assert.throws(() => app.restoreBackupJSON(JSON.stringify(base)));
+  base.workoutLogs[0].exercises = [{exId:'barbell_curl',sets:[{reps:5,weight:5}]}];
+  base.workoutLogs.push({...base.workoutLogs[0]});
+  assert.throws(() => app.restoreBackupJSON(JSON.stringify(base)));
+});
+
+test('undo latest Growth session leaves standard barbell loads untouched', () => {
+  const { app } = createApp();
+  const state = app.getState();
+  const standard = state.exStats.barbell_curl.weight;
+  state.templateKey = 'growth';
+  const growth = state.growthExStats.barbell_curl.weight;
+  app.setSessionReadiness('good', false);
+  recordAll(app);
+  assert.equal(app.completeWorkoutSession(), true);
+  assert.ok(state.growthExStats.barbell_curl.weight > growth);
+  assert.equal(app.undoLastWorkout(), true);
+  assert.equal(state.growthExStats.barbell_curl.weight, growth);
+  assert.equal(state.exStats.barbell_curl.weight, standard);
+  assert.equal(state.templateKey, 'growth');
+});
+
+test('cold measurements determine growth and pump measurements do not distort it', () => {
+  const { app, document } = createApp();
+  const state = app.getState();
+  state.armMeasurements = [
+    {date:'Hafta 1',cm:33,note:'Soğuk'},
+    {date:'Hafta 1',cm:38,note:'Pump'},
+    {date:'Hafta 2',cm:33.5,note:'Soğuk'},
+    {date:'Hafta 2',cm:40,note:'Pump'}
+  ];
+  app.renderProgressTab();
+  assert.equal(document.getElementById('armGrowthDeltaBadge').textContent, '+0.5 cm');
 });
