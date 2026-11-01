@@ -33,6 +33,7 @@ body { background:var(--v7-bg); }
 .v7-row-chevron { margin-left:auto; color:#9aa5ac; font-size:23px; }
 .v7-recent { border-radius:20px; padding:15px 17px; border:1px solid #336f51; background:linear-gradient(120deg,#122d22,#0d1b1a); }
 .v7-recent strong { display:block; font-size:15px; margin-top:2px; }
+.v7-navigation.hidden,.app-header.hidden,.app-bottom-nav.hidden { display:none !important; }
 .v7-navigation { position:fixed; bottom:0; left:50%; transform:translateX(-50%); z-index:35; width:100%; max-width:620px; padding:8px 12px max(12px, env(safe-area-inset-bottom, 0px)); background:rgba(8,13,16,.97); border-top:1px solid #283239; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; backdrop-filter:blur(18px); }
 .v7-nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:59px; border-radius:14px; color:#98a3ac; font-size:11px; font-weight:700; }
 .v7-nav-icon { font-size:23px; line-height:26px; }
