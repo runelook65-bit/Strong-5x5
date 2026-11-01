@@ -310,3 +310,21 @@ body .app-shell {
 @media(prefers-reduced-motion:reduce){
   .app-shell .v7-screen, .app-shell .v7-cta { animation:none; transition:none; }
 }
+
+/* Uniform exercise glyphs — no inconsistent stock GIF / low resolution atlas in lists. */
+.app-shell .ui-exercise-mark {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 40px;
+  width:40px; height:40px;
+  border-radius:11px;
+  color:#96e4b8;
+  background:#1d3028 !important;
+  background-image:none !important;
+  border:1px solid rgba(109,203,154,.15);
+}
+.app-shell .ui-exercise-mark svg { width:21px; height:21px; }
+.app-shell .ui-exercise-mark.arm-thumb-hammer { color:#c6e8d4; background:#25352f !important; }
+.app-shell .ui-exercise-mark.arm-thumb-skull { color:#85d8ab; background:#1a3229 !important; }
+.app-shell .ui-exercise-mark.arm-thumb-generic { color:#c0d0c7; background:#293036 !important; }
