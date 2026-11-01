@@ -486,7 +486,7 @@
         <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-extrabold text-white">Tamamlanan Antrenman Geçmişi</h3>
-            <button id="clearHistoryBtn" type="button" class="text-xs text-rose-400 hover:underline">Geçmişi Temizle</button>
+            <button id="undoWorkoutBtn" type="button" class="text-xs text-amber-300 hover:underline">Son Seansı Geri Al</button>
           </div>
           <div id="workoutHistoryList" class="space-y-2">
             <!-- Populated by renderWorkoutHistory() -->
@@ -1928,6 +1928,12 @@
         armList.appendChild(item);
       });
 
+      // The last saved session is the only one eligible for safe rollback.
+      const latestLog = (state.workoutLogs || []).at(-1);
+      const undoButton = document.getElementById('undoWorkoutBtn');
+      undoButton.disabled = !latestLog || !Array.isArray(latestLog.undoStats);
+      undoButton.classList.toggle('opacity-40', undoButton.disabled);
+
       // Render Workout History
       const histContainer = document.getElementById('workoutHistoryList');
       histContainer.innerHTML = '';
@@ -2074,6 +2080,45 @@
     // =========================================================================
     // 7. COMPLETE WORKOUT & STRONGLIFTS PROGRESSION ENGINE
     // =========================================================================
+    function undoLastWorkout() {
+      const latest = (state.workoutLogs || []).at(-1);
+      if (!latest || !Array.isArray(latest.undoStats) || !Array.isArray(latest.exercises) ||
+          !/^w(?:[1-9]|1[0-2])_d[0-2]$/.test(latest.id || '') || !state.completedSlots[latest.id] ||
+          !['standard','growth','hybrid5x5','stronglifts_arm'].includes(latest.templateKey) ||
+          !['A','B'].includes(latest.workoutType)) return false;
+
+      // Validate all rollback snapshots before touching user data.
+      for (const entry of latest.undoStats) {
+        const stat = state[entry.profile]?.[entry.exId];
+        if (!stat || !Array.isArray(stat.history) || !Number.isInteger(entry.historyLength) ||
+            stat.history.length !== entry.historyLength + 1 ||
+            !Number.isFinite(entry.weight) || entry.weight < 0.5 ||
+            !Number.isInteger(entry.failStreak) || entry.failStreak < 0 ||
+            stat.history.at(-1)?.timestamp !== latest.timestamp) return false;
+      }
+      const [week, day] = latest.id.match(/^w(\d+)_d(\d)$/).slice(1).map(Number);
+      for (const entry of latest.undoStats) {
+        const stat = state[entry.profile][entry.exId];
+        stat.weight = entry.weight;
+        stat.failStreak = entry.failStreak;
+        stat.history.pop();
+      }
+      for (const ex of latest.exercises) {
+        if (!ex || !Object.prototype.hasOwnProperty.call(EXERCISE_DB, ex.exId) || !Array.isArray(ex.sets)) continue;
+        const key = `w${week}_d${day}_${latest.templateKey}_${latest.workoutType}_${ex.exId}`;
+        state.activeSets[key] = ex.sets.map(set => set.reps);
+        state.activeWeights[key] = ex.sets.map(set => set.weight);
+      }
+      delete state.completedSlots[latest.id];
+      state.workoutLogs.pop();
+      state.currentWeek = week;
+      state.currentDayIdx = day;
+      state.templateKey = latest.templateKey;
+      state.overrideWorkoutType = latest.workoutType;
+      saveState();
+      return true;
+    }
+
     function closeFinishPreview() {
       const modal = document.getElementById('finishPreviewModal');
       modal.classList.add('hidden');
@@ -2155,11 +2200,19 @@
       const slotKey = `w${week}_d${dayIdx}`;
       const summaryLines = [];
       const recordedExercises = [];
+      const undoStats = [];
       const timestamp = new Date().toISOString();
 
       exercises.forEach(item => {
         const { meta, sets, reps, setValues, stats } = item;
         const beforeWeight = stats.weight;
+        undoStats.push({
+          exId: item.exId,
+          profile: state.templateKey === 'growth' ? 'growthExStats' : 'exStats',
+          weight: stats.weight,
+          failStreak: stats.failStreak,
+          historyLength: stats.history.length
+        });
         const decision = predictExerciseProgress(item);
         const actualSets = setValues.map((count, index) => ({
           reps: count,
@@ -2206,6 +2259,8 @@
       state.workoutLogs.push({
         id: slotKey,
         timestamp,
+        workoutType: wType,
+        undoStats,
         date: `Hafta ${week} • ${dayName}`,
         performedAt: new Date().toLocaleDateString('tr-TR'),
         templateKey: state.templateKey,
@@ -2450,12 +2505,20 @@
         }
       });
 
-      document.getElementById('clearHistoryBtn').addEventListener('click', () => {
-        if (!window.confirm('Antrenman geçmişini kalıcı olarak temizlemek istiyor musun?')) return;
-        state.workoutLogs = [];
-        saveState();
-        renderProgressTab();
-        showToast('Antrenman geçmişi temizlendi');
+      document.getElementById('undoWorkoutBtn').addEventListener('click', () => {
+        const latest = (state.workoutLogs || []).at(-1);
+        if (!latest || !Array.isArray(latest.undoStats)) {
+          showToast('Bu eski seans güvenli şekilde geri alınamaz.');
+          return;
+        }
+        if (!window.confirm('Son kaydedilen antrenman geri alınacak; bu seansa bağlı ilerleme ve ağırlık değişiklikleri eski hâline dönecek. Devam?')) return;
+        if (undoLastWorkout()) {
+          resetRestTimer();
+          renderAll();
+          showToast('Son seans geri alındı; setlerini yeniden düzenleyebilirsin.');
+        } else {
+          showToast('Son seans geri alınamadı.');
+        }
       });
 
       // 1RM Calculator Inputs
