@@ -652,11 +652,11 @@ test('Inline logger uses nonsticky rest panel and never duplicates set entry for
   assert.ok(!html.includes('Sıradaki set · 1/5'));
 });
 
-test('PWA release 0.7.0 exposes new five-screen architecture and update UI', () => {
+test('PWA release 0.7.1 exposes new five-screen architecture and update UI', () => {
   for (const id of ['v7Today','v7Focus','v7Program','v7Progress','v7Settings','v7ToolDetail']) {
     assert.match(html, new RegExp('id="'+id+'"'));
   }
-  assert.match(html, /<meta name="application-version" content="0\.7\.0"/);
+  assert.match(html, /<meta name="application-version" content="0\.7\.1"/);
   assert.match(html, /id="appUpdateBanner"/);
   assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
 });
@@ -830,4 +830,31 @@ test('Growth readiness remains independently associated with each training day',
   app.v7EnterFocus();
   assert.equal(document.getElementById('v7Energy').value,'unreported');
   assert.equal(document.getElementById('v7Joint').checked,false);
+});
+
+test('Precision Glass design is loaded after the base v0.7 stylesheet', () => {
+  assert.match(html, /href="\/src\/v7.css"\s*\/?>[\s\S]*href="\/src\/v7-glass.css"/);
+  assert.match(html, /class="v8-hero-watermark"/);
+  assert.match(html, /class="v8-hero-context"/);
+  assert.match(html, /id="v7WeightValueBtn"/);
+  assert.match(html, /id="v7RepsValueBtn"/);
+});
+
+test('Floating nav uses coherent SVG icons and preserves real four-tab navigation', () => {
+  const start=html.indexOf('<nav id="v7Nav"');
+  const end=html.indexOf('</nav>',start);
+  const nav=html.slice(start,end);
+  assert.equal((nav.match(/data-v7tab="/g)||[]).length,4);
+  assert.equal((nav.match(/<svg /g)||[]).length,4);
+  assert.match(nav,/data-v7tab="today"/);
+  assert.match(nav,/data-v7tab="settings"/);
+});
+
+test('Precision Glass settings keeps semantic tool IDs and SVG icons', () => {
+  const ids=['v7RestPrefBtn','v7SoundBtn','v7PlateBtn','v7MeasurementsBtn','v7WeightsBtn','v7CalcBtn','v7ExportBtn','v7ImportBtn','v7ResetBtn'];
+  ids.forEach(id=>assert.match(html,new RegExp('id="'+id+'"')));
+  const start=html.indexOf('<section id="v7Settings"');
+  const end=html.indexOf('</section>',start);
+  const settings=html.slice(start,end);
+  assert.ok((settings.match(/<svg /g)||[]).length>=8);
 });
