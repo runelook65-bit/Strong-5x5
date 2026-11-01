@@ -984,3 +984,43 @@ test('v0.9 compact focus still logs actual changed values and advances sets', ()
   assert.equal(app.getActiveWorkoutExercises()[0].setWeights[0],27);
   assert.equal(document.getElementById('v7ExercisePrescription').textContent,'5 × 5 tekrar · 1/5 set');
 });
+
+test('v0.9 program summary reports real completed sessions and exposes accessible progress', () => {
+  const {app,document}=createApp();
+  app.getState().completedSlots['w1_d0']=true;
+  app.getState().completedSlots['w1_d2']=true;
+  app.v7RenderProgram();
+  assert.equal(document.getElementById('v9ProgramSlotCount').textContent,'2 / 36 seans');
+  assert.equal(document.getElementById('v9ProgramProgressTrack').getAttribute('aria-valuenow'),'2');
+  assert.equal(document.getElementById('v7WeekDays').children.length,3);
+  const day=document.getElementById('v7WeekDays').children[0];
+  assert.equal(day.getAttribute('aria-pressed'),'true');
+  assert.match(day.innerHTML,/Tamamlandı/);
+});
+
+test('v0.9 Program A/B cards derive counts and prescriptions from selected template', () => {
+  const {app,document}=createApp();
+  app.getState().templateKey='hybrid5x5';
+  app.v7RenderProgram();
+  const buttons=document.getElementById('v7WorkoutTemplates').children;
+  assert.equal(buttons.length,2);
+  assert.match(buttons[0].innerHTML,/13 set/);
+  assert.match(buttons[1].innerHTML,/11 set/);
+  assert.match(buttons[0].innerHTML,/ui9-program-exercise-list/);
+  assert.equal(buttons[0].getAttribute('aria-pressed'),'true');
+  assert.equal(buttons[1].getAttribute('aria-pressed'),'false');
+  assert.equal(document.getElementById('v7TemplateSelect').value,'hybrid5x5');
+});
+
+test('v0.9 Program roadmap preserves 7th-week deload and original week switching', () => {
+  const {app,document}=createApp();
+  app.v7RenderProgram();
+  const weeks=document.getElementById('v7WeekGrid').children;
+  assert.equal(weeks.length,12);
+  assert.match(weeks[6].innerHTML,/Toparlanma/);
+  assert.equal(weeks[6].getAttribute('aria-label').includes('toparlanma haftası'),true);
+  assert.equal(app.v7ChangeWeek(7),true);
+  app.v7RenderProgram();
+  assert.equal(document.getElementById('v9ProgramCurrentWeek').textContent,'7');
+  assert.match(document.getElementById('v7ProgramWeekText').textContent,/A \/ B \/ A/);
+});
