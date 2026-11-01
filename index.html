@@ -335,13 +335,27 @@
       <!-- TAB 2: PROGRAM & KURALLAR (REHBER & TABLO) -->
       <!-- ========================================== -->
       <section id="viewProgram" class="space-y-4 hidden">
+        <div class="bg-gradient-to-br from-[#133326] to-[#11171a] border border-emerald-500/25 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">12 haftalık yol haritan</p>
+            <span id="programHeroCounter" class="text-[11px] font-mono bg-emerald-500/15 text-emerald-300 px-2 py-1 rounded-full">0 / 36</span>
+          </div>
+          <h2 id="programHeroTitle" class="text-xl font-extrabold text-white">Hafta 1 · A/B/A</h2>
+          <p id="programHeroSubtitle" class="text-xs text-gray-300">3 antrenman · 4 dinlenme günü</p>
+          <div class="h-1.5 bg-[#224538] rounded-full overflow-hidden" role="progressbar" aria-label="Programın tamamlanan seans oranı" aria-valuemin="0" aria-valuemax="36" aria-valuenow="0" id="programHeroTrack">
+            <div id="programHeroFill" class="h-full bg-emerald-400 rounded-full transition-[width] duration-300" style="width:0%"></div>
+          </div>
+        </div>
 
         <!-- Hypertrophy programming explainer -->
-        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-2.5">
-          <h2 class="text-base font-bold text-white">ARM Growth · Çift İlerleme</h2>
+        <details class="bg-card border border-borderDark rounded-xl p-4 space-y-2.5">
+          <summary class="text-sm font-bold text-white cursor-pointer">Program mantığı · ARM Growth ve yük artışı</summary>
+          <div class="pt-3 space-y-2">
+          <h2 class="text-base font-bold text-emerald-300">ARM Growth · Çift İlerleme</h2>
           <p class="text-xs text-gray-300 leading-relaxed">Hipertrofi şablonunda her hareketin bir tekrar aralığı vardır. Örneğin 3 × 6–10: aynı çalışma ağırlığıyla bütün setlerde 10 tekrara ulaştığında ve toparlanman uygunsa, sonraki seansta ağırlığı küçük bir adımla artır. 6–9 tekrar arası ilerleme hâlâ geçerlidir; bu tek başına başarısızlık sayılmaz.</p>
           <p class="text-xs text-gray-400 leading-relaxed">Bu bir başlangıç programıdır. Başka sırt, göğüs veya omuz antrenmanları yapıyorsan dolaylı kol yükünü de hesaba kat. Eklem ağrısında egzersizi zorlayarak sürdürme.</p>
-        </div>
+          </div>
+        </details>
 
         <!-- 12-Week Visual Matrix -->
         <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
@@ -369,8 +383,10 @@
         </div>
 
         <!-- StrongLifts Progression Rules Table (Exact match to Screenshot 1) -->
-        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
-          <h2 class="text-base font-extrabold text-white">4. StrongLifts tarzı ağırlık artırma</h2>
+        <details class="bg-card border border-borderDark rounded-xl p-4 space-y-3">
+          <summary class="text-sm font-bold text-white cursor-pointer">Ağırlık artırma kuralları · ayrıntılar</summary>
+          <div class="pt-3 space-y-3">
+          <h2 class="text-base font-extrabold text-white">StrongLifts tarzı ilerleme</h2>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
@@ -406,13 +422,33 @@
           <div class="p-3 rounded-xl bg-oled border border-borderDark text-xs text-gray-300 leading-relaxed">
             <strong class="text-white">Kritik Form Notu:</strong> 5×5 hareketlerinde tükenişe gitme; 1–2 tekrar yedek bırak (RIR 1–2). İzolasyon hareketlerinde de form bozulmadan çalış. <strong class="text-emerald-400">Barbell Curl</strong> sırasında özellikle bilek ve dirseklerini zorlamamaya dikkat et (gerekirse EZ-Bar kullan).
           </div>
-        </div>
+          </div>
+        </details>
       </section>
 
       <!-- ========================================== -->
       <!-- TAB 3: İLERLEME & ANALİZ (GRAFİK & ÖLÇÜ)   -->
       <!-- ========================================== -->
       <section id="viewProgress" class="space-y-4 hidden">
+        <div class="space-y-2 px-1">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Performans günlüğü</p>
+          <h2 class="text-xl font-extrabold text-white">İlerlemen</h2>
+          <p class="text-xs text-gray-400">Gerçek antrenman kayıtların ve ölçümlerin. Örnek başarı verisi gösterilmez.</p>
+        </div>
+        <div class="grid grid-cols-3 gap-2" id="progressOverview">
+          <div class="bg-card border border-borderDark rounded-xl p-3 min-w-0">
+            <p class="text-[10px] text-gray-400">Seans</p>
+            <p id="progressTotalSessions" class="text-lg font-bold font-mono text-white">—</p>
+          </div>
+          <div class="bg-card border border-borderDark rounded-xl p-3 min-w-0">
+            <p class="text-[10px] text-gray-400">Toplam hacim</p>
+            <p id="progressTotalVolume" class="text-lg font-bold font-mono text-emerald-300">—</p>
+          </div>
+          <div class="bg-card border border-borderDark rounded-xl p-3 min-w-0">
+            <p class="text-[10px] text-gray-400">Soğuk ölçüm</p>
+            <p id="progressColdDelta" class="text-lg font-bold font-mono text-white">—</p>
+          </div>
+        </div>
 
         <!-- Exercise Weight Progression Chart Card -->
         <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
@@ -1961,6 +1997,12 @@
       matrix.innerHTML = '';
       const totalDone = Object.keys(state.completedSlots).filter(k => state.completedSlots[k]).length;
       document.getElementById('completedSessionsCounter').textContent = `${totalDone} / 36 Seans`;
+      document.getElementById('programHeroCounter').textContent = `${totalDone} / 36`;
+      document.getElementById('programHeroTitle').textContent = `Hafta ${state.currentWeek} · ${state.currentWeek % 2 ? 'A/B/A' : 'B/A/B'}`;
+      document.getElementById('programHeroSubtitle').textContent =
+        `3 antrenman günü · ${state.currentWeek === 7 ? 'toparlanma haftası' : '4 dinlenme günü'}`;
+      document.getElementById('programHeroFill').style.width = `${Math.min(100,totalDone / 36 * 100)}%`;
+      document.getElementById('programHeroTrack').setAttribute('aria-valuenow',String(Math.min(36,totalDone)));
 
       for (let w = 1; w <= 12; w++) {
         const box = document.createElement('div');
@@ -2034,6 +2076,16 @@
     }
 
     function renderProgressTab() {
+      const logs = Array.isArray(state.workoutLogs) ? state.workoutLogs : [];
+      const totalVolume = logs.reduce((sum, log) =>
+        sum + (Number.isFinite(log?.volume) && log.volume >= 0 ? log.volume : 0), 0);
+      const cold = (state.armMeasurements || []).filter(m => m.note === 'Soğuk' && Number.isFinite(m.cm));
+      const coldDelta = cold.length >= 2 ? cold.at(-1).cm - cold[0].cm : null;
+      document.getElementById('progressTotalSessions').textContent = String(logs.length);
+      document.getElementById('progressTotalVolume').textContent =
+        totalVolume > 0 ? `${Math.round(totalVolume).toLocaleString('tr-TR')} kg` : '—';
+      document.getElementById('progressColdDelta').textContent =
+        coldDelta === null ? '—' : `${coldDelta >= 0 ? '+' : ''}${coldDelta.toFixed(1)} cm`;
       const sel = document.getElementById('chartExerciseSelect');
       const currentVal = sel.value || 'barbell_curl';
       sel.innerHTML = '';
