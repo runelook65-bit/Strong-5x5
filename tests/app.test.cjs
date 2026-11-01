@@ -26,7 +26,7 @@ class FakeElement {
       contains: v => flags.has(v)
     };
   }
-  set innerHTML(value) { this._html = value; }
+  set innerHTML(value) { this._html = value; if (value === '') this.children = []; }
   get innerHTML() { return this._html || ''; }
   appendChild(child) { this.children.push(child); return child; }
   querySelector() { return new FakeElement(); }
