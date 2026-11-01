@@ -209,6 +209,7 @@
             <label for="templateSelect" class="text-xs font-semibold text-gray-400 shrink-0">Şablon:</label>
             <select id="templateSelect" class="min-w-0 w-full bg-oled border border-borderDark rounded-xl px-2.5 py-2 text-xs font-semibold text-white focus:outline-none focus:border-emerald-500">
               <option value="standard">ARM 5×5 (Orijinal Görsel Şablonu)</option>
+              <option value="growth">ARM Growth · Hipertrofi (6–15 tekrar)</option>
               <option value="hybrid5x5">ARM 5×5 Hibrit (B1: 5×5 + İzolasyon)</option>
               <option value="stronglifts_arm">StrongLifts 5×5 + Kol Odaklı</option>
             </select>
@@ -219,6 +220,28 @@
           </div>
         </div>
         </details>
+
+        <!-- Session readiness: user-provided, not inferred from health data -->
+        <div class="bg-card border border-borderDark rounded-2xl p-3.5 space-y-2.5" aria-label="Seans öncesi toparlanma değerlendirmesi">
+          <div>
+            <h3 class="text-sm font-bold text-white">Bugünkü toparlanma durumun</h3>
+            <p class="text-[11px] text-gray-400 mt-1">İsteğe bağlı. Growth şablonunda yük artışı için durumunu belirtmelisin.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <label for="readinessEnergy" class="text-xs text-gray-300 shrink-0">Enerji</label>
+            <select id="readinessEnergy" class="flex-1 min-w-[150px] rounded-xl bg-oled border border-borderDark px-3 py-2.5 text-sm text-white">
+              <option value="unreported">Seçilmedi</option>
+              <option value="good">İyi, dinlenmiş</option>
+              <option value="normal">Normal</option>
+              <option value="low">Yorgun / toparlanmadım</option>
+            </select>
+          </div>
+          <label class="flex items-start gap-2 text-xs text-gray-300 leading-relaxed">
+            <input id="jointDiscomfort" type="checkbox" class="mt-0.5 accent-emerald-500 w-4 h-4 shrink-0" />
+            <span>Bugün dirsek / bilek rahatsızlığım var. <span class="text-amber-300">Yük artırma önerisini durdur.</span></span>
+          </label>
+          <div id="readinessAdvice" class="text-xs text-gray-400" aria-live="polite"></div>
+        </div>
 
         <!-- Active Workout Banner & Exercises Container -->
         <div class="space-y-3">
@@ -297,6 +320,13 @@
       <!-- TAB 2: PROGRAM & KURALLAR (REHBER & TABLO) -->
       <!-- ========================================== -->
       <section id="viewProgram" class="space-y-4 hidden">
+
+        <!-- Hypertrophy programming explainer -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-2.5">
+          <h2 class="text-base font-bold text-white">ARM Growth · Çift İlerleme</h2>
+          <p class="text-xs text-gray-300 leading-relaxed">Hipertrofi şablonunda her hareketin bir tekrar aralığı vardır. Örneğin 3 × 6–10: aynı çalışma ağırlığıyla bütün setlerde 10 tekrara ulaştığında ve toparlanman uygunsa, sonraki seansta ağırlığı küçük bir adımla artır. 6–9 tekrar arası ilerleme hâlâ geçerlidir; bu tek başına başarısızlık sayılmaz.</p>
+          <p class="text-xs text-gray-400 leading-relaxed">Bu bir başlangıç programıdır. Başka sırt, göğüs veya omuz antrenmanları yapıyorsan dolaylı kol yükünü de hesaba kat. Eklem ağrısında egzersizi zorlayarak sürdürme.</p>
+        </div>
 
         <!-- 12-Week Visual Matrix -->
         <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
@@ -401,6 +431,19 @@
           <div class="relative h-48 w-full bg-oled border border-borderDark rounded-xl p-2 flex items-center justify-center">
             <svg id="progressionSvgChart" class="w-full h-full overflow-visible" viewBox="0 0 360 150"></svg>
           </div>
+        </div>
+
+        <!-- Direct working sets per programmed week, based solely on recorded sets -->
+        <div class="bg-card border border-borderDark rounded-2xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-base font-bold text-white">Haftalık Kol Hacmi</h2>
+              <p class="text-xs text-gray-400">Yalnızca kaydedilmiş, tekrar alt sınırını karşılayan doğrudan setler.</p>
+            </div>
+            <select id="volumeWeekSelect" aria-label="Program haftası seç" class="bg-oled border border-borderDark rounded-xl px-2 py-2 text-xs text-gray-200"></select>
+          </div>
+          <div id="muscleVolumeCards" class="grid grid-cols-2 gap-3"></div>
+          <p id="volumeCoverageNote" class="text-[11px] text-gray-400 leading-relaxed"></p>
         </div>
 
         <!-- Arm Circumference Tracker (Kol Ölçüsü Takibi) -->
@@ -734,7 +777,30 @@
       }
     };
 
+    const EXERCISE_MUSCLES = Object.freeze({
+      barbell_curl: 'biceps',
+      hammer_curl: 'biceps',
+      db_biceps_curl: 'biceps',
+      close_grip_db_press: 'triceps',
+      lying_db_triceps: 'triceps',
+      overhead_db_triceps: 'triceps'
+    });
+
     const TEMPLATES = {
+      growth: {
+        name: 'ARM Growth · Hipertrofi',
+        description: 'Ağırlığı artırmadan önce tüm setlerde tekrar aralığının üst sınırına ulaş.',
+        A: [
+          { exId: 'barbell_curl', sets: 3, reps: 10, minReps: 6 },
+          { exId: 'close_grip_db_press', sets: 3, reps: 10, minReps: 6 },
+          { exId: 'hammer_curl', sets: 3, reps: 15, minReps: 10 }
+        ],
+        B: [
+          { exId: 'lying_db_triceps', sets: 3, reps: 15, minReps: 10 },
+          { exId: 'db_biceps_curl', sets: 3, reps: 12, minReps: 8 },
+          { exId: 'overhead_db_triceps', sets: 3, reps: 15, minReps: 10 }
+        ]
+      },
       standard: {
         name: 'ARM 5×5 (Orijinal Görsel Şablonu)',
         A: [
@@ -804,7 +870,8 @@
         completedSlots: {}, // e.g. "w1_d0": true
         exStats: exStats,
         workoutLogs: [],
-        armMeasurements: []
+        armMeasurements: [],
+        readinessBySlot: {} // optional self-reported recovery: energy and joint discomfort
       };
     }
 
@@ -829,6 +896,7 @@
           });
           state.activeSets = state.activeSets && typeof state.activeSets === 'object' ? state.activeSets : {};
           state.activeWeights = state.activeWeights && typeof state.activeWeights === 'object' ? state.activeWeights : {};
+          state.readinessBySlot = state.readinessBySlot && typeof state.readinessBySlot === 'object' ? state.readinessBySlot : {};
           // Keep unfinished set records from the first (exercise-only) format.
           Object.keys(EXERCISE_DB).forEach(id => {
             const scopedKey = getSetStorageKey(id);
@@ -908,6 +976,7 @@
           baseSets: item.sets,
           sets: effectiveSets,
           reps: item.reps,
+          minReps: item.minReps || item.reps,
           setValues: state.activeSets[setKey],
           setWeights: state.activeWeights[setKey],
           stats: state.exStats[item.exId]
@@ -1225,7 +1294,7 @@
               ${isSaved ? '<span class="text-[10px] text-emerald-400">Kaydedildi</span>' : focused ? '<span class="text-[10px] text-emerald-400">Sıradaki hareket</span>' : done ? '<span class="text-[10px] text-emerald-400">Setler tamam</span>' : ''}
             </div>
             <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-emerald-300">
-              <span>${sets} × ${reps}</span>
+              <span>${sets} × ${item.minReps < reps ? `${item.minReps}–${reps}` : reps}</span>
               ${stats.failStreak ? `<span class="text-[10px] font-medium text-amber-300">Başarısız seri ${stats.failStreak}/3</span>` : ''}
               ${state.currentWeek === 7 ? '<span class="text-[10px] text-sky-300">Hafif hafta</span>' : ''}
             </div>
@@ -1284,7 +1353,7 @@
           btn.innerHTML = `
             <span class="text-[10px] font-semibold text-gray-400">${setIdx + 1}. SET</span>
             <span class="text-lg leading-tight font-mono font-extrabold">${val === null ? '＋' : val >= reps ? '✓' : String(val)}</span>
-            <span class="text-[10px] font-mono">${val === null ? `${reps} hedef` : `${val}/${reps} tekrar`}</span>
+            <span class="text-[10px] font-mono">${val === null ? (item.minReps < reps ? `${item.minReps}–${reps} hedef` : `${reps} hedef`) : `${val}/${reps} tekrar`}</span>
             <span class="text-[10px] text-gray-400">${actualWeight.toFixed(1)} kg</span>
           `;
           btn.addEventListener('click', () => {
@@ -1337,7 +1406,7 @@
       if (state.completedSlots[`w${state.currentWeek}_d${state.currentDayIdx}`]) return;
       editingSet = { setKey: item.setKey, setIdx, target: item.reps };
       document.getElementById('setEditTitle').textContent = `${item.meta.name} · ${setIdx + 1}. Set`;
-      document.getElementById('setEditHint').textContent = `Hedef: ${item.reps} tekrar · gerçek yapılanı kaydet`;
+      document.getElementById('setEditHint').textContent = `Hedef: ${item.minReps < item.reps ? `${item.minReps}–${item.reps}` : item.reps} tekrar · gerçek yapılanı kaydet`;
       document.getElementById('setEditReps').value = item.setValues[setIdx] ?? item.reps;
       document.getElementById('setEditWeight').value = getRecordedWeight(item, setIdx);
       const presetArea = document.getElementById('setEditPresets');
@@ -1470,7 +1539,7 @@
             <img src="${meta.img}" alt="${meta.name}" class="w-20 h-20 rounded-2xl object-cover bg-white shrink-0 border border-borderDark" />
             <div class="space-y-0.5">
               <div class="text-sm font-extrabold text-white">${i + 1}. ${meta.name}</div>
-              <div class="text-base font-extrabold text-emerald-400">${item.sets} × ${item.reps}</div>
+              <div class="text-base font-extrabold text-emerald-400">${item.sets} × ${item.minReps ? `${item.minReps}–${item.reps}` : item.reps}</div>
               <div class="text-xs text-gray-400">${meta.desc}</div>
             </div>
           `;
@@ -1478,8 +1547,9 @@
         });
       };
 
-      renderCatalogSection('catalogListA', TEMPLATES.standard.A);
-      renderCatalogSection('catalogListB', TEMPLATES.standard.B);
+      const chosenTemplate = TEMPLATES[state.templateKey] || TEMPLATES.standard;
+      renderCatalogSection('catalogListA', chosenTemplate.A);
+      renderCatalogSection('catalogListB', chosenTemplate.B);
     }
 
     function renderProgressTab() {
