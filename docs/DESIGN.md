@@ -55,3 +55,32 @@ Mevcut Vanilla JS arayüzü test edilmeden React, shadcn/ui veya Recharts geçi�
 - **Dokunma alanı:** Girişler ve set kaydetme düğmesi en az 44 px; iPhone safe-area ve klavyeye göre alt nav uyarlanır.
 - **Gerçek veri:** Program ve Progress yalnızca kullanıcının kayıtlarına göre yüzdeler ve KPI'lar gösterir.
 - **Teknik borç:** Gerçek iPhone Safari ve Android tarayıcı üzerinde görünüm ve klavye kabul testleri gerekir.
+
+## v0.7.1 — Precision Glass
+
+**Glassmorphism estetik bir efekt değil, arayüzdeki katmanları ayırma aracıdır.**
+
+### Katmanlar
+
+1. *App canvas:* `#080e12` ve çok hafif yeşil ambient radial gradient.
+2. *Hero surface:* `rgba(21,63,49,.75)` → `rgba(14,24,31,.82)`, 20px blur (fallback `#162e27`), 1px düşük opak kenar çizgisi.
+3. *Floating navigation:* `rgba(22,31,36,.77)`, 25px blur, kenar ve gölgelerle içerikten ayrılmış tek aktif ikon. iOS `env(safe-area-inset-bottom)`.
+4. *Mat kartlar:* Set, hacim, tekrar, grafik, form ve tablo için `#141b21` veya `#0e161b`. Blur özellikle **yok**.
+5. *CTA:* Tek parlak mint: `#69edb7 → #40d69b`, koyu `#072216` yazı.
+
+### Uygulama
+
+- `src/v7.css`: temel ekran geometrisi ve işlevsel stiller.
+- `src/v7-glass.css`: ürün seviyesinde glass görsel sistem, yalnızca `v7` ve `v8` ekran sınıflarını değiştirir.
+- `index.html`: hero watermark SVG, inline erişilebilir SVG ikonlar ve gerçek antrenman durum etiketi.
+- Ek font ve ücretli görsel gerekmiyor.
+- Kullanıcı kayıtları ve işlevsel veri motoru etkilenmiyor.
+- Her cihazda bitmap/mockup eşleşmesi **henüz doğrulanmadı**. Safari üzerindeki blur, SVG thumbnail görselleri ve nav hizası gerçek ekran görüntüsüyle değerlendirilmelidir.
+
+### Görsel regresyon sınırları
+
+- 320px genişlikte başlık ve KG değeri taşmamalı.
+- iPhone çentik ve alt home-indicator ile floating nav çakışmamalı.
+- Alt sekme aktif odak modunda görünmemeli.
+- Reduce Transparency / Reduce Motion etkin olduğunda tüm temel eylemler görünür ve kullanılabilir olmalı.
+- Aynı anda en fazla hero + alt dock (Focus ekranında hero + rest) frosted glass taşır; veri kartlarında pahalı blur yok.
