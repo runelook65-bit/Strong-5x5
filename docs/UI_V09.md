@@ -36,6 +36,15 @@ We are **using shadcn/ui's accessible design conventions and component hierarchy
 - The 12-week roadmap and training rationale move to expandable disclosure cards to reduce initial scroll.
 - CSS scoped to `#v7Program` / `ui9-program-*`; tap targets are at least 44 CSS pixels.
 
+### 5. Progress — recorded performance, not an achievement mockup
+- A compact three-metric strip reuses the existing recorded session count, total kg work volume, and cold-arm circumference delta.
+- Strength chart stays selectable by exercise and uses persisted exercise history; the latest 12 valid measurements are visualized, with a dedicated no-data message.
+- The 12-week volume chart still reads from recorded workouts and now notes data coverage. No demo values or fabricated sessions.
+- Personal-record rows read the maximum valid set weight per exercise; empty results have an explicit state.
+- Cold/pump arm readings and the original measurement/history actions are preserved.
+- Layout is CSS-scoped to `#v7Progress` / `ui9-progress-*`; 44px tap targets and stable offline storage are preserved.
+- Existing chart implementations are retained. The metrics are not clinical indicators or strength estimates.
+
 ## Not yet done
 
 - [ ] Actual React + shadcn/ui component installation and engine adapter — do **not** attempt this by replacing the workout engine before data migration and behavior tests.
