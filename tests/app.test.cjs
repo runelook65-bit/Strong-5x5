@@ -57,6 +57,7 @@ function createApp(saved) {
     return {
       getDefaultState, loadState, getScheduledWorkoutType, getActiveWorkoutExercises,
       getSessionSnapshot, getSetStorageKey, predictExerciseProgress, recordExerciseSet,
+      getSessionReadiness, setSessionReadiness, calculateWeekMuscleVolume, renderMuscleVolume, TEMPLATES,
       openFinishPreview, completeWorkoutSession, renderExercises,
       getState: () => state,
       setState: next => { state = next; }
@@ -209,4 +210,119 @@ test('week-seven recovery preserves the planned weight even after all sets are c
   assert.equal(app.completeWorkoutSession(), true);
   assert.equal(state.exStats.barbell_curl.weight, before);
   assert.equal(state.workoutLogs[0].exercises[0].result, 'hold');
+});
+
+test('Growth is opt-in and offers a lower/upper repetition range', () => {
+  const { app } = createApp();
+  assert.equal(app.getState().templateKey, 'standard');
+  app.getState().templateKey = 'growth';
+  const list = app.getActiveWorkoutExercises();
+  assert.equal(list.length, 3);
+  assert.deepEqual(list.map(item => [item.sets, item.minReps, item.reps]), [[3, 6, 10], [3, 6, 10], [3, 10, 15]]);
+  app.getState().currentDayIdx = 1;
+  assert.deepEqual(app.getActiveWorkoutExercises().map(item => [item.minReps, item.reps]), [[10, 15], [8, 12], [10, 15]]);
+});
+
+test('Growth requires explicit readiness before increasing working weight', () => {
+  const { app } = createApp();
+  app.getState().templateKey = 'growth';
+  recordAll(app);
+  const item = app.getActiveWorkoutExercises()[0];
+  assert.equal(app.getSessionReadiness().energy, 'unreported');
+  assert.equal(app.predictExerciseProgress(item).kind, 'hold');
+  assert.equal(app.predictExerciseProgress(item).reason, 'readiness');
+  assert.equal(app.setSessionReadiness('good', false), true);
+  const recommended = app.predictExerciseProgress(item);
+  assert.equal(recommended.kind, 'success');
+  assert.ok(recommended.nextWeight > item.stats.weight);
+});
+
+test('Growth holds weight while reps improve within the target interval', () => {
+  const { app } = createApp();
+  app.getState().templateKey = 'growth';
+  app.setSessionReadiness('normal', false);
+  const item = app.getActiveWorkoutExercises()[0];
+  for (let i = 0; i < item.sets; i++) {
+    app.recordExerciseSet(item.setKey, i, item.minReps + 1, item.stats.weight);
+  }
+  item.stats.failStreak = 1;
+  const decision = app.predictExerciseProgress(item);
+  assert.equal(decision.kind, 'build');
+  assert.equal(decision.nextWeight, item.stats.weight);
+});
+
+test('Growth does not recommend raising weight on a lighter recorded set', () => {
+  const { app } = createApp();
+  app.getState().templateKey = 'growth';
+  app.setSessionReadiness('good', false);
+  const item = app.getActiveWorkoutExercises()[0];
+  for (let i = 0; i < item.sets; i++) {
+    app.recordExerciseSet(item.setKey, i, item.reps, i === 0 ? item.stats.weight - 1 : item.stats.weight);
+  }
+  assert.equal(app.predictExerciseProgress(item).kind, 'build');
+  assert.equal(app.predictExerciseProgress(item).reason, 'weight');
+});
+
+test('Low energy or joint discomfort blocks progression without pretending recovery was measured', () => {
+  const { app } = createApp();
+  app.getState().templateKey = 'growth';
+  recordAll(app);
+  const item = app.getActiveWorkoutExercises()[0];
+  app.setSessionReadiness('low', false);
+  assert.equal(app.predictExerciseProgress(item).reason, 'fatigue');
+  app.setSessionReadiness('good', true);
+  assert.equal(app.predictExerciseProgress(item).reason, 'joint');
+  assert.equal(app.getSessionReadiness().jointDiscomfort, true);
+  app.setSessionReadiness('normal', false);
+  assert.equal(app.predictExerciseProgress(item).kind, 'success');
+});
+
+test('Growth tracks failed attempts below the lower rep bound only', () => {
+  const { app } = createApp();
+  const state = app.getState();
+  state.templateKey = 'growth';
+  for (const week of [1, 3, 5]) {
+    state.currentWeek = week;
+    state.currentDayIdx = 0;
+    app.setSessionReadiness('normal', false);
+    for (const item of app.getActiveWorkoutExercises()) {
+      for (let i = 0; i < item.sets; i++) {
+        const count = item.exId === 'barbell_curl' && i === 0 ? item.minReps - 1 : item.reps;
+        app.recordExerciseSet(item.setKey, i, count, item.stats.weight);
+      }
+    }
+    assert.equal(app.completeWorkoutSession(), true);
+  }
+  assert.equal(state.exStats.barbell_curl.failStreak, 0);
+  assert.ok(state.exStats.barbell_curl.weight < 27.5);
+});
+
+test('Muscle volume counts only stored direct sets above their program minimum', () => {
+  const { app } = createApp();
+  const state = app.getState();
+  state.templateKey = 'growth';
+  app.setSessionReadiness('normal', false);
+  for (const item of app.getActiveWorkoutExercises()) {
+    for (let i = 0; i < item.sets; i++) {
+      const reps = item.exId === 'barbell_curl' && i === 0 ? item.minReps - 1 : item.minReps;
+      app.recordExerciseSet(item.setKey, i, reps, item.stats.weight);
+    }
+  }
+  assert.equal(app.completeWorkoutSession(), true);
+  const volume = app.calculateWeekMuscleVolume(1);
+  assert.equal(volume.sessions, 1);
+  assert.equal(volume.biceps.sets, 5); // 2 curl + 3 hammer
+  assert.equal(volume.triceps.sets, 3);
+  assert.equal(app.calculateWeekMuscleVolume(2).biceps.sets, 0);
+});
+
+test('Legacy workouts without per-set details are not counted as invented volume', () => {
+  const { app } = createApp();
+  const state = app.getState();
+  state.workoutLogs.push({ id: 'w2_d1', title: 'Eski kayıt', volume: 900, details: [] });
+  const volume = app.calculateWeekMuscleVolume(2);
+  assert.equal(volume.sessions, 1);
+  assert.equal(volume.legacySessions, 1);
+  assert.equal(volume.biceps.sets, 0);
+  assert.equal(volume.triceps.sets, 0);
 });
