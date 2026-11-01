@@ -2,7 +2,7 @@
 
 **Canlı uygulama (v0.7.0): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
 
-**GitHub geliştirme sürümü: v0.7.1 (Precision Glass)** · Canlı Vercel sürümü: **v0.7.0**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
+**GitHub geliştirme sürümü: v0.7.2 (Visual Covers)** · Canlı Vercel sürümü: **v0.7.0**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
 
 Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım manuel olarak yapılmıştır; sonraki güncellemeler otomatik yayınlanmaz.
 
@@ -137,3 +137,18 @@ Ayrıntılar: [v0.7 UI ve kabul kriterleri](docs/V07_UX.md). Vercel'e manuel ola
 - **Regresyonlar:** 66/66 JavaScript test simülasyonunda geçti; HTML/CSS yapısal kontrol temiz.
 
 **Yayın sınırı:** v0.7.1 **yalnızca GitHub'da**. https://arm-5x5.vercel.app adresinde son doğrulanmış üretim sürümü v0.7.0. Bağımsız `npm run build`, iPhone Safari görsel QA, VoiceOver ve PWA güncelleme testleri yeni sürüm için yapılmadı.
+
+## v0.7.2 — Visual Covers (GitHub; henüz canlıya alınmadı)
+
+Önceki konuşmada üretilen **5 sayfa kapağı + 3 egzersiz görseli**, yalnızca CSS referansı değil, GitHub'a commit edilen optimize edilmiş gerçek WebP dosyalarıdır.
+
+- `public/visual-assets/arm-covers-atlas.webp`: **5 kapak**, yaklaşık 21 KB, Home/Focus/Program/Progress/Settings.
+- `public/visual-assets/arm-exercises-atlas.webp`: **3 egzersiz görseli**, yaklaşık 6 KB, Barbell/Hammer Curl ve Skull Crusher.
+- `src/v7-glass.css`: ekranların doğru görsel dilimini seçen sprite kuralları, text contrast gradient ve responsive breakpoints.
+- `index.html`: beş kapak yüzeyi ve egzersiz ID'sine göre görsel eşleme; hareketler, program motoru ve kayıt verileri aynı.
+- Kaynak WebP dosyalarının Git blob SHA değerleri doğrulandı.
+- **69/69 regresyon testi**, HTML sözdizimi ve benzersiz ID kontrolü başarılı.
+
+Görseller çevrimdışı PWA statik içerik kapsamındadır. **Gerçek iPhone, VoiceOver ve bağımsız Vite üretim testi henüz yapılmadı.** [Görsel varlık eşleme ve QA rehberi](docs/V072_VISUAL_ASSETS.md).
+
+**Yayın ayrımı:** v0.7.2 yalnızca GitHub'da; kullanıcı ayrıca istemeden Vercel production güncellenmez.
