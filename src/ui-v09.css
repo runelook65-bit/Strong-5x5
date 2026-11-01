@@ -639,3 +639,89 @@ body .app-shell {
 @media(prefers-reduced-motion:reduce) {
   .app-shell .v7-cta,.app-shell .v7-screen {animation:none;transition:none;}
 }
+
+
+/* v0.9 Program — one focused planner, same state and session engine. */
+.app-shell #v7Program .ui9-program-overview { padding:18px 17px 15px; }
+.app-shell .ui9-program-topline,
+.app-shell .ui9-program-progress-meta {display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.app-shell .ui9-program-badge {
+  display:inline-flex;align-items:center;white-space:nowrap;padding:6px 9px;
+  border:1px solid #355348;background:#1c3028;color:#b1eccc;
+  border-radius:999px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;
+}
+.app-shell .ui9-program-heading {margin:13px 0 3px;font-size:29px;line-height:1.15;font-weight:800;letter-spacing:-.9px;color:var(--ui-foreground);}
+.app-shell .ui9-program-heading-muted {font-weight:500;color:var(--ui-muted);font-size:18px;}
+.app-shell .ui9-program-pattern {margin:0;font-size:12px;}
+.app-shell .ui9-program-track {margin-top:16px;height:7px;background:#2a3635;}
+.app-shell .ui9-program-track>div {background:var(--ui-primary);}
+.app-shell .ui9-program-progress-meta {margin-top:9px;font-size:11px;color:var(--ui-muted);}
+.app-shell .ui9-program-progress-meta strong {color:var(--ui-foreground);font-size:12px;font-variant-numeric:tabular-nums;}
+.app-shell .ui9-program-section-heading {margin-bottom:11px;}
+.app-shell .ui9-program-section-heading p {font-size:11px;margin-top:4px;}
+.app-shell .ui9-program-days {gap:7px;}
+.app-shell .ui9-program-day {
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;
+  gap:7px;min-width:0;min-height:103px;padding:11px 10px;border-radius:12px;
+  background:var(--ui-card);border:1px solid var(--ui-border);
+}
+.app-shell .ui9-program-day .ui9-program-day-label {color:var(--ui-muted);font-weight:650;font-size:11px;}
+.app-shell .ui9-program-day strong {font-size:13px;letter-spacing:-.1px;margin:0;}
+.app-shell .ui9-program-day-status {font-size:10px;font-weight:730;color:var(--ui-muted);}
+.app-shell .ui9-program-day.is-active {background:#1c352a;border-color:#61ba8d;}
+.app-shell .ui9-program-day.is-active .ui9-program-day-status {color:#9df1c2;}
+.app-shell .ui9-program-day.is-done .ui9-program-day-status {color:#94eac0;}
+.app-shell .ui9-program-workout-list {background:var(--ui-card);}
+.app-shell .ui9-program-workout {
+  display:flex;align-items:flex-start;gap:11px;min-height:44px;padding:15px 12px;
+  border-bottom:1px solid var(--ui-border);
+}
+.app-shell .ui9-program-workout:last-child {border-bottom:0;}
+.app-shell .ui9-program-workout.is-active {box-shadow:inset 3px 0 var(--ui-primary);}
+.app-shell .ui9-program-workout .ui-exercise-mark {flex-shrink:0;margin-top:2px;}
+.app-shell .ui9-program-workout-main {display:block;flex:1;min-width:0;}
+.app-shell .ui9-program-workout-title {display:flex;flex-wrap:wrap;gap:7px;align-items:center;font-size:14px;}
+.app-shell .ui9-program-workout-title strong {font-weight:760;}
+.app-shell .ui9-program-workout-tag {padding:3px 7px;border-radius:6px;background:#203329;color:#9de6c0;font-size:10px;font-weight:680;}
+.app-shell .ui9-program-workout-meta {display:block;margin-top:5px;font-size:11px;}
+.app-shell .ui9-program-exercise-list {list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column;gap:6px;}
+.app-shell .ui9-program-exercise-list li {display:flex;flex-wrap:wrap;justify-content:space-between;column-gap:10px;row-gap:2px;font-size:11px;color:#d2dbd6;overflow-wrap:anywhere;}
+.app-shell .ui9-program-exercise-list li span {color:var(--ui-muted);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.app-shell .ui9-program-workout .v7-row-chevron {margin:9px 1px 0 0;}
+.app-shell .ui9-program-selector {padding:16px;}
+.app-shell .ui9-program-label {display:block;font-size:11px;margin:12px 0 7px;}
+.app-shell .ui9-program-selector .v7-select {min-height:48px;}
+.app-shell .ui9-program-help {font-size:11px;line-height:1.5;margin-top:9px;}
+.app-shell .ui9-program-details {padding:0 15px 14px;}
+.app-shell .ui9-program-details > summary {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:52px;cursor:pointer;font-size:13px;font-weight:730;color:var(--ui-foreground);
+  list-style:none;
+}
+.app-shell .ui9-program-details > summary::-webkit-details-marker {display:none;}
+.app-shell .ui9-program-details > summary:focus-visible,
+.app-shell .ui9-program-day:focus-visible,
+.app-shell .ui9-program-week:focus-visible,
+.app-shell .ui9-program-workout:focus-visible {outline:2px solid var(--ui-ring);outline-offset:2px;}
+.app-shell .ui9-program-chevron {font-size:20px;color:var(--ui-muted);transition:transform .16s ease;}
+.app-shell .ui9-program-details[open] .ui9-program-chevron {transform:rotate(180deg);}
+.app-shell .ui9-program-weeks {margin-top:14px;}
+.app-shell .ui9-program-week {
+  min-height:59px;padding:7px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:var(--ui-card-raised);font-size:11px;border-radius:10px;
+}
+.app-shell .ui9-program-week small {font-size:8px;line-height:1.25;font-weight:570;color:var(--ui-muted);}
+.app-shell .ui9-program-week.is-recovery small {color:#95dcb5;}
+.app-shell .ui9-program-rules {display:grid;gap:11px;margin-top:8px;}
+.app-shell .ui9-program-rules .v7-list-line {gap:12px;font-size:12px;}
+.app-shell .ui9-program-rules .v7-list-line p {margin-top:3px;font-size:11px;line-height:1.5;}
+@media(max-width:360px){
+  .app-shell #v7Program .ui9-program-overview {padding:15px 13px;}
+  .app-shell .ui9-program-day {padding:10px 7px;}
+  .app-shell .ui9-program-day strong {font-size:12px;}
+  .app-shell .ui9-program-workout {padding:12px 9px;gap:8px;}
+  .app-shell .ui9-program-week small {font-size:8px;}
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .ui9-program-chevron {transition:none;}
+}
