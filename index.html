@@ -443,6 +443,28 @@
             <select id="volumeWeekSelect" aria-label="Program haftası seç" class="bg-oled border border-borderDark rounded-xl px-2 py-2 text-xs text-gray-200"></select>
           </div>
           <div id="muscleVolumeCards" class="grid grid-cols-2 gap-3"></div>
+          <div class="grid grid-cols-[100px_minmax(0,1fr)] gap-3 items-center rounded-xl bg-oled border border-borderDark px-3 py-3">
+            <svg id="armMuscleDiagram" viewBox="0 0 110 164" role="img" aria-label="Ön kol ve üst kol yük göstergesi" class="w-full h-40">
+              <title>Kol kasları · çalışma yükü temsili</title>
+              <path d="M44 13C27 14 22 25 18 42L12 83 21 130 34 145 40 139 29 99 34 64 44 53M66 13C83 14 88 25 92 42L98 83 89 130 76 145 70 139 81 99 76 64 66 53" stroke="#505B64" stroke-width="2.5" fill="#283038" stroke-linejoin="round"/>
+              <path d="M44 13C48 18 62 18 66 13L70 29 65 52 62 79 48 79 45 52 40 29Z" fill="#20262B" stroke="#56616D" stroke-width="2"/>
+              <path id="bicepsMuscleShape" d="M28 35C35 30 42 37 41 53L36 79 29 99 21 87 24 57Z M82 35C75 30 68 37 69 53L74 79 81 99 89 87 86 57Z" fill="#334155" stroke="#3D4958" stroke-width="1.5"/>
+              <path id="tricepsMuscleShape" d="M19 41L25 40 24 70 18 82 14 73Z M91 41L85 40 86 70 92 82 96 73Z" fill="#334155" stroke="#3D4958" stroke-width="1.5"/>
+              <circle cx="55" cy="13" r="11" fill="#283038" stroke="#56616D" stroke-width="2"/>
+            </svg>
+            <div class="space-y-2">
+              <div class="text-xs font-semibold text-white">Kas yükü</div>
+              <div class="text-[11px] text-gray-400">Büyüklükler yalnızca doğrudan set sayısıdır; anatomik ölçüm değildir.</div>
+              <div class="flex items-center gap-2 text-xs text-gray-200"><span class="w-2.5 h-2.5 bg-emerald-400 rounded-sm"></span>Biceps <strong id="bicepsMuscleShare" class="ml-auto text-emerald-300">—</strong></div>
+              <div class="flex items-center gap-2 text-xs text-gray-200"><span class="w-2.5 h-2.5 bg-sky-400 rounded-sm"></span>Triceps <strong id="tricepsMuscleShare" class="ml-auto text-sky-300">—</strong></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2"><h3 class="text-xs font-bold text-white">12 haftalık doğrudan set takibi</h3><span class="text-[10px] text-gray-500">Biceps / Triceps</span></div>
+            <div class="overflow-x-auto pb-2" tabindex="0" aria-label="12 haftalık çalışma setleri çubuğu">
+              <div id="weeklyVolumeGraph" class="grid grid-cols-12 gap-1.5 min-w-[420px] h-32 items-end"></div>
+            </div>
+          </div>
           <p id="volumeCoverageNote" class="text-[11px] text-gray-400 leading-relaxed"></p>
         </div>
 
@@ -1528,6 +1550,37 @@
           <div class="text-xs text-gray-300">${data[key].volume} kg · set hacmi</div>`;
         cards.appendChild(cell);
       });
+      const maxSets = Math.max(1, ...Array.from({length:12}, (_, w) => {
+        const v = calculateWeekMuscleVolume(w+1);
+        return v.biceps.sets + v.triceps.sets;
+      }));
+      const bicepsShare = document.getElementById('bicepsMuscleShare');
+      const tricepsShare = document.getElementById('tricepsMuscleShare');
+      bicepsShare.textContent = data.biceps.sets ? `${data.biceps.sets} set` : '—';
+      tricepsShare.textContent = data.triceps.sets ? `${data.triceps.sets} set` : '—';
+      document.getElementById('bicepsMuscleShape').setAttribute('fill', data.biceps.sets ? '#34D399' : '#334155');
+      document.getElementById('tricepsMuscleShape').setAttribute('fill', data.triceps.sets ? '#38BDF8' : '#334155');
+
+      const graph = document.getElementById('weeklyVolumeGraph');
+      graph.innerHTML = '';
+      for (let w = 1; w <= 12; w++) {
+        const weekData = calculateWeekMuscleVolume(w);
+        const bHeight = weekData.biceps.sets / maxSets * 92;
+        const tHeight = weekData.triceps.sets / maxSets * 92;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `h-full flex flex-col items-center justify-end gap-1 pb-1 rounded-lg border ${w === week ? 'border-emerald-500/50 bg-emerald-950/20' : 'border-transparent hover:bg-card'}`;
+        button.setAttribute('aria-label', `Hafta ${w}: biceps ${weekData.biceps.sets}, triceps ${weekData.triceps.sets} çalışma seti`);
+        button.innerHTML = `<div class="w-5 flex flex-col-reverse justify-start rounded-sm overflow-hidden" style="height:92px;">
+           <div style="height:${bHeight.toFixed(1)}px;background:#34D399"></div>
+           <div style="height:${tHeight.toFixed(1)}px;background:#38BDF8"></div>
+          </div><span class="text-[10px] text-gray-400">${w}</span>`;
+        button.addEventListener('click', () => {
+          document.getElementById('volumeWeekSelect').value = String(w);
+          renderMuscleVolume();
+        });
+        graph.appendChild(button);
+      }
       document.getElementById('volumeCoverageNote').textContent =
         data.sessions === 0 ? 'Bu program haftasında henüz kayıt yok.'
         : `${data.sessions} kayıtlı seans · ${data.legacySessions ? data.legacySessions + ' eski seansın set verisi bulunmuyor. ' : ''}Bu sayılar yalnızca alt tekrar hedefini karşılayan doğrudan çalışma setleridir. Diğer antrenmanlarda alınan dolaylı yük dahil değildir.`;
