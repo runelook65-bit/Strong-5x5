@@ -87,6 +87,19 @@
 
 Ayrıntılar için [v0.7 tasarım spesifikasyonu](V07_UX.md).
 
+## v0.7.1 — Precision Glass tasarım uyumu (kod tamamlandı)
+
+- [x] Referans beş mockup ile hiyerarşi uyumunu güçlendirme.
+- [x] Üst bölümde seçici translucent hero; alt navigasyonda floating frosted glass.
+- [x] KG/tekrar ve grafikleri yüksek kontrastlı okunabilir mat yüzeylerde tutma.
+- [x] Alt tab ve Ayarlar'da tutarlı SVG ikonlar, blur desteklenmeyen tarayıcı fallback'i.
+- [x] Ready / In progress / Completed durumunu gerçek seans verisinden oluşturma.
+- [x] iPhone safe-area, en az 44px dokunma alanı, reduce-motion/reduce-transparency.
+- [x] 66/66 JavaScript simülasyonu, HTML ve CSS statik denetimi.
+- [ ] Gerçek iPhone Safari ekran görüntüsü ve önceki mockup'larla birebir hizalama değerlendirmesi.
+- [ ] `npm install && npm test && npm run build` ve Android/VoiceOver performans testi.
+- [ ] Kullanıcı isterse manuel Vercel yayını; mevcut canlı v0.7.0 sürümüne dokunulmaz.
+
 ## Yayın kriterleri
 
 Yayına çıkmadan önce:
