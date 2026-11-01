@@ -46,3 +46,12 @@ Yazı ailesi sistem öncelikli `Inter` fallback ve sayısal alanlarda `JetBrains
 ## Sonraki sınırlar
 
 Mevcut Vanilla JS arayüzü test edilmeden React, shadcn/ui veya Recharts geçişi yapılmamalıdır. Her mimari dönüşüm öncesinde eski `localStorage` kayıtlarının yedeği ve migration testleri gerekir.
+
+## v0.6 — Performance Logger deneyimi
+
+- **Kompakt satır:** Her sette numara, önceki gerçek performans, toplam kg, tekrar ve kayıt onayı bulunur.
+- **Odak:** İlk tamamlanmamış egzersiz otomatik açık; diğer hareketler katlanır.
+- **Dinlenme:** Zamanlayıcı Workout içinde açılır. Üstte ikinci bir sabit navigasyon şeridi değildir.
+- **Dokunma alanı:** Girişler ve set kaydetme düğmesi en az 44 px; iPhone safe-area ve klavyeye göre alt nav uyarlanır.
+- **Gerçek veri:** Program ve Progress yalnızca kullanıcının kayıtlarına göre yüzdeler ve KPI'lar gösterir.
+- **Teknik borç:** Gerçek iPhone Safari ve Android tarayıcı üzerinde görünüm ve klavye kabul testleri gerekir.
