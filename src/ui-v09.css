@@ -1,0 +1,302 @@
+/*
+ * ARM 5×5 v0.9 — Quiet Workout UI
+ * A native HTML/CSS implementation of shadcn/ui design principles.
+ * Not the shadcn React registry. We preserve the existing vanilla JS workout engine.
+ *
+ * Layout principle: one decision per screen. Transparent chrome is reserved for
+ * navigation; workout metrics, buttons and historical data use solid surfaces.
+ */
+:root {
+  --ui9-bg: #090c10;
+  --ui9-card: #151a20;
+  --ui9-card-dark: #10151a;
+  --ui9-border: #2c343b;
+  --ui9-muted: #a5aeb8;
+  --ui9-foreground: #f5f7f8;
+  --ui9-accent: #5cd89d;
+  --ui9-focus-ring: #9cebc2;
+  --ui9-radius: 13px;
+}
+html { background:var(--ui9-bg); }
+body, body .app-shell { background:var(--ui9-bg); color:var(--ui9-foreground); }
+body .app-shell {
+  max-width: 540px;
+  padding-bottom:calc(116px + env(safe-area-inset-bottom,0px));
+}
+.app-shell .app-main { padding:22px 16px 48px; }
+.app-shell .v7-screen.space-y-5 > :not([hidden]) + :not([hidden]) { margin-top:19px; }
+
+/* Shared, consistent focus indicator and semantic surfaces */
+.app-shell .v7-hero,.app-shell .v7-stat,.app-shell .v7-card,
+.app-shell .v7-recent,.app-shell .ui-panel {
+  border-radius:var(--ui9-radius);
+  border:1px solid var(--ui9-border);
+  background:var(--ui9-card);
+  box-shadow:none;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+.app-shell .v7-hero,.app-shell .arm-cover,.app-shell .ui-panel {
+  background-image:none !important;
+  background:var(--ui9-card) !important;
+  box-shadow:none !important;
+}
+.app-shell .v7-hero::before,.app-shell .v7-hero::after,
+.app-shell .v8-hero-watermark { display:none !important; }
+.app-shell .v7-section-title { font-size:16px; font-weight:720; letter-spacing:-.25px; }
+.app-shell button:focus-visible,.app-shell select:focus-visible {
+  outline:2px solid var(--ui9-focus-ring);
+  outline-offset:3px;
+}
+.app-shell .v7-muted { color:var(--ui9-muted); }
+
+/* TODAY: a short next-action card, not a billboard */
+.app-shell #v7Today .v7-page-header { min-height:49px; }
+.app-shell #v7Today .v7-page-header .v7-title { font-size:21px; }
+.app-shell #v7Today .v8-header-overline { display:none; }
+.app-shell #v7Today .v7-page-header .v7-muted { font-size:12px; }
+.app-shell #v7Today .v7-logo { height:39px;width:39px;border-radius:11px; }
+.app-shell .ui-next-session.ui9-primary-panel {
+  min-height:0;
+  padding:17px 16px 14px;
+  gap:0;
+}
+.app-shell .ui9-primary-panel .v7-eyebrow { color:var(--ui9-muted);font-size:10px;letter-spacing:.06em; }
+.app-shell .ui9-primary-panel .v8-hero-context { max-width:100%; }
+.app-shell .ui9-primary-panel .v8-hero-status { font-size:10px;padding:4px 8px; }
+.app-shell .ui9-primary-panel .v7-hero-title {
+  font-size:27px;
+  line-height:1.05;
+  margin:12px 0 0;
+  font-weight:770;
+  letter-spacing:-.9px;
+}
+.app-shell .ui9-primary-panel > .v7-muted {
+  max-width:none;
+  margin:5px 0 16px;
+  font-size:12px;
+}
+.app-shell .ui9-primary-panel .v7-cta {
+  min-height:47px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:750;
+  background:var(--ui9-accent);
+  box-shadow:none;
+}
+.app-shell .ui9-primary-panel .v7-text-link {
+  min-height:33px;
+  margin:7px 0 0;
+  font-size:12px;
+  color:var(--ui9-muted);
+}
+/* Three readings share one surface and no longer compete with the primary CTA */
+.app-shell #v7Today .v7-stats.ui-stats {
+  gap:0;
+  overflow:hidden;
+  border:1px solid var(--ui9-border);
+  background:var(--ui9-card-dark);
+  border-radius:12px;
+}
+.app-shell #v7Today .v7-stat {
+  border:0;
+  background:transparent;
+  padding:11px 10px 12px;
+  border-radius:0;
+  gap:4px;
+  min-height:74px;
+}
+.app-shell #v7Today .v7-stat:not(:last-child) { border-right:1px solid var(--ui9-border); }
+.app-shell #v7Today .v7-stat-icon { display:none; }
+.app-shell #v7Today .v7-stat .v7-muted { font-size:10px; }
+.app-shell #v7Today .v7-stat strong { font-size:17px;font-weight:730; }
+.app-shell #v7Today .v7-exercise-row {
+  min-height:58px;
+  padding:10px 12px;
+}
+.app-shell #v7Today .ui-exercise-mark {
+  height:34px;
+  width:34px;
+  flex-basis:34px;
+  border-radius:9px;
+}
+.app-shell #v7Today .ui-exercise-mark svg {width:17px;height:17px;}
+.app-shell #v7Today .v7-chip {
+  font-size:10px;
+  color:var(--ui9-muted);
+  background:transparent;
+  padding:0;
+  font-weight:540;
+  border:0;
+  margin-top:2px;
+}
+.app-shell #v7Today .v7-ex-name { font-size:13px;font-weight:660; }
+.app-shell #v7Today #v7LastWorkout {
+  padding:11px 13px;
+  border-radius:12px;
+  min-height:0;
+  background:var(--ui9-card-dark);
+}
+/* Low-emphasis historical entry, smaller than active session */
+.app-shell #v7Today #v7LastWorkout strong { font-size:12px; }
+
+/* FOCUS: the large exercise art was a duplicate of the action; use a compact heading */
+.app-shell .v7-focus { gap:12px; min-height:calc(100svh - 48px); }
+.app-shell .ui9-exercise-header {
+  min-height:0;
+  padding:13px 15px;
+  border-radius:12px;
+}
+.app-shell .ui9-exercise-header .v8-focus-label {font-size:9px;}
+.app-shell .ui9-exercise-header .v7-hero-title {
+  font-size:21px;
+  line-height:1.16;
+  margin:7px 0 4px;
+}
+.app-shell .ui9-exercise-header .v7-muted { font-size:11px; }
+.app-shell .ui9-exercise-header .v7-exercise-image { display:none !important; }
+.app-shell .ui9-focus-logger {
+  padding:13px;
+  border-radius:13px;
+}
+.app-shell .ui9-metrics-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+.app-shell .ui9-metric {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+  padding:10px 9px;
+  background:var(--ui9-card-dark);
+  border:1px solid var(--ui9-border);
+  border-radius:11px;
+}
+.app-shell .ui9-metric .v8-value-label {
+  text-align:left;
+  margin:0 0 1px;
+  font-size:9px;
+  color:var(--ui9-muted);
+  letter-spacing:.04em;
+}
+.app-shell .ui9-metric .ui9-value-row {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-areas:"value value" "minus plus";
+  align-items:center;
+  gap:5px;
+  margin:0;
+}
+.app-shell .ui9-metric .ui9-value-row .ui9-value-button {
+  grid-area:value;
+  display:flex;
+  justify-content:center;
+  align-items:baseline;
+  gap:4px;
+  width:100%;
+  min-width:0;
+  min-height:47px;
+  background:transparent;
+  border:0;
+  padding:1px 0;
+  border-radius:9px;
+}
+.app-shell .ui9-metric .ui9-value-row .v7-stepper {
+  width:100%;
+  min-width:0;
+  min-height:40px;
+  height:40px;
+  border-radius:9px;
+  background:#1b2625;
+  color:#beeacb;
+  border:1px solid #34433f;
+  font-size:21px;
+}
+.app-shell .ui9-metric .ui9-value-row .v7-stepper:first-child { grid-area:minus; }
+.app-shell .ui9-metric .ui9-value-row .v7-stepper:last-child { grid-area:plus; }
+.app-shell .ui9-metric .v7-value {
+  font-size:clamp(25px,6.8vw,33px);
+  line-height:1.1;
+  letter-spacing:-1px;
+}
+.app-shell .ui9-metric .v7-unit {
+  font-size:11px;
+  color:#a8b7af;
+}
+.app-shell .ui9-focus-logger #v7SetHint {
+  text-align:left;
+  margin:11px 0 9px;
+  font-size:11px;
+}
+.app-shell .ui9-focus-logger #v7LogSetBtn {
+  min-height:48px;
+  border-radius:10px;
+  box-shadow:none;
+}
+.app-shell .ui9-focus-logger .v7-set-dots {
+  margin-top:11px;
+  justify-content:center;
+}
+.app-shell .ui9-focus-logger .v7-dot {
+  height:30px;
+  width:30px;
+}
+.app-shell .ui9-focus-logger #v7ExerciseProgress {font-size:10px;}
+
+/* Rest and navigation are supporting tools, not second feature cards. */
+.app-shell .ui9-rest-surface {
+  padding:12px;
+  border-color:var(--ui9-border);
+  background:var(--ui9-card-dark);
+}
+.app-shell .ui9-rest-surface .v7-rest-controls button {
+  background:#1b2624;
+  min-height:44px;
+  border-color:#34433f;
+}
+.app-shell .v7-navigation.ui-tabbar {
+  width:100%;
+  max-width:540px;
+  bottom:0;
+  padding:7px 8px max(9px,env(safe-area-inset-bottom,0px));
+  border:0;
+  border-top:1px solid var(--ui9-border);
+  border-radius:0;
+  background:rgba(13,17,22,.97);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+  box-shadow:none;
+}
+.app-shell .v7-nav-item {
+  min-height:48px;
+  border-radius:9px;
+}
+.app-shell .v7-nav-item.is-active {background:#203229;color:#8ce3b2;}
+
+/* Keep other screens aligned with the same compact, quiet components. */
+.app-shell .v7-day.is-active,.app-shell .v7-week.is-active {
+  background:#203229;
+  border-color:#4a8f69;
+}
+.app-shell .v7-setting-row .v7-accent {background:#1b2d26;}
+.app-shell .v7-settings-hero {padding:12px;}
+.app-shell .v7-progress-cover {display:none;}
+@media(max-width:360px) {
+  .app-shell .app-main { padding:16px 12px 36px; }
+  .app-shell .ui9-metric {padding:9px 6px;}
+  .app-shell .ui9-metric .v7-value {font-size:25px;}
+  .app-shell #v7Today .v7-stat {padding:10px 7px;}
+  .app-shell #v7Today .v7-stat strong {font-size:15px;}
+}
+@media(prefers-reduced-transparency:reduce) {
+  .app-shell .v7-navigation.ui-tabbar {
+    background:#11171c;
+    -webkit-backdrop-filter:none;
+    backdrop-filter:none;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .v7-cta,.app-shell .v7-screen {animation:none;transition:none;}
+}
