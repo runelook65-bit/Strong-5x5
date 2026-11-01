@@ -1,8 +1,8 @@
 # ARM 5×5 — Workout Tracker
 
-**Canlı uygulama: https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
+**Canlı uygulama (v0.5.0): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
 
-**v0.5.0 (geliştirme sürümü)** · 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
+**v0.6.0 (geliştirme sürümü; Vercel'deki canlı sürüm henüz v0.5.0)** · 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
 
 Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım manuel olarak yapılmıştır; sonraki güncellemeler otomatik yayınlanmaz.
 
@@ -69,8 +69,22 @@ Uygulama deposuna henüz bir genel açık kaynak **LICENSE** dosyası eklenmedi;
 ## Kalite durumu
 
 - Regresyon testleri `tests/app.test.cjs` dosyasında, Node'un test çalıştırıcısını kullanır.
-- 34 senaryo kod simülasyonunda geçti. Uygulama HTML denge ve JavaScript syntax kontrolleri yapıldı.
+- 45 senaryo kod simülasyonunda geçti. Uygulama HTML denge ve JavaScript syntax kontrolleri yapıldı.
 - Manuel GitHub Actions workflow eklendi; workflow çalıştırıldığı doğrulanmadı.
 - Gerçek cihaz, VoiceOver, uzun süreli offline ve soğuk başlatma testleri henüz tamamlanmadı.
 
 Ayrıntılar için `docs/ROADMAP.md`, `docs/DESIGN.md` ve `docs/OPEN_SOURCE.md` dosyalarına bak.
+
+## v0.6 — Performance Logger (GitHub, henüz canlıda değil)
+
+- Beş büyük set kartı yerine beş kompakt SET / ÖNCEKİ / KG / TEKRAR / ONAY satırı.
+- Satırdaki KG ve tekrar düzenlenebilir; + tuşu boş seti kaydeder. Tamamlanmış ✓ tuşuna dokunarak detay düzenleme ve silme açılır.
+- Önceki sütun aynı program şablonunda gerçekten kaydedilmiş setlerden hesaplanır; hayali geçmiş gösterilmez.
+- Aktif egzersiz açık, diğerleri kapalı; teknik ve plaka ayarları ikincil.
+- Dinlenme sayacı artık üst üste binen sabit bant değil, Antrenman içindeki açılır panel.
+- Alt sekme çubuğu safe-area kullanır, sayısal giriş odaklandığında gizlenir.
+- Program: 12 hafta yol haritası. İlerleme: gerçek seans, toplam hacim ve soğuk kol ölçümü özetleri.
+- Türkçe ondalık virgül formatlı ağırlık girişi desteklenir.
+- 45 JavaScript regresyon senaryosu geçti. Gerçek iPhone/Android ve üretim build doğrulaması devam ediyor.
+- Önceki yerel kayıt şeması ve ağırlık artırma algoritması değiştirilmedi.
+- **Vercel v0.5.0 üretim adresine dokunulmadı.** Yeni sürüm ancak ayrıca yayınlanırsa canlıya çıkar.
