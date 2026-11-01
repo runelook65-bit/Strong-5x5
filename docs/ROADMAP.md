@@ -1,66 +1,62 @@
-# ARM 5×5 — Ürün Geliştirme Yol Haritası
+# ARM 5×5 — Ürün Yol Haritası
 
-## 0.1 — Temel takip ve kritik hata düzeltmeleri (tamamlandı)
+## v0.1–v0.3 · Tamamlandı (kod düzeyinde)
 
-- Mevcut tek dosyalı HTML uygulamasını GitHub'a aktarma
-- Seansların hafta, gün, şablon, A/B ve hareket bazında ayrılması
-- Boş setlerden sahte tamamlanma veya otomatik ağırlık artırma hatasını engelleme
-- Aynı seansın iki kez kaydedilmesini engelleme
-- Yeni kullanıcılar için sahte set/kol çevresi/performans verilerini kaldırma
-- Mobil arka planda geçen süreyi hesaba katan dinlenme sayacı
-- Tam veri sıfırlama ve geçmiş silme için onay
-- Node'un dahili test sistemiyle temel regresyon testleri
+- v0.1: 12 haftalık A/B takvim, egzersiz setleri, yerel seans kayıtları, ilk regresyonlar.
+- v0.2: Seans odaklı mobil arayüz, gerçek kg/tekrar verisi, seans özeti, güvenli ağırlık ilerlemesi.
+- v0.3: İsteğe bağlı ARM Growth (hipertrofi), 6–15 tekrar aralıkları, seans bazlı toparlanma bildirimi, bağımsız kuvvet/Growth yük profili, gerçek kol hacmi.
 
-## 0.2 — Antrenman deneyimi (kod tamamlandı; gerçek cihaz QA bekliyor)
+## v0.4 · Veri güvenliği ve analiz (kod tamamlandı)
 
-- [x] Tek dokunuşla set tamamla, tamamlanan sete tekrar dokunarak gerçek tekrar (0–30) ve ağırlık düzenle
-- [x] Set başına gerçek yük + tekrar bazlı hacim ve programdan bağımsız seans kayıtları
-- [x] Kaydetmeden önce set, hacim, eksik setler ve sonraki ağırlık hedefi önizlemesi
-- [x] Toparlanma haftasında (7. hafta) çalışma ağırlığını otomatik artırmama
-- [x] İkincil program seçeneklerini kapatılabilir bölüme al; ilerleme ve sıradaki hareketi öne çıkar
-- [x] İki süre kısayolu + 15 sn ekleme, arka planda gerçek zamanlı dinlenme sayacı (mevcut)
-- [x] Hareket tekniği ve hafif ısınma notları, dambılda toplam kg açıklaması
-- [x] Temel aria-label, modal rolü, görünür klavye odağı ve reduced-motion (kaynak seviyesinde)
-- [ ] iOS Safari, Android Chrome ve VoiceOver ile gerçek cihaz kabul testi
-- [ ] Tüm setlere ayrı ağırlık girişi yapan akışın gerçek cihaz ergonomi testi
-- [ ] Harici cihazda uzun metin/büyük yazı/hizalama testi
+- [x] Dosyaya sürümlenmiş JSON yedek indirme.
+- [x] JSON veri, oturum, set, ağırlık, ölçüm ve nested obje doğrulaması.
+- [x] Güvensiz, şişirilmiş veya hatalı veriyi yedek içe almadan reddetme.
+- [x] Mevcut kayıtları değiştirmeden **önce** doğrulama, kullanıcıdan onay alma.
+- [x] `localStorage` yazma hatasında bellek durumunu koruma.
+- [x] Eski v0.3 yerel yedek formatını kabul etme.
+- [x] Son kaydedilmiş seansı, gerçek setler ve ağırlık geçmişiyle güvenli geri alma.
+- [x] Soğuk kol ölçümlerini pump ölçümlerinden bağımsız değerlendirme.
+- [x] Tek ölçüm silme.
+- [x] Etkileşimli 12 haftalık biceps/triceps SVG çalışma hacmi grafiği.
+- [x] Özgün kas yükü gösterimi.
+- [x] Eski metinlerde HTML escape ile güvenli görüntüleme.
+- [ ] Büyük ve gerçek cihaz kayıtlarıyla geri yükleme kabul testi.
+- [ ] Cihazlar arası yedek taşıma (iOS Safari ↔ Android) kabul testi.
+- [ ] Çok daha eski v0.1 önizleme verilerinin gerçek örnekleriyle migration doğrulaması.
 
-## 0.3 — Program & Growth Engine (kod tamamlandı; gerçek cihaz QA bekliyor)
+## v0.5 · Tasarım ve çevrimdışı PWA (altyapı kaynak kodu tamamlandı)
 
-- [x] Mevcut üç şablonu koruyarak ARM Growth şablonu ekleme
-- [x] Ana hareketlerde 6–10, izolasyonlarda 8–15 tekrar aralıkları
-- [x] Çift ilerleme: üst tekrar sınırına ulaşmadan ağırlık artmıyor
-- [x] Düşük gerçek set ağırlığında yük artışı önerilmiyor
-- [x] Kuvvet ve Growth ağırlık profillerini bağımsız tutma
-- [x] Seans bazlı öz-bildirim: enerji durumu ve eklem rahatsızlığı
-- [x] Toparlanma olumsuz veya bilinmiyorsa Growth yük artışını durdurma
-- [x] Tamamlanan setlerin alt tekrar hedefini sağlamasına göre haftalık doğrudan biceps/triceps hacmi
-- [x] Eksik eski kayıtları hacim için sıfır varsaymama, açıklama gösterme
-- [x] Tahmini 1RM ve grafiklerde sahte başlangıç noktası göstermeme
-- [ ] Gerçek iPhone Safari/Android testleri ve VoiceOver kabul testi
-- [ ] Farklı cihazlarda eski v0.2 verisinin kayıpsız içeri alınması
-- [ ] Gerçek ekipmanla artış adımlarının kişiye göre ayarlanması
+- [x] Setlog benzeri tek satırda hızlı gerçek kg / tekrar girişi.
+- [x] Özgün uygulama kimliği ve vektör ikon.
+- [x] Vite + Tailwind CSS v3 + PostCSS + Autoprefixer build kurulumu.
+- [x] Tailwind runtime CDN kaldırıldı.
+- [x] MIT lisanslı `vite-plugin-pwa` ile offline precache / manifest konfigürasyonu.
+- [x] Otomatik deploy içermeyen **manuel** GitHub Actions verify workflow.
+- [x] Açık kaynak lisans / özgün varlık ayrımı `docs/OPEN_SOURCE.md` içinde.
+- [x] UI sistemi ve ekran ilkeleri `docs/DESIGN.md` içinde.
+- [ ] **`npm install && npm test && npm run build` bağımsız gerçek Node ortamında çalıştırılmalı.**
+- [ ] iPhone Safari Home Screen kurulumu, ikon görünümü ve offline tekrar açma.
+- [ ] Android Chrome PWA kurulumu, kesilen internet ve güncelleme davranışı.
+- [ ] Safari/VoiceOver/TalkBack, ekran büyütme, dinlenme sayacı QA.
+- [ ] Seans sırasında sayfa yenileme/cihaz uyutma/güncelleme kabul testleri.
+- [ ] CSS paket boyutu / Lighthouse performans denetimi.
 
-## 0.4 — Veri güvenliği ve analiz
+## v0.6 · Ürün sağlamlaştırma (ileri aşama)
 
-- JSON dosya olarak dışa/içe aktarma + doğrulama
-- Eski veri şemaları için sürümlü migration
-- Soğuk kol ölçülerini pump ölçümlerinden ayrı izleme
-- Dinlenme günleri ve aynı kasın ardışık yüklenmesi analizi
-- Antrenman kayıtlarını düzenleme / geri alma ve geçmişten devam
+- [ ] Her şablon için program sıralaması ve yük profili üzerinde gerçek antrenman denemeleri.
+- [ ] Kullanıcının önceki egzersiz setinden yüklere otomatik ön doldurma seçenekleri.
+- [ ] Antrenman geçmişi için filtreleme ve güvenli düzenleme (son seans dışı değişikliklerin geçmiş ilerlemeyi bozması engellenmeli).
+- [ ] Antrenman aralıkları gerçek takvim tarihine göre hesaplanmalı, haftalık A/B sırası kaçırılan günlerden etkilenmemeli.
+- [ ] `localStorage` → IndexedDB geçişi ve doğrulanmış migration.
+- [ ] Otomatik ve isteğe bağlı bulut eşitlemesi, ancak kullanıcı ihtiyacı doğrulanınca.
+- [ ] Egzersiz görselleri için kaynak/izin envanteri; hakları belirsiz üçüncü taraf animasyonları kullanmama.
+- [ ] Açık kaynak lisansı kararı: repo public olsa da şu anda kodu otomatik olarak açık kaynak lisanslı değildir.
 
-## 0.5 — Ürünleştirme
+## Yayın kriterleri
 
-- CDN'deki Tailwind'i kaldırıp derlenmiş CSS'e geçiş
-- Statik PWA, çevrimdışı çalışma, iPhone ana ekranına ekleme
-- CI, tarayıcı tabanlı e2e testleri, statik hosting
-- İsteğe bağlı Supabase hesabı ve cihazlar arası senkronizasyon
-- Kullanıcı onayı olmadan ücretli geçiş veya abonelik eklememe
-
-## Program geliştirme notu
-
-Kol hipertrofisi için bütün hareketlere zorunlu 5×5 uygulatmak doğru varsayım değildir. Ana hareketlerde güç takibi yapılırken izolasyonlarda daha yüksek tekrar aralıkları ve kontrollü form korunmalı; dirsek/bilek yükü ve toparlanma gözlenmelidir. Mevcut üç şablon korunur. Dördüncü ARM Growth şablonu kullanıcı tarafından manuel seçilir. Growth ağırlıkları ayrı profilde tutulur; başlangıç yükleri yalnızca örnek olup kişiye göre ayarlanmalıdır. Enerji ve rahatsızlık bilgisi öz-bildirimdir, sağlık tanısı değildir. Program dışındaki antrenmanların dolaylı set yükü hacim ekranına dahil edilmez.
-
-## Ürün sınırları
-
-Bu repository mevcut tek dosyalı prototipin başlangıcıdır. Otomatik deployment veya çoklu cihaz senkronizasyonu henüz etkin değildir. Yerel tarayıcı verileri kullanıcı tarafından yedeklenmelidir.
+Yayına çıkmadan önce:
+1. Gerçek `npm run build` ve regresyonlar geçmeli.
+2. Eski kullanıcının kayıtları korunmalı; JSON yedek içe/ihracı tarayıcıda test edilmeli.
+3. Ana ekran, set tamamlama, timer, geri alma ve offline kurulum telefon üzerinde kabul testini geçmeli.
+4. Otomatik ücretli geçiş, reklam veya izleme eklenmemeli.
+5. **Her commit otomatik canlı yayınlanmamalı**; dağıtım ayrı kullanıcı kararı olarak yönetilmeli.
