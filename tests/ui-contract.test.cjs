@@ -54,3 +54,13 @@ test('iOS safe area and reduced motion remain supported', () => {
   assert.match(css,/\.app-shell \.v7-navigation\.ui-tabbar/);
   assert.match(css,/\.app-shell \.ui9-program-day \{/);
 });
+
+test('v0.9 progress is accessible and uses existing stable data bindings', () => {
+  for (const id of ['v7ProgressSessions','v7ProgressVolume','v7ProgressArm','v7StrengthChart','v7VolumeChart','v7PersonalRecords','v7LastMeasurements','v7MeasureBtn','v7HistoryBtn','v7ChartExercise']) {
+    assert.match(html,new RegExp('id="'+id+'"'));
+  }
+  assert.match(html,/id="v9ProgressStatus"[^>]*role="status"/);
+  assert.match(html,/id="v7ChartExercise"[^>]*aria-label="Grafikteki hareket"/);
+  assert.match(css,/\.app-shell \.ui9-progress-kpis/);
+  assert.match(css,/\.app-shell \.ui9-progress-measure-btn \{min-height:44px/);
+});
