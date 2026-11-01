@@ -56,7 +56,7 @@ function createApp(saved) {
   const app = new Function('window', 'document', 'localStorage', 'setInterval', 'clearInterval', 'setTimeout', 'clearTimeout', script + `
     return {
       getDefaultState, loadState, getScheduledWorkoutType, getActiveWorkoutExercises,
-      getSessionSnapshot, getSetStorageKey, predictExerciseProgress, recordExerciseSet,
+      getSessionSnapshot, getSetStorageKey, predictExerciseProgress, recordExerciseSet, getPreviousSetPerformance,
       getSessionReadiness, setSessionReadiness, calculateWeekMuscleVolume, renderMuscleVolume, TEMPLATES,
       openFinishPreview, completeWorkoutSession, renderExercises, renderProgressTab,
       makeBackupJSON, parseBackupJSON, restoreBackupJSON, undoLastWorkout,
@@ -511,4 +511,80 @@ test('cold measurements determine growth and pump measurements do not distort it
   ];
   app.renderProgressTab();
   assert.equal(document.getElementById('armGrowthDeltaBadge').textContent, '+0.5 cm');
+});
+
+test('Performance Logger opens current exercise and renders compact five-row set table', () => {
+  const { app, document } = createApp();
+  app.renderExercises();
+  const cards = document.getElementById('exerciseCardsContainer').children;
+  assert.equal(cards.length, 3);
+  assert.equal(cards[0].open, true);
+  assert.equal(cards[1].open, false);
+  const panelBody = cards[0].children[1];
+  const rows = panelBody.children[2].children;
+  assert.equal(rows.length, 5);
+  assert.equal(rows[0].children.length, 5);
+  assert.equal(rows[0].children[2].value, '27.5');
+  assert.equal(rows[0].children[3].value, '5');
+  assert.equal(rows[0].children[4].textContent, '+');
+});
+
+test('Inline set completion saves real weight/reps and automatically advances next row', () => {
+  const { app, document } = createApp();
+  app.renderExercises();
+  const currentCard = () => document.getElementById('exerciseCardsContainer').children[0];
+  const getRow = index => currentCard().children[1].children[2].children[index];
+  getRow(0).children[2].value = '25';
+  getRow(0).children[3].value = '4';
+  getRow(0).children[4].listeners.click();
+  const exercise = app.getActiveWorkoutExercises()[0];
+  assert.equal(exercise.setValues[0], 4);
+  assert.equal(exercise.setWeights[0], 25);
+  assert.equal(getRow(0).children[4].textContent, '✓');
+  assert.equal(getRow(1).children[4].textContent, '+');
+  assert.equal(app.getSessionSnapshot().recordedSets, 1);
+});
+
+test('Inline set edits update original record without adding duplicate sets', () => {
+  const { app, document } = createApp();
+  const item = app.getActiveWorkoutExercises()[0];
+  assert.equal(app.recordExerciseSet(item.setKey, 0, 5, 27.5), true);
+  app.renderExercises();
+  const row = document.getElementById('exerciseCardsContainer').children[0].children[1].children[2].children[0];
+  row.children[2].value = '23.5';
+  row.children[3].value = '3';
+  row.children[4].listeners.click();
+  assert.equal(app.getActiveWorkoutExercises()[0].setValues[0], 3);
+  assert.equal(app.getActiveWorkoutExercises()[0].setWeights[0], 23.5);
+  assert.equal(app.getSessionSnapshot().recordedSets, 1);
+});
+
+test('Inline set validation rejects empty, negative and fractional repetitions', () => {
+  const { app, document } = createApp();
+  app.renderExercises();
+  const row = document.getElementById('exerciseCardsContainer').children[0].children[1].children[2].children[0];
+  for (const value of ['', '-1', '4.5', '31']) {
+    row.children[3].value = value;
+    row.children[4].listeners.click();
+    assert.equal(app.getSessionSnapshot().recordedSets, 0);
+  }
+});
+
+test('Previous set column uses only actual saved workout for selected template', () => {
+  const { app } = createApp();
+  const state = app.getState();
+  assert.equal(app.getPreviousSetPerformance('barbell_curl', 0, 'standard'), null);
+  recordAll(app);
+  assert.equal(app.completeWorkoutSession(), true);
+  assert.deepEqual(app.getPreviousSetPerformance('barbell_curl', 0, 'standard'), {reps:5,weight:27.5});
+  assert.equal(app.getPreviousSetPerformance('barbell_curl', 0, 'growth'), null);
+  assert.equal(app.getPreviousSetPerformance('barbell_curl', 99, 'standard'), null);
+});
+
+test('Mobile layout keeps timer inside workout and footer safe-area accessible', () => {
+  assert.match(html, /<details id="restTimerBar"/);
+  assert.match(html, /class="app-main [^"]*"/);
+  assert.match(html, /\.app-shell\s*\{\s*padding-bottom:\s*calc\(114px \+ env\(safe-area-inset-bottom/);
+  assert.match(html, /\.app-bottom-nav\s*\{[^}]*env\(safe-area-inset-bottom/);
+  assert.match(html, /className = 'workout-set-heading'/);
 });
