@@ -734,7 +734,7 @@ test('Week selection and day selection preserve isolated workout slots', () => {
   assert.equal(app.v7ChangeWeek(7), true);
   app.v7RenderProgram();
   assert.equal(document.getElementById('v7WeekGrid').children.length, 12);
-  assert.equal(app.getActiveWorkoutExercises()[0].sets, 2);
+  assert.equal(app.getActiveWorkoutExercises()[0].sets, 3); // first exercise is 5×5 → 3 sets in week 7
   app.v7ChangeWeek(1); app.v7ChangeDay(0);
   assert.equal(app.getActiveWorkoutExercises()[0].setValues[0], 5);
 });
