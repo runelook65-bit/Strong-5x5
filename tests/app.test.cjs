@@ -1024,3 +1024,56 @@ test('v0.9 Program roadmap preserves 7th-week deload and original week switching
   assert.equal(document.getElementById('v9ProgramCurrentWeek').textContent,'7');
   assert.match(document.getElementById('v7ProgramWeekText').textContent,/A \/ B \/ A/);
 });
+
+test('v0.9 progress uses no fake scores on an empty fresh install', () => {
+  const {app,document}=createApp();
+  app.v7RenderProgress();
+  assert.equal(document.getElementById('v7ProgressSessions').textContent,0);
+  assert.equal(document.getElementById('v7ProgressVolume').textContent,'—');
+  assert.equal(document.getElementById('v7ProgressArm').textContent,'—');
+  assert.match(document.getElementById('v9ProgressStatus').textContent,/İlk antrenmanını/);
+  assert.match(document.getElementById('v7PersonalRecords').innerHTML,/Kayıtlı set/);
+  assert.equal(document.getElementById('v9StrengthNote').textContent,'Bu hareket için kayıtlı çalışma ağırlığı yok.');
+});
+
+test('v0.9 progress cards calculate recorded volume, actual PRs and cold measurement delta', () => {
+  const {app,document}=createApp();
+  const s=app.getState();
+  s.workoutLogs=[
+    {id:'w1_d0_standard_A',title:'Workout A',volume:1234,exercises:[{exId:'barbell_curl',sets:[{weight:20,reps:5},{weight:22,reps:5}]}]},
+    {id:'w2_d0_standard_B',title:'Workout B',volume:444,exercises:[]}
+  ];
+  s.armMeasurements=[{note:'Soğuk',cm:34},{note:'Pump',cm:36},{note:'Soğuk',cm:35.5}];
+  s.exStats.barbell_curl.history=[{weight:20,reps:5,date:'2026-10-20'},{weight:22,reps:5,date:'2026-10-25'}];
+  app.v7RenderProgress();
+  assert.equal(document.getElementById('v7ProgressSessions').textContent,2);
+  assert.equal(document.getElementById('v7ProgressVolume').textContent,'1.678 kg');
+  assert.equal(document.getElementById('v7ProgressArm').textContent,'+1.5 cm');
+  assert.equal(document.getElementById('v9StrengthNote').textContent,'Son 2 kayıt gösteriliyor');
+  assert.match(document.getElementById('v9VolumeNote').textContent,/2 haftada/);
+  assert.equal(document.getElementById('v7PersonalRecords').children.length,1);
+  assert.match(document.getElementById('v7PersonalRecords').children[0].innerHTML,/22.0 kg/);
+  assert.match(document.getElementById('v7LastMeasurements').innerHTML,/35.5 cm/);
+  assert.match(document.getElementById('v7LastMeasurements').innerHTML,/36.0 cm/);
+});
+
+test('v0.9 progress excludes missing or invalid set weights from PRs', () => {
+  const {app,document}=createApp();
+  app.getState().workoutLogs=[{id:'w1_d0_standard_A',volume:0,exercises:[
+    {exId:'barbell_curl',sets:[{weight:40,reps:0},{weight:NaN,reps:5},{weight:0,reps:5}]}
+  ]}];
+  app.v7RenderProgress();
+  assert.equal(document.getElementById('v7PersonalRecords').children.length,0);
+  assert.match(document.getElementById('v9RecordsNote').textContent,/Kaydedilmiş setlerde/);
+});
+
+test('v0.9 progress keeps exercise chart selection on rerender and tracks true history', () => {
+  const {app,document}=createApp();
+  const selector=document.getElementById('v7ChartExercise');
+  selector.value='hammer_curl';
+  app.getState().exStats.hammer_curl.history=[{weight:11,reps:8,date:'2026-10-20'}];
+  app.v7RenderProgress();
+  assert.equal(selector.value,'hammer_curl');
+  assert.equal(document.getElementById('v9StrengthNote').textContent,'Son 1 kayıt gösteriliyor');
+  assert.match(document.getElementById('v7StrengthChart').innerHTML,/11\.0 kg/);
+});
