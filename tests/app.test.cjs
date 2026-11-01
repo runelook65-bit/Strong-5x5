@@ -61,6 +61,10 @@ function createApp(saved) {
       openFinishPreview, completeWorkoutSession, renderExercises, renderProgressTab,
       makeBackupJSON, parseBackupJSON, restoreBackupJSON, undoLastWorkout,
       escapeHTML, renderMuscleVolume, renderProgramTab, parseWorkoutWeight,
+      v7RenderToday, v7EnterFocus, v7Navigate, v7RenderFocus, v7SelectExercise, v7LogCurrentSet,
+      v7EditValue, v7ChangeWeek, v7ChangeDay, v7RenderProgram, v7RenderProgress,
+      v7RenderSettings, v7BuildStrengthChart, v7BuildVolumeChart, v7OpenValueModal,
+      v7SaveValueModal, v7CloseValueModal, v7RenderSettings,
       getState: () => state,
       setState: next => { state = next; }
     };
@@ -648,9 +652,137 @@ test('Inline logger uses nonsticky rest panel and never duplicates set entry for
   assert.ok(!html.includes('Sıradaki set · 1/5'));
 });
 
-test('PWA release 0.6.1 is visibly identifiable and updateable', () => {
-  assert.match(html, /id="appReleaseBadge"[^>]*>Yeni arayüz · v0\.6\.1<\/span>/);
-  assert.match(html, /<meta name="application-version" content="0\.6\.1"/);
+test('PWA release 0.7.0 exposes new five-screen architecture and update UI', () => {
+  for (const id of ['v7Today','v7Focus','v7Program','v7Progress','v7Settings','v7ToolDetail']) {
+    assert.match(html, new RegExp('id="'+id+'"'));
+  }
+  assert.match(html, /<meta name="application-version" content="0\.7\.0"/);
   assert.match(html, /id="appUpdateBanner"/);
   assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
+});
+
+test('Today is a launchpad, not a set table, and starts without invented metrics', () => {
+  const { app, document } = createApp();
+  app.v7RenderToday();
+  assert.equal(document.getElementById('v7HeroTitle').textContent, 'Workout A');
+  assert.equal(document.getElementById('v7TodayExercises').children.length, 3);
+  assert.equal(document.getElementById('v7StatWeek').textContent, '1 / 12');
+  assert.equal(document.getElementById('v7StatSessions').textContent, '0 / 3');
+  assert.equal(document.getElementById('v7StatArm').textContent, '—');
+  assert.equal(document.getElementById('v7StartLabel').textContent, 'Antrenmanı Başlat');
+});
+
+test('Workout focus hides the bottom tabs and shows one actual exercise', () => {
+  const { app, document } = createApp();
+  assert.equal(app.v7EnterFocus(0), true);
+  assert.equal(document.getElementById('v7Focus').classList.contains('hidden'), false);
+  assert.equal(document.getElementById('v7Nav').classList.contains('hidden'), true);
+  assert.equal(document.getElementById('v7ExerciseName').textContent, 'Barbell Curl');
+  assert.equal(document.getElementById('v7WeightText').textContent, '27.5');
+  assert.equal(document.getElementById('v7RepsText').textContent, '5');
+  assert.equal(document.getElementById('v7SetDots').children.length, 5);
+  app.v7Navigate('today');
+  assert.equal(document.getElementById('v7Nav').classList.contains('hidden'), false);
+});
+
+test('Focus Seti Tamamla saves real set data and home offers to continue', () => {
+  const { app, document } = createApp();
+  app.v7EnterFocus(0);
+  assert.equal(app.v7LogCurrentSet(), true);
+  assert.equal(app.getSessionSnapshot().recordedSets, 1);
+  assert.equal(app.getActiveWorkoutExercises()[0].setValues[0], 5);
+  app.v7RenderToday();
+  assert.equal(document.getElementById('v7StartLabel').textContent, 'Antrenmana Devam Et');
+});
+
+test('Focus weight/repetition steppers update draft values, not saved data', () => {
+  const { app, document } = createApp();
+  app.v7EnterFocus(0);
+  app.v7EditValue('weight', -0.5);
+  app.v7EditValue('reps', -2);
+  assert.equal(document.getElementById('v7WeightText').textContent, '27');
+  assert.equal(document.getElementById('v7RepsText').textContent, '3');
+  assert.equal(app.getSessionSnapshot().recordedSets, 0);
+  app.v7LogCurrentSet();
+  assert.equal(app.getActiveWorkoutExercises()[0].setValues[0], 3);
+  assert.equal(app.getActiveWorkoutExercises()[0].setWeights[0], 27);
+});
+
+test('Direct numeric editor accepts Turkish comma and rejects invalid reps', () => {
+  const { app, document } = createApp();
+  app.v7EnterFocus(0);
+  app.v7OpenValueModal('weight');
+  document.getElementById('v7ValueInput').value = '19,5';
+  app.v7SaveValueModal();
+  assert.equal(document.getElementById('v7WeightText').textContent, '19.5');
+  app.v7OpenValueModal('reps');
+  document.getElementById('v7ValueInput').value = '3.5';
+  app.v7SaveValueModal();
+  assert.equal(document.getElementById('v7RepsText').textContent, '5');
+  document.getElementById('v7ValueInput').value = '8';
+  app.v7SaveValueModal();
+  assert.equal(document.getElementById('v7RepsText').textContent, '8');
+});
+
+test('Week selection and day selection preserve isolated workout slots', () => {
+  const { app, document } = createApp();
+  const state = app.getState();
+  const a = app.getActiveWorkoutExercises()[0];
+  app.recordExerciseSet(a.setKey, 0, 5, 27.5);
+  assert.equal(app.v7ChangeDay(1), true);
+  assert.equal(app.getActiveWorkoutExercises()[0].setValues[0], null);
+  assert.equal(app.v7ChangeWeek(7), true);
+  app.v7RenderProgram();
+  assert.equal(document.getElementById('v7WeekGrid').children.length, 12);
+  assert.equal(app.getActiveWorkoutExercises()[0].sets, 2);
+  app.v7ChangeWeek(1); app.v7ChangeDay(0);
+  assert.equal(app.getActiveWorkoutExercises()[0].setValues[0], 5);
+});
+
+test('Program renders the actual A/B week, exercise templates and selections', () => {
+  const { app, document } = createApp();
+  app.v7RenderProgram();
+  assert.equal(document.getElementById('v7WeekDays').children.length, 3);
+  assert.equal(document.getElementById('v7WorkoutTemplates').children.length, 2);
+  assert.equal(document.getElementById('v7WeekGrid').children.length, 12);
+  assert.equal(document.getElementById('v7ProgramPercent').textContent, '0%');
+});
+
+test('Progress starts with empty-state charts and no fabricated records', () => {
+  const { app, document } = createApp();
+  app.v7RenderProgress();
+  assert.equal(document.getElementById('v7ProgressSessions').textContent, '0');
+  assert.equal(document.getElementById('v7ProgressVolume').textContent, '—');
+  assert.equal(document.getElementById('v7ProgressArm').textContent, '—');
+  assert.match(document.getElementById('v7StrengthChart').innerHTML, /İlk antrenmanını/);
+  assert.match(document.getElementById('v7VolumeChart').innerHTML, /Haftalık hacim/);
+});
+
+test('Progress charts and records use completed real workout history', () => {
+  const { app, document } = createApp();
+  recordAll(app);
+  assert.equal(app.completeWorkoutSession(), true);
+  app.v7RenderProgress();
+  assert.equal(document.getElementById('v7ProgressSessions').textContent, '1');
+  assert.match(document.getElementById('v7StrengthChart').innerHTML, /<svg/);
+  assert.match(document.getElementById('v7VolumeChart').innerHTML, /<svg/);
+  assert.ok(document.getElementById('v7PersonalRecords').children.length > 0);
+});
+
+test('Workout recovery preference stays in JSON backup', () => {
+  const { app } = createApp();
+  const state=app.getState();
+  state.v7RestSeconds=120;
+  const parsed=app.parseBackupJSON(app.makeBackupJSON());
+  assert.equal(parsed.v7RestSeconds, 120);
+  assert.equal(app.getDefaultState().v7RestSeconds, 0);
+});
+
+test('Settings displays actual persisted sound and rest preferences', () => {
+  const { app, document } = createApp();
+  app.getState().soundEnabled=false;
+  app.getState().v7RestSeconds=150;
+  app.v7RenderSettings();
+  assert.equal(document.getElementById('v7SoundValue').textContent, 'Kapalı');
+  assert.equal(document.getElementById('v7RestPrefValue').textContent, '150 sn ›');
 });
