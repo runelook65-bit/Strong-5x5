@@ -2,7 +2,7 @@
 
 **Canlı uygulama (v0.7.0): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
 
-**GitHub sürümü: v0.7.0** · Canlı Vercel sürümü: **v0.7.0**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
+**GitHub geliştirme sürümü: v0.7.1 (Precision Glass)** · Canlı Vercel sürümü: **v0.7.0**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
 
 Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım manuel olarak yapılmıştır; sonraki güncellemeler otomatik yayınlanmaz.
 
@@ -121,3 +121,19 @@ Ayrıntılar: [v0.7 UI ve kabul kriterleri](docs/V07_UX.md). Vercel'e manuel ola
 - Vite build logunda `dist/index.html`, `assets/index-6ouLSsWs.css`, `sw.js` ve `manifest.webmanifest` üretimi doğrulandı.
 - 61 kod simülasyonu geçti; gerçek iPhone Safari, VoiceOver ve PWA offline acceptance testleri henüz tamamlanmadı.
 - Git bağlantısı olmadığı için yeni commitler otomatik dağıtılmıyor.
+
+## v0.7.1 — Precision Glass (GitHub; henüz canlıya alınmadı)
+
+Önceden seçilmiş beş ekranlık mockuplara daha yakın, kontrollü glassmorphism sistemi. Yeni sistem ek stylesheet `src/v7-glass.css` ile uygulandı; eski `src/v7.css` ve hesaplama kodları korundu.
+
+- **Bugün:** Atmosferik glass antrenman hero, gerçek *Hazır / Devam ediyor / Tamamlandı* durumu, öne çıkan Başlat/Devam Et eylemi, daha okunur mat KPI kartları.
+- **Aktif Antrenman:** Görseli arka planda kullanılmış egzersiz başlığı, büyük kg/tekrar kontrolü, tek seferde tek set, fotoğraf ve data arasındaki kontrast, cam dinlenme yüzeyi.
+- **Program:** 12 haftalık grid, seçili gün ve 7. hafta toparlanması; okunabilir mat kartlarla sınırlı glass hero.
+- **İlerleme:** Gerçek kayıtlara dayalı grafikler yüksek kontrastlı mat yüzeylerde.
+- **Ayarlar:** Üst kimlik kartında glass, seçeneklerde tek çizgi dilinde SVG simgeleri.
+- **Gezinme:** iOS safe-area üzerinde yüzen, kısmen saydam ve blur'lu, tek aktif sekmesi olan alt dock. Sekmeler korunur, focus'ta gizlenir.
+- **Ulaşılabilirlik ve performans:** Dokunma alanları en az 44px; reduced-motion / reduced-transparency ve blur olmayan tarayıcılar için fallback vardır. Bütün kartlara blur uygulanmaz.
+- **Davranış düzeltmesi:** Tamamlanmış seans ana ekranda hatalı olarak `Antrenmana Devam Et` yazmaz.
+- **Regresyonlar:** 66/66 JavaScript test simülasyonunda geçti; HTML/CSS yapısal kontrol temiz.
+
+**Yayın sınırı:** v0.7.1 **yalnızca GitHub'da**. https://arm-5x5.vercel.app adresinde son doğrulanmış üretim sürümü v0.7.0. Bağımsız `npm run build`, iPhone Safari görsel QA, VoiceOver ve PWA güncelleme testleri yeni sürüm için yapılmadı.
