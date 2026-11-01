@@ -647,3 +647,10 @@ test('Inline logger uses nonsticky rest panel and never duplicates set entry for
   assert.ok(!/<div id="restTimerBar" class="sticky/.test(html));
   assert.ok(!html.includes('Sıradaki set · 1/5'));
 });
+
+test('PWA release 0.6.1 is visibly identifiable and updateable', () => {
+  assert.match(html, /id="appReleaseBadge"[^>]*>Yeni arayüz · v0\.6\.1<\/span>/);
+  assert.match(html, /<meta name="application-version" content="0\.6\.1"/);
+  assert.match(html, /id="appUpdateBanner"/);
+  assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
+});
