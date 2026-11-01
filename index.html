@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ARM 5×5 — 12 Haftalık Kol Büyütme & Antrenman Takipçisi</title>
   <meta name="theme-color" content="#07080a" />
-  <meta name="application-version" content="0.7.1" />
+  <meta name="application-version" content="0.7.2" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ARM 5×5" />
@@ -164,9 +164,9 @@
             <img src="/icons/arm-5x5.svg" alt="" class="v7-logo" />
             <div><p class="v8-header-overline">YOUR TRAINING SPACE</p><h1 id="v7TodayTitle" class="v7-title">ARM 5×5</h1><p class="v7-muted text-sm">Bugün, daha güçlü bir sen.</p></div>
           </div>
-          <span class="v7-version">v0.7.1</span>
+          <span class="v7-version">v0.7.2</span>
         </div>
-        <div class="v7-hero v7-home-hero">
+        <div class="v7-hero v7-home-hero arm-cover arm-cover-home">
           <div class="v8-hero-watermark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 17c0-4 2-6 5-6V7l2-3 3 2-1 5h3l3-2 2 3-2 5c-2 3-5 4-9 4-3 0-5-1-6-4Z"/></svg></div>
           <div class="v8-hero-context"><span class="v7-eyebrow">SIRADAKİ ANTRENMAN</span><span class="v8-hero-status"><span class="v8-status-dot"></span><span id="v8HeroState">Hazır</span></span></div>
           <h2 id="v7HeroTitle" class="v7-hero-title">Workout A</h2>
@@ -193,7 +193,7 @@
           <button id="v7FocusMoreBtn" type="button" class="v7-icon-button v8-focus-more" aria-label="Antrenman seçenekleri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
         </div>
         <div class="v7-thin-track" role="progressbar" aria-label="Antrenman ilerleme yüzdesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="v7FocusTrack"><div id="v7FocusFill"></div></div>
-        <div class="v7-hero v7-exercise-hero">
+        <div id="v7FocusHero" class="v7-hero v7-exercise-hero">
           <div class="v8-focus-label"><span class="v8-status-dot"></span> AKTİF EGZERSİZ</div>
           <h2 id="v7ExerciseName" class="v7-hero-title">Barbell Curl</h2>
           <p id="v7ExercisePrescription" class="v7-muted mt-1">5 set × 5 tekrar</p>
@@ -254,7 +254,7 @@
 
       <section id="v7Program" class="v7-screen v7-page space-y-5 hidden" aria-labelledby="v7ProgramTitle">
         <div class="v7-page-header"><div><h1 id="v7ProgramTitle" class="v7-title">Program</h1><p class="v7-muted text-sm">ARM 5×5</p></div></div>
-        <div class="v7-hero v7-program-hero">
+        <div class="v7-hero v7-program-hero arm-cover arm-cover-program">
           <div class="v7-eyebrow">12 HAFTALIK PLAN</div>
           <h2 class="v7-hero-title">12 Haftalık Plan</h2>
           <p class="v8-program-note">Düzenli ilerle. Her set bir adım.</p>
@@ -285,6 +285,11 @@
           <div class="v7-stat"><span class="v7-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h17M8 15l4-4 4 2 4-7"/></svg></span><span class="v7-muted text-xs">Hacim</span><strong id="v7ProgressVolume">—</strong></div>
           <div class="v7-stat"><span class="v7-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4"/></svg></span><span class="v7-muted text-xs">Kol değişimi</span><strong id="v7ProgressArm">—</strong></div>
         </div>
+        <div class="v7-hero v7-progress-cover arm-cover arm-cover-progress" role="img" aria-label="Zümrüt ışıklarla ağırlık antrenmanı ve yükselen gelişim grafiği">
+          <div class="v7-eyebrow">GÜÇ VE KAS GELİŞİMİ</div>
+          <h2 class="v7-section-title mt-2">İlerlemen Devam Ediyor</h2>
+          <p class="v7-muted text-xs mt-2">Her kayıt, gelişimini görünür kılar.</p>
+        </div>
         <div class="v7-card p-4">
           <div class="flex flex-wrap justify-between gap-2 items-center mb-4"><h2 class="v7-section-title">Güç Gelişimi</h2><select id="v7ChartExercise" aria-label="Grafikteki hareket" class="v7-select v7-compact-select"></select></div>
           <div id="v7StrengthChart" class="v7-chart-area"></div>
@@ -297,7 +302,7 @@
 
       <section id="v7Settings" class="v7-screen v7-page space-y-5 hidden" aria-labelledby="v7SettingsTitle">
         <h1 id="v7SettingsTitle" class="v7-title">Ayarlar</h1>
-        <div class="v7-hero v7-settings-hero flex gap-3 items-center">
+        <div class="v7-hero v7-settings-hero arm-cover arm-cover-settings flex gap-3 items-center">
           <img src="/icons/arm-5x5.svg" alt="" class="v7-logo"/>
           <div><h2 class="text-2xl font-extrabold">ARM 5×5</h2><p class="v7-muted text-sm">Antrenman tercihleri ve araçlar</p><span class="v8-settings-version">PERSONAL PERFORMANCE</span></div>
         </div>
@@ -319,7 +324,7 @@
             <button id="v7ImportBtn" type="button" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><path d="M12 4v12m-5-5 5 5 5-5M5 17v3h14v-3"/></svg></span><span>Yedekten Geri Yükle</span><span class="v7-row-end">›</span></button>
             <button id="v7ResetBtn" type="button" class="v7-setting-row v7-destructive"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5m4-5v5"/></svg></span><span>Verileri Sıfırla</span><span class="v7-row-end">›</span></button>
           </div></div>
-        <div class="v7-info">ⓘ &nbsp; Sürüm 0.7.1 · Precision Glass UI</div>
+        <div class="v7-info">ⓘ &nbsp; Sürüm 0.7.2 · Visual Covers</div>
       </section>
 
       <section id="v7ToolDetail" class="v7-screen v7-page hidden" aria-labelledby="v7ToolTitle">
@@ -2828,7 +2833,14 @@
   return true;
 }
 
-    function v7RenderToday(){
+    function v7ArtworkMarkup(exId, fallbackSrc){
+  const known={barbell_curl:'barbell',hammer_curl:'hammer',skull_crusher:'skull'};
+  const type=known[exId];
+  if(type) return `<span class="v7-exercise-art arm-thumb arm-thumb-${type}" aria-hidden="true"></span>`;
+  return `<img src="${fallbackSrc}" alt="" loading="lazy"/>`;
+}
+
+function v7RenderToday(){
   const snapshot=v7CurrentSnapshot();
   const wType=getActiveWorkoutType();
   v7SetText('v7HeroTitle',`Workout ${wType}`);
@@ -2844,7 +2856,7 @@
   snapshot.exercises.forEach((item,i)=>{
     const row=document.createElement('button');
     row.type='button';row.className='v7-exercise-row';
-    row.innerHTML=`<img src="${item.meta.img}" alt="" loading="lazy"/><span class="flex-1 min-w-0"><span class="v7-ex-name block">${i+1}. ${escapeHTML(item.meta.name)}</span><span class="v7-chip">${v7GoalText(item)} tekrar</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
+    row.innerHTML=`${v7ArtworkMarkup(item.exId,item.meta.img)}<span class="flex-1 min-w-0"><span class="v7-ex-name block">${i+1}. ${escapeHTML(item.meta.name)}</span><span class="v7-chip">${v7GoalText(item)} tekrar</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
     row.setAttribute('aria-label',`${item.meta.name}, ${v7GoalText(item)}. Antrenmana geç`);
     row.addEventListener('click',()=>v7EnterFocus(i));
     list.appendChild(row);
@@ -2890,6 +2902,8 @@
   v7SetText('v7ExerciseName',item.meta.name);
   v7SetText('v7ExercisePrescription',`${v7GoalText(item)} tekrar`);
   const img=v7Element('v7ExerciseImage');img.src=item.meta.img;img.alt='';
+  v7Element('v7FocusHero').classList.toggle('arm-cover',item.exId==='barbell_curl');
+  v7Element('v7FocusHero').classList.toggle('arm-cover-focus',item.exId==='barbell_curl');
   const pct=snapshot.totalSets ? Math.round(snapshot.recordedSets/snapshot.totalSets*100):0;
   v7Element('v7FocusFill').style.width=`${pct}%`;
   v7Element('v7FocusTrack').setAttribute('aria-valuenow',String(pct));
@@ -3010,7 +3024,7 @@
     const items=template[type];
     const meta=EXERCISE_DB[items[0].exId];
     const names=items.map(i=>EXERCISE_DB[i.exId].name).join(', ');
-    row.innerHTML=`<img src="${meta.img}" alt="" loading="lazy"><span class="flex-1 min-w-0"><span class="v7-ex-name block">Workout ${type}</span><span class="v7-muted text-xs block mt-1">${escapeHTML(names)}</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
+    row.innerHTML=`${v7ArtworkMarkup(items[0].exId,meta.img)}<span class="flex-1 min-w-0"><span class="v7-ex-name block">Workout ${type}</span><span class="v7-muted text-xs block mt-1">${escapeHTML(names)}</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
     row.addEventListener('click',()=>{
       const current=getActiveWorkoutType();
       if(current!==type&&getSessionSnapshot().recordedSets>0&&!window.confirm('Farklı antrenmanın kayıtları korunacak. Devam edilsin mi?'))return;
@@ -3100,7 +3114,7 @@
     if(!records.length)continue;
     const best=Math.max(...records.map(x=>x.weight));count++;
     const row=document.createElement('div');row.className='v7-exercise-row';
-    row.innerHTML=`<img src="${meta.img}" alt="" loading="lazy"><span class="v7-ex-name flex-1 min-w-0">${escapeHTML(meta.name)}</span><span class="v7-chip">${best.toFixed(1)} kg</span>`;
+    row.innerHTML=`${v7ArtworkMarkup(meta.id,meta.img)}<span class="v7-ex-name flex-1 min-w-0">${escapeHTML(meta.name)}</span><span class="v7-chip">${best.toFixed(1)} kg</span>`;
     prs.appendChild(row);
   }
   if(!count)prs.innerHTML='<div class="p-4 text-sm v7-muted">Henüz kişisel rekor kaydın yok.</div>';
