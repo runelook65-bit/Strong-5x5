@@ -614,7 +614,7 @@ body {
   background-color: #081d18;
   background-image:
     linear-gradient(90deg,rgba(2,14,13,.87) 0%,rgba(4,20,18,.78) 32%,rgba(3,23,17,.25) 71%,rgba(4,18,16,.08) 100%),
-    url('/visual-assets/arm-covers-atlas.webp');
+    url('https://raw.githubusercontent.com/runelook65-bit/Strong-5x5/main/public/visual-assets/arm-covers-atlas.webp');
   background-size: 100% 100%, 500% 100%;
   background-repeat: no-repeat;
   background-position: 0 0, 0% center;
@@ -657,7 +657,7 @@ body {
   height:49px;
   border-radius:13px;
   border:1px solid rgba(164,239,199,.18);
-  background-image:url('/visual-assets/arm-exercises-atlas.webp');
+  background-image:url('https://raw.githubusercontent.com/runelook65-bit/Strong-5x5/main/public/visual-assets/arm-exercises-atlas.webp');
   background-size:300% 100%;
   background-repeat:no-repeat;
   background-color:#121d1a;
