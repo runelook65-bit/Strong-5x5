@@ -37,6 +37,12 @@
     .app-header > div:first-child > div { min-width: 0; }
     .app-header #headerSubtitle { line-height: 1.3; overflow-wrap: anywhere; }
     .app-header > div:last-child { flex-shrink: 0; }
+    .rest-timer-summary #timerStatusText { max-width: 116px; line-height:1.25; white-space: normal; text-align:right; }
+    .app-main .exercise-panel { scroll-margin-top: 90px; }
+    .set-cell-input { scroll-margin-block: 120px 160px; }
+    @supports selector(:has(input:focus)) {
+      .app-shell:has(.set-cell-input:focus) .app-bottom-nav { display:none; }
+    }
     .rest-timer-panel > summary { list-style: none; }
     .rest-timer-panel > summary::-webkit-details-marker { display: none; }
     .rest-timer-panel[open] .rest-chevron { transform: rotate(180deg); }
@@ -1667,6 +1673,12 @@
         : `${data.sessions} kayıtlı seans · ${data.legacySessions ? data.legacySessions + ' eski seansın set verisi bulunmuyor. ' : ''}Bu sayılar yalnızca alt tekrar hedefini karşılayan doğrudan çalışma setleridir. Diğer antrenmanlarda alınan dolaylı yük dahil değildir.`;
     }
 
+    function parseWorkoutWeight(raw) {
+      const normalized = String(raw ?? '').trim().replace(',', '.');
+      if (!/^(?:[0-9]+)(?:\.[0-9]+)?$/.test(normalized)) return NaN;
+      return Number(normalized);
+    }
+
     function getPreviousSetPerformance(exId,index,templateKey) {
   for (let i = (state.workoutLogs || []).length - 1; i >= 0; i--) {
     const log = state.workoutLogs[i];
@@ -1815,7 +1827,7 @@
       btn.textContent = wasRecorded ? '✓' : '+';
       btn.setAttribute('aria-label', `${meta.name} ${setIdx+1}. setini ${wasRecorded ? 'güncelle veya düzenle' : 'kaydet'}`);
       const submit = () => {
-        const weight = Number(weightInput.value);
+        const weight = parseWorkoutWeight(weightInput.value);
         const count = Number(repsInput.value);
         if (weightInput.value.trim() === '' || repsInput.value.trim() === '' ||
             !Number.isFinite(weight) || weight < 0.5 || weight > 500 ||
@@ -2007,7 +2019,7 @@
       for (let w = 1; w <= 12; w++) {
         const box = document.createElement('div');
         const isCurrentWeek = (w === state.currentWeek);
-        box.className = `rounded-xl p-2.5 border ${
+        box.className = `rounded-xl p-3 border ${
           isCurrentWeek ? 'bg-emerald-950/30 border-emerald-500/60' : 'bg-oled border-borderDark'
         } space-y-2`;
 
@@ -2027,7 +2039,7 @@
           const done = !!state.completedSlots[key];
           const dayBtn = document.createElement('button');
           dayBtn.type = 'button';
-          dayBtn.className = `py-1.5 rounded-lg text-xs font-bold border transition ${
+          dayBtn.className = `min-h-[44px] py-2 rounded-lg text-xs font-bold border transition ${
             done
               ? 'bg-emerald-500 text-oled border-emerald-400'
               : (w === state.currentWeek && d === state.currentDayIdx)
@@ -2574,6 +2586,7 @@
 
       document.querySelectorAll('.nav-tab-btn').forEach(btn => {
         const t = btn.getAttribute('data-tab');
+        btn.setAttribute('aria-current', t === tabName ? 'page' : 'false');
         if (t === tabName) {
           btn.className = 'nav-tab-btn flex flex-col items-center justify-center py-1.5 rounded-xl text-emerald-400 bg-emerald-500/10 font-semibold text-[11px] gap-1 transition';
         } else {
