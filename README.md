@@ -1,5 +1,7 @@
 # ARM 5×5 — Workout Tracker
 
+**Geliştirme dalı:** `design/shadcn-mobile-v09` — **0.9.0-dev**, shadcn/ui ilkelerini temel alan konsolide mobil tasarım. Yalnızca **Bugün** ve **Aktif Antrenman** yeniden düzenlendi; `main` ve Vercel canlı sürümü değişmedi. Bu aşamada React/shadcn bileşen kütüphanesi kurulu değil. [Kapsam ve QA](docs/UI_V09.md).
+
 **Canlı uygulama (son doğrulanan v0.7.2): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
 
 **GitHub geliştirme sürümü: v0.8.0 (Minimal UI)** · Canlı Vercel sürümü: **v0.7.2**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
