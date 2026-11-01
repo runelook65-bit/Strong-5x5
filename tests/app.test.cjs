@@ -281,6 +281,8 @@ test('Growth tracks failed attempts below the lower rep bound only', () => {
   const { app } = createApp();
   const state = app.getState();
   state.templateKey = 'growth';
+  const growthStartWeight = state.growthExStats.barbell_curl.weight;
+  const strengthStartWeight = state.exStats.barbell_curl.weight;
   for (const week of [1, 3, 5]) {
     state.currentWeek = week;
     state.currentDayIdx = 0;
@@ -293,8 +295,9 @@ test('Growth tracks failed attempts below the lower rep bound only', () => {
     }
     assert.equal(app.completeWorkoutSession(), true);
   }
-  assert.equal(state.exStats.barbell_curl.failStreak, 0);
-  assert.ok(state.exStats.barbell_curl.weight < 27.5);
+  assert.equal(state.growthExStats.barbell_curl.failStreak, 0);
+  assert.ok(state.growthExStats.barbell_curl.weight < growthStartWeight);
+  assert.equal(state.exStats.barbell_curl.weight, strengthStartWeight);
 });
 
 test('Muscle volume counts only stored direct sets above their program minimum', () => {
@@ -325,4 +328,29 @@ test('Legacy workouts without per-set details are not counted as invented volume
   assert.equal(volume.legacySessions, 1);
   assert.equal(volume.biceps.sets, 0);
   assert.equal(volume.triceps.sets, 0);
+});
+
+test('Strength and Growth working weights are independent', () => {
+  const { app } = createApp();
+  const state = app.getState();
+  const strengthWeight = state.exStats.barbell_curl.weight;
+  state.templateKey = 'growth';
+  const growthWeight = state.growthExStats.barbell_curl.weight;
+  assert.ok(growthWeight < strengthWeight);
+  app.getActiveWorkoutExercises()[0].stats.weight = growthWeight + 1;
+  state.templateKey = 'standard';
+  assert.equal(app.getActiveWorkoutExercises()[0].stats.weight, strengthWeight);
+  state.templateKey = 'growth';
+  assert.equal(app.getActiveWorkoutExercises()[0].stats.weight, growthWeight + 1);
+});
+
+test('Readiness stays within the selected week and day', () => {
+  const { app } = createApp();
+  const state = app.getState();
+  state.templateKey = 'growth';
+  app.setSessionReadiness('good', true);
+  state.currentDayIdx = 1;
+  assert.deepEqual(app.getSessionReadiness(), {energy: 'unreported', jointDiscomfort: false});
+  state.currentDayIdx = 0;
+  assert.deepEqual(app.getSessionReadiness(), {energy: 'good', jointDiscomfort: true});
 });
