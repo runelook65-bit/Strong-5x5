@@ -2786,6 +2786,8 @@
     let v7DraftWeight=0;
     let v7DraftReps=0;
     let v7EditingField=null;
+    let v7ToolNode=null;
+    let v7ToolOrigin=null;
 
     function v7SetText(id,value){document.getElementById(id).textContent=String(value);}
 
@@ -2800,6 +2802,10 @@
     function v7Navigate(page){
   const pages={today:"v7Today",focus:"v7Focus",program:"v7Program",progress:"v7Progress",settings:"v7Settings",tool:"v7ToolDetail"};
   if(!Object.prototype.hasOwnProperty.call(pages,page))return false;
+  if(v7Page==='tool'&&page!=='tool'&&v7ToolNode&&v7ToolOrigin){
+    v7ToolOrigin.appendChild(v7ToolNode);
+    v7ToolNode=null;v7ToolOrigin=null;
+  }
   v7Page=page;
   Object.entries(pages).forEach(([key,id])=>v7Element(id).classList.toggle('hidden',key!==page));
   v7Element('v7Nav').classList.toggle('hidden',page==='focus'||page==='tool');
@@ -3107,13 +3113,20 @@
     function v7OpenTool(kind){
   const titles={calc:'1RM Hesaplayıcı',weights:'Başlangıç Ağırlıkları',measure:'Kol Ölçümü Kaydı',history:'Antrenman Geçmişi'};
   if(!Object.prototype.hasOwnProperty.call(titles,kind))return false;
+  if(v7ToolNode&&v7ToolOrigin){
+    v7ToolOrigin.appendChild(v7ToolNode);
+    v7ToolNode=null;v7ToolOrigin=null;
+  }
   const content=v7Element('v7ToolContent');content.innerHTML='';
   let target=null;
   if(kind==='calc')target=v7Element('calcWeightInput')?.closest('.bg-card');
   if(kind==='weights')target=v7Element('weightsConfigList')?.closest('.bg-card');
   if(kind==='measure')target=v7Element('armSizeInput')?.closest('.bg-card');
   if(kind==='history')target=v7Element('workoutHistoryList')?.closest('.bg-card');
-  if(target)content.appendChild(target);
+  if(!target){showToast('Bu araç yüklenemedi.');return false;}
+  v7ToolOrigin=target.parentElement;
+  v7ToolNode=target;
+  content.appendChild(target);
   v7SetText('v7ToolTitle',titles[kind]);
   v7Navigate('tool');
   return true;
