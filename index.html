@@ -225,7 +225,7 @@
         <div class="bg-card border border-borderDark rounded-2xl p-3.5 space-y-2.5" aria-label="Seans öncesi toparlanma değerlendirmesi">
           <div>
             <h3 class="text-sm font-bold text-white">Bugünkü toparlanma durumun</h3>
-            <p class="text-[11px] text-gray-400 mt-1">İsteğe bağlı. Growth şablonunda yük artışı için durumunu belirtmelisin.</p>
+            <p class="text-[11px] text-gray-400 mt-1">İsteğe bağlı. Growth şablonunda yük artışı için durumunu belirtmelisin. Growth ağırlıkları 5×5 profilinden ayrıdır; örnek başlangıç ağırlıklarını kendine göre düzenle.</p>
           </div>
           <div class="flex flex-wrap items-center gap-3">
             <label for="readinessEnergy" class="text-xs text-gray-300 shrink-0">Enerji</label>
@@ -858,6 +858,17 @@
         };
       });
 
+      const growthExStats = {};
+      Object.keys(EXERCISE_DB).forEach(id => {
+        const ex = EXERCISE_DB[id];
+        growthExStats[id] = {
+          weight: Math.max(0.5, Math.round(ex.defaultWeight * 0.8 * 2) / 2),
+          increment: Math.min(1, ex.defaultInc),
+          failStreak: 0,
+          history: []
+        };
+      });
+
       return {
         currentWeek: 1,
         currentDayIdx: 0, // 0: Pazartesi, 1: Çarşamba, 2: Cuma
@@ -869,6 +880,7 @@
         quickTracker: [false, false, false, false, false], // start with zero real sets
         completedSlots: {}, // e.g. "w1_d0": true
         exStats: exStats,
+        growthExStats, // isolated starting prescriptions for optional hypertrophy program
         workoutLogs: [],
         armMeasurements: [],
         readinessBySlot: {} // optional self-reported recovery: energy and joint discomfort
@@ -897,6 +909,11 @@
           state.activeSets = state.activeSets && typeof state.activeSets === 'object' ? state.activeSets : {};
           state.activeWeights = state.activeWeights && typeof state.activeWeights === 'object' ? state.activeWeights : {};
           state.readinessBySlot = state.readinessBySlot && typeof state.readinessBySlot === 'object' ? state.readinessBySlot : {};
+          const seedGrowth = getDefaultState().growthExStats;
+          if (!state.growthExStats || typeof state.growthExStats !== 'object') state.growthExStats = seedGrowth;
+          Object.keys(seedGrowth).forEach(id => {
+            if (!state.growthExStats[id]) state.growthExStats[id] = seedGrowth[id];
+          });
           // Keep unfinished set records from the first (exercise-only) format.
           Object.keys(EXERCISE_DB).forEach(id => {
             const scopedKey = getSetStorageKey(id);
@@ -941,6 +958,10 @@
       return getScheduledWorkoutType(state.currentWeek, state.currentDayIdx);
     }
 
+    function getExerciseStats(exId) {
+      return state.templateKey === 'growth' ? state.growthExStats[exId] : state.exStats[exId];
+    }
+
     function getEffectiveSetsCount(baseSets) {
       // Screenshot 1 rule: "7. hafta -> Set sayısını yaklaşık yarıya indir"
       if (state.currentWeek === 7) {
@@ -979,7 +1000,7 @@
           minReps: item.minReps || item.reps,
           setValues: state.activeSets[setKey],
           setWeights: state.activeWeights[setKey],
-          stats: state.exStats[item.exId]
+          stats: getExerciseStats(item.exId)
         };
       });
     }
@@ -1680,12 +1701,12 @@
       });
 
       const chosenId = sel.value || 'barbell_curl';
-      const exStat = state.exStats[chosenId];
+      const exStat = getExerciseStats(chosenId);
       const meta = EXERCISE_DB[chosenId];
 
       // Only real logged sets (1–10 reps) qualify for this approximate 1RM.
       const actualSets = (state.workoutLogs || [])
-        .filter(log => log && Array.isArray(log.exercises))
+        .filter(log => log && (log.templateKey || 'standard') === state.templateKey && Array.isArray(log.exercises))
         .flatMap(log => log.exercises)
         .filter(ex => ex && ex.exId === chosenId && Array.isArray(ex.sets))
         .flatMap(ex => ex.sets)
@@ -1804,7 +1825,7 @@
       const list = document.getElementById('weightsConfigList');
       list.innerHTML = '';
       Object.values(EXERCISE_DB).forEach(meta => {
-        const st = state.exStats[meta.id];
+        const st = getExerciseStats(meta.id);
         const row = document.createElement('div');
         row.className = 'bg-oled border border-borderDark rounded-xl p-3 flex flex-wrap items-center justify-between gap-2';
         row.innerHTML = `
