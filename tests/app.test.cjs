@@ -832,8 +832,8 @@ test('Growth readiness remains independently associated with each training day',
   assert.equal(document.getElementById('v7Joint').checked,false);
 });
 
-test('Precision Glass design is loaded after the base v0.7 stylesheet', () => {
-  assert.match(html, /href="\/src\/v7.css"\s*\/?>[\s\S]*href="\/src\/v7-glass.css"/);
+test('Consolidated design is loaded after the structural v0.7 stylesheet', () => {
+  assert.match(html, /href="\/src\/v7.css"\s*\/?>[\s\S]*href="\/src\/ui-v09.css"/);
   assert.match(html, /class="v8-hero-watermark"/);
   assert.match(html, /class="v8-hero-context"/);
   assert.match(html, /id="v7WeightValueBtn"/);
@@ -916,8 +916,10 @@ test('Visual Covers: session data remains independent of imagery', () => {
   assert.equal(app.getSessionSnapshot().recordedSets,1);
 });
 
-test('Minimal UI v0.8 stylesheet supersedes the overgrown Glass theme', () => {
-  assert.match(html, /href="\/src\/v7-glass.css"[\s\S]*href="\/src\/ui-system.css"/);
+test('v0.9 consolidate-only CSS keeps minimal design and removes legacy glass runtime', () => {
+  assert.ok(!html.includes('href="/src/v7-glass.css"'));
+  assert.ok(!html.includes('href="/src/ui-system.css"'));
+  assert.match(html, /href="\/src\/ui-v09.css"/);
   assert.match(html, /class="v7-hero v7-home-hero arm-cover arm-cover-home ui-panel ui-next-session ui9-primary-panel"/);
   assert.match(html, /class="v7-navigation ui-tabbar"/);
   assert.match(html, /application-version" content="0\.9\.0-dev"/);
@@ -954,10 +956,10 @@ test('The old generated cover layer remains in source but not required for app w
   assert.match(html,/id="v7Settings"/);
 });
 
-test('v0.9 quiet-ui stylesheet overrides the legacy glass and minimal layers last', () => {
-  const order=['/src/v7-glass.css','/src/ui-system.css','/src/ui-v09.css'].map(x=>html.indexOf(x));
+test('v0.9 one active design stylesheet follows the legacy structural base', () => {
+  const order=['/src/v7.css','/src/ui-v09.css'].map(x=>html.indexOf(x));
   assert.ok(order.every(v=>v>=0));
-  assert.ok(order[0]<order[1]&&order[1]<order[2]);
+  assert.ok(order[0]<order[1]);
   assert.match(html,/class="v7-card v7-work-control ui-panel ui-logger ui9-focus-logger"/);
   assert.match(html,/class="ui9-metrics-grid"/);
 });
