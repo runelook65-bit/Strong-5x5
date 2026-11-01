@@ -2833,7 +2833,7 @@
   const wType=getActiveWorkoutType();
   v7SetText('v7HeroTitle',`Workout ${wType}`);
   v7SetText('v7HeroSubtitle',`${snapshot.exercises.length} hareket · ${snapshot.totalSets} set · Hafta ${state.currentWeek}`);
-  v7SetText('v7StartLabel',snapshot.recordedSets ? 'Antrenmana Devam Et' : snapshot.isSaved ? 'Kaydedilen Seansı Gör' : 'Antrenmanı Başlat');
+  v7SetText('v7StartLabel',snapshot.isSaved ? 'Kaydedilen Seansı Gör' : snapshot.recordedSets ? 'Antrenmana Devam Et' : 'Antrenmanı Başlat');
   v7SetText('v8HeroState', snapshot.isSaved ? 'Tamamlandı' : snapshot.recordedSets ? 'Devam ediyor' : 'Hazır');
   v7SetText('v7StatWeek',`${state.currentWeek} / 12`);
   v7SetText('v7StatSessions',`${[0,1,2].filter(idx=>state.completedSlots[`w${state.currentWeek}_d${idx}`]).length} / 3`);
