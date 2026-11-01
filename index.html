@@ -1014,6 +1014,7 @@
       }
       clean.quickTracker = Array.isArray(src.quickTracker) && src.quickTracker.length === 5 &&
         src.quickTracker.every(v => typeof v === 'boolean') ? src.quickTracker : defaults.quickTracker;
+      const sessionIds = new Set();
       for (const log of clean.workoutLogs) {
         if (!isObject(log) || typeof log.title !== 'string' || log.title.length > 150 ||
             !Array.isArray(log.details) || log.details.length > 30 ||
@@ -1021,6 +1022,32 @@
             !Number.isFinite(log.volume) || log.volume < 0 || log.volume > 1000000 ||
             (log.exercises !== undefined && (!Array.isArray(log.exercises) || log.exercises.length > 15))) {
           throw new Error('Antrenman geçmişi geçersiz.');
+        }
+        if (log.id !== undefined) {
+          if (typeof log.id !== 'string' || !/^w(?:[1-9]|1[0-2])_d[0-2]$/.test(log.id) || sessionIds.has(log.id)) {
+            throw new Error('Çakışan veya geçersiz seans kimliği.');
+          }
+          sessionIds.add(log.id);
+        }
+        if (log.exercises) {
+          for (const ex of log.exercises) {
+            if (!isObject(ex) || !Object.prototype.hasOwnProperty.call(EXERCISE_DB, ex.exId) ||
+                !Array.isArray(ex.sets) || ex.sets.length > 10 ||
+                !ex.sets.every(set => isObject(set) && Number.isInteger(set.reps) && set.reps >= 0 && set.reps <= 30 &&
+                  Number.isFinite(set.weight) && set.weight >= 0.5 && set.weight <= 500)) {
+              throw new Error('Hareket setleri geçersiz.');
+            }
+          }
+        }
+        if (log.undoStats !== undefined) {
+          if (!Array.isArray(log.undoStats) || log.undoStats.length > 15 ||
+              !log.undoStats.every(st => isObject(st) && ['growthExStats','exStats'].includes(st.profile) &&
+                Object.prototype.hasOwnProperty.call(EXERCISE_DB, st.exId) &&
+                Number.isFinite(st.weight) && st.weight >= 0.5 && st.weight <= 500 &&
+                Number.isInteger(st.failStreak) && st.failStreak >= 0 && st.failStreak <= 5 &&
+                Number.isInteger(st.historyLength) && st.historyLength >= 0 && st.historyLength <= 1000)) {
+            throw new Error('Seans geri alma verisi geçersiz.');
+          }
         }
       }
       for (const m of clean.armMeasurements) {
