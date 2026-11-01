@@ -259,29 +259,43 @@
       </section>
 
       <section id="v7Program" class="v7-screen v7-page space-y-5 hidden" aria-labelledby="v7ProgramTitle">
-        <div class="v7-page-header"><div><h1 id="v7ProgramTitle" class="v7-title">Program</h1><p class="v7-muted text-sm">ARM 5×5</p></div></div>
-        <div class="v7-hero v7-program-hero arm-cover arm-cover-program ui-panel ui-program-summary">
-          <div class="v7-eyebrow">12 HAFTALIK PLAN</div>
-          <h2 class="v7-hero-title">12 Haftalık Plan</h2>
-          <p class="v8-program-note">Düzenli ilerle. Her set bir adım.</p>
-          <p id="v7ProgramWeekText" class="v7-muted mt-3">Hafta 1 / 12 · A / B / A</p>
-          <div class="flex gap-3 items-center mt-4"><div class="v7-thin-track flex-1"><div id="v7ProgramProgress"></div></div><span id="v7ProgramPercent" class="text-xs font-semibold">0%</span></div>
+        <div class="v7-page-header"><div><h1 id="v7ProgramTitle" class="v7-title">Program</h1><p class="v7-muted text-sm">12 haftalık antrenman düzenin</p></div></div>
+        <div class="v7-hero v7-program-hero arm-cover arm-cover-program ui-panel ui-program-summary ui9-program-overview">
+          <div class="ui9-program-topline"><span class="v7-eyebrow">12 HAFTALIK PLAN</span><span id="v9ProgramSlotCount" class="ui9-program-badge">0 / 36 seans</span></div>
+          <h2 class="ui9-program-heading">Hafta <span id="v9ProgramCurrentWeek">1</span><span class="ui9-program-heading-muted"> / 12</span></h2>
+          <p id="v7ProgramWeekText" class="v7-muted ui9-program-pattern">Bu hafta: A / B / A</p>
+          <div id="v9ProgramProgressTrack" class="v7-thin-track ui9-program-track" role="progressbar" aria-label="12 haftalık planda tamamlanan seanslar" aria-valuemin="0" aria-valuemax="36" aria-valuenow="0">
+            <div id="v7ProgramProgress"></div>
+          </div>
+          <div class="ui9-program-progress-meta"><span>36 planlı antrenman</span><strong id="v7ProgramPercent">0%</strong></div>
         </div>
-        <div><h2 class="v7-section-title mb-3">Bu Hafta</h2><div id="v7WeekDays" class="v7-week-days"></div></div>
-        <div><h2 class="v7-section-title mb-3">Antrenman Şablonları</h2><div id="v7WorkoutTemplates" class="v7-card divide-y divide-[#2b3339]"></div></div>
-        <div><h2 class="v7-section-title mb-3">Haftalık Yol Haritası</h2><div id="v7WeekGrid" class="v7-week-grid"></div></div>
-        <div class="v7-card v8-explainer p-4 space-y-3">
-          <h2 class="v7-section-title">Program Mantığı</h2>
-          <div class="v7-list-line"><span class="v7-accent">▂▅█</span><div><strong>Aşamalı Yüklenme</strong><p class="v7-muted text-xs">Hedef tekrarları tamamladıkça çalışma ağırlığını ilerlet.</p></div></div>
-          <div class="v7-list-line"><span class="v7-accent">▣</span><div><strong>Dinlenme Günleri</strong><p class="v7-muted text-xs">Haftada üç antrenman; aralarda toparlanma.</p></div></div>
-          <div class="v7-list-line"><span class="v7-accent">◡</span><div><strong>7. Hafta Toparlanması</strong><p class="v7-muted text-xs">Çalışma setlerini azalt; yük artışı önerme.</p></div></div>
-        </div>
-        <div class="v7-card p-4 space-y-3">
-          <h2 class="font-bold text-white">Program Seçimi</h2>
-          <label for="v7TemplateSelect" class="text-xs v7-muted block">Şablon</label>
+        <section class="ui9-program-section" aria-labelledby="v9ThisWeekTitle">
+          <div class="ui9-program-section-heading"><h2 id="v9ThisWeekTitle" class="v7-section-title">Bu hafta</h2><p class="v7-muted">Gün seçerek antrenmanını değiştir</p></div>
+          <div id="v7WeekDays" class="v7-week-days ui9-program-days"></div>
+        </section>
+        <section class="ui9-program-section" aria-labelledby="v9WorkoutTypesTitle">
+          <div class="ui9-program-section-heading"><h2 id="v9WorkoutTypesTitle" class="v7-section-title">Antrenman A / B</h2><p class="v7-muted">Hareket ve set planını incele; dokunarak seç</p></div>
+          <div id="v7WorkoutTemplates" class="v7-card ui9-program-workout-list"></div>
+        </section>
+        <section class="v7-card ui9-program-selector" aria-labelledby="v9TemplateTitle">
+          <h2 id="v9TemplateTitle" class="v7-section-title">Program şablonu</h2>
+          <label for="v7TemplateSelect" class="v7-muted ui9-program-label">Aktif şablon</label>
           <select id="v7TemplateSelect" class="v7-select"></select>
-          <p class="v7-muted text-xs">A/B sırası ve çalışma ağırlıkları seçtiğin şablona göre hesaplanır.</p>
-        </div>
+          <p class="v7-muted ui9-program-help">Şablon değişikliği kayıtlı antrenmanları silmez. Başlanmış seansta onay istenir.</p>
+        </section>
+        <details class="v7-card ui9-program-details">
+          <summary>12 haftalık yol haritası <span aria-hidden="true" class="ui9-program-chevron">⌄</span></summary>
+          <p class="v7-muted ui9-program-help">Hafta seçimi mevcut antrenman gününü de ilk güne taşır. 7. hafta toparlanma haftasıdır.</p>
+          <div id="v7WeekGrid" class="v7-week-grid ui9-program-weeks"></div>
+        </details>
+        <details class="v7-card ui9-program-details">
+          <summary>Program mantığı <span aria-hidden="true" class="ui9-program-chevron">⌄</span></summary>
+          <div class="ui9-program-rules">
+            <div class="v7-list-line"><span class="v7-accent" aria-hidden="true">↑</span><div><strong>Aşamalı yüklenme</strong><p class="v7-muted">Hedef tekrarlar tamamlandıkça çalışma ağırlığını ilerlet.</p></div></div>
+            <div class="v7-list-line"><span class="v7-accent" aria-hidden="true">○</span><div><strong>Dinlenme günleri</strong><p class="v7-muted">Haftada üç antrenman; aralarda toparlanma.</p></div></div>
+            <div class="v7-list-line"><span class="v7-accent" aria-hidden="true">7</span><div><strong>7. hafta toparlanması</strong><p class="v7-muted">Çalışma setlerini azalt; yük artışı önerme.</p></div></div>
+          </div>
+        </details>
       </section>
 
       <section id="v7Progress" class="v7-screen v7-page space-y-5 hidden" aria-labelledby="v7ProgressTitle">
@@ -3008,43 +3022,61 @@ function v7RenderToday(){
 
     function v7RenderProgram(){
   const week=state.currentWeek;
-  const totalDone=Object.values(state.completedSlots||{}).filter(Boolean).length;
+  const slots=state.completedSlots||{};
+  const totalDone=Math.min(36,Object.values(slots).filter(Boolean).length);
   const pattern=week%2?'A / B / A':'B / A / B';
-  v7SetText('v7ProgramWeekText',`Hafta ${week} / 12 · Bu hafta: ${pattern}`);
-  const pct=Math.min(100,Math.round(totalDone/36*100));
+  v7SetText('v9ProgramCurrentWeek',String(week));
+  v7SetText('v7ProgramWeekText',`Bu hafta: ${pattern}`);
+  v7SetText('v9ProgramSlotCount',`${totalDone} / 36 seans`);
+  const pct=Math.round(totalDone/36*100);
   v7Element('v7ProgramProgress').style.width=`${pct}%`;
+  v7Element('v9ProgramProgressTrack').setAttribute('aria-valuenow',String(totalDone));
   v7SetText('v7ProgramPercent',`${pct}%`);
+
   const dayRoot=v7Element('v7WeekDays');dayRoot.innerHTML='';
   DAY_NAMES.forEach((day,i)=>{
-    const done=!!state.completedSlots[`w${week}_d${i}`];
+    const done=!!slots[`w${week}_d${i}`];
+    const selected=i===state.currentDayIdx;
+    const type=getScheduledWorkoutType(week,i);
+    const status=done?'Tamamlandı':selected?'Seçili':'Seç';
     const row=document.createElement('button');row.type='button';
-    row.className=`v7-day ${i===state.currentDayIdx?'is-active':''}`;
-    row.innerHTML=`<span class="text-[11px] v7-muted">${day}</span><strong>Workout ${getScheduledWorkoutType(week,i)}</strong><span class="text-[11px] ${done?'text-emerald-300':'v7-muted'}">${done?'✓ Tamamlandı':i===state.currentDayIdx?'Seçili':'Seç'}</span>`;
-    row.setAttribute('aria-pressed',String(i===state.currentDayIdx));
+    row.className=`v7-day ui9-program-day ${selected?'is-active':''} ${done?'is-done':''}`;
+    row.innerHTML=`<span class="ui9-program-day-label">${escapeHTML(day)}</span><strong>Workout ${type}</strong><span class="ui9-program-day-status">${done?'✓ ':''}${status}</span>`;
+    row.setAttribute('aria-pressed',String(selected));
+    row.setAttribute('aria-label',`${day}: Workout ${type}, ${status}`);
     row.addEventListener('click',()=>v7ChangeDay(i));
     dayRoot.appendChild(row);
   });
+
   const tempRoot=v7Element('v7WorkoutTemplates');tempRoot.innerHTML='';
   const template=TEMPLATES[state.templateKey]||TEMPLATES.standard;
+  const activeType=getActiveWorkoutType();
   for(const type of ['A','B']){
-    const row=document.createElement('button');row.type='button';row.className='v7-exercise-row';
     const items=template[type];
     const meta=EXERCISE_DB[items[0].exId];
-    const names=items.map(i=>EXERCISE_DB[i.exId].name).join(', ');
-    row.innerHTML=`${v7ArtworkMarkup(items[0].exId,meta.img)}<span class="flex-1 min-w-0"><span class="v7-ex-name block">Workout ${type}</span><span class="v7-muted text-xs block mt-1">${escapeHTML(names)}</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
+    const selected=type===activeType;
+    const row=document.createElement('button');row.type='button';
+    row.className=`v7-exercise-row ui9-program-workout ${selected?'is-active':''}`;
+    const totalSets=items.reduce((sum,item)=>sum+item.sets,0);
+    const exerciseLines=items.map(item=>`<li>${escapeHTML(EXERCISE_DB[item.exId].name)} <span>${escapeHTML(v7GoalText(item))}</span></li>`).join('');
+    row.innerHTML=`${v7ArtworkMarkup(items[0].exId,meta.img)}<span class="ui9-program-workout-main"><span class="ui9-program-workout-title"><strong>Workout ${type}</strong><span class="ui9-program-workout-tag">${selected?'Aktif':type==='A'?'Biceps':'Triceps'}</span></span><span class="v7-muted ui9-program-workout-meta">${items.length} hareket · ${totalSets} set</span><ul class="ui9-program-exercise-list">${exerciseLines}</ul></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
+    row.setAttribute('aria-label',`Workout ${type}, ${items.length} hareket, ${totalSets} set. Antrenman ${type} seç`);
+    row.setAttribute('aria-pressed',String(selected));
     row.addEventListener('click',()=>{
-      const current=getActiveWorkoutType();
-      if(current!==type&&getSessionSnapshot().recordedSets>0&&!window.confirm('Farklı antrenmanın kayıtları korunacak. Devam edilsin mi?'))return;
+      if(getActiveWorkoutType()!==type&&getSessionSnapshot().recordedSets>0&&!window.confirm('Farklı antrenmanın kayıtları korunacak. Devam edilsin mi?'))return;
       state.overrideWorkoutType=type;saveState();renderAll();v7Navigate('today');
     });
     tempRoot.appendChild(row);
   }
+
   const grid=v7Element('v7WeekGrid');grid.innerHTML='';
   for(let i=1;i<=12;i++){
     const btn=document.createElement('button');btn.type='button';
-    btn.className=`v7-week ${week===i?'is-active':''} ${i===7?'is-recovery':''}`;
-    btn.textContent=i===7?'Hafta 7 · Deload':`Hafta ${i}`;
+    const completed=[0,1,2].filter(d=>slots[`w${i}_d${d}`]).length;
+    btn.className=`v7-week ui9-program-week ${week===i?'is-active':''} ${i===7?'is-recovery':''}`;
+    btn.innerHTML=`<span>Hafta ${i}</span><small>${i===7?'Toparlanma':completed?completed+'/3 tamamlandı':'3 antrenman'}</small>`;
     btn.setAttribute('aria-current',i===week?'step':'false');
+    btn.setAttribute('aria-label',`Hafta ${i}${i===7?', toparlanma haftası':''}, ${completed} / 3 tamamlandı`);
     btn.addEventListener('click',()=>v7ChangeWeek(i));grid.appendChild(btn);
   }
   const select=v7Element('v7TemplateSelect');
@@ -3057,7 +3089,7 @@ function v7RenderToday(){
   select.value=state.templateKey;
 }
 
-    function v7BuildStrengthChart(id){
+      function v7BuildStrengthChart(id){
   const stats=getExerciseStats(id);
   const history=(stats?.history||[]).filter(h=>Number.isFinite(h.weight)&&h.weight>0);
   if(!history.length)return '<div class="v7-chart-empty">İlk antrenmanını kaydettiğinde gerçek ağırlık gelişimi burada görünecek.</div>';
