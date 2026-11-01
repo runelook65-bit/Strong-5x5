@@ -414,11 +414,11 @@
           <!-- Stats Row for Selected Exercise -->
           <div class="grid grid-cols-3 gap-2">
             <div class="bg-oled border border-borderDark rounded-xl p-2.5">
-              <div class="text-[11px] text-gray-400">Güncel Ağırlık</div>
+              <div class="text-[11px] text-gray-400">Sonraki Ağırlık Hedefi</div>
               <div id="statCurrentWeight" class="text-sm font-mono font-bold text-white">30 kg</div>
             </div>
             <div class="bg-oled border border-borderDark rounded-xl p-2.5">
-              <div class="text-[11px] text-gray-400">Tahmini 1RM</div>
+              <div class="text-[11px] text-gray-400">Kayıtlardan Tahmini 1RM</div>
               <div id="statEst1RM" class="text-sm font-mono font-bold text-emerald-400">35 kg</div>
             </div>
             <div class="bg-oled border border-borderDark rounded-xl p-2.5">
@@ -1353,7 +1353,7 @@
         cell.className = 'rounded-xl bg-oled border border-borderDark p-3 space-y-1';
         cell.innerHTML = `<div class="text-xs text-gray-400">${title} · doğrudan</div>
           <div class="font-mono font-bold text-2xl text-emerald-400">${data[key].sets} <span class="text-xs text-gray-400">set</span></div>
-          <div class="text-xs text-gray-300">${data[key].volume} kg · tekrar hacmi</div>`;
+          <div class="text-xs text-gray-300">${data[key].volume} kg · set hacmi</div>`;
         cards.appendChild(cell);
       });
       document.getElementById('volumeCoverageNote').textContent =
@@ -1683,51 +1683,53 @@
       const exStat = state.exStats[chosenId];
       const meta = EXERCISE_DB[chosenId];
 
-      // Epley 1RM formula: weight * (1 + reps/30)
-      const est1RM = exStat.weight * (1 + meta.defaultReps / 30);
+      // Only real logged sets (1–10 reps) qualify for this approximate 1RM.
+      const actualSets = (state.workoutLogs || [])
+        .filter(log => log && Array.isArray(log.exercises))
+        .flatMap(log => log.exercises)
+        .filter(ex => ex && ex.exId === chosenId && Array.isArray(ex.sets))
+        .flatMap(ex => ex.sets)
+        .filter(set => set && Number.isInteger(set.reps) && set.reps >= 1 && set.reps <= 10 &&
+          Number.isFinite(set.weight) && set.weight > 0);
+      const est1RM = actualSets.length ? Math.max(...actualSets.map(set => set.weight * (1 + set.reps / 30))) : null;
       document.getElementById('statCurrentWeight').textContent = `${exStat.weight.toFixed(1)} kg`;
-      document.getElementById('statEst1RM').textContent = `${est1RM.toFixed(1)} kg`;
+      document.getElementById('statEst1RM').textContent = est1RM !== null ? `${est1RM.toFixed(1)} kg` : '—';
       document.getElementById('statFailStreak').textContent = `${exStat.failStreak} / 3`;
 
-      // Draw SVG chart
+      // Draw only confirmed lifting history; do not fabricate a start point.
       const svg = document.getElementById('progressionSvgChart');
-      const hist = exStat.history && exStat.history.length > 0
-        ? exStat.history
-        : [{ date: 'Başlangıç', weight: exStat.weight }];
-
-      const weights = hist.map(h => h.weight);
-      const minW = Math.min(...weights) - 2;
-      const maxW = Math.max(...weights) + 2;
-      const range = Math.max(4, maxW - minW);
-
-      const width = 340;
-      const height = 120;
-      const padLeft = 28;
-      const padTop = 15;
-
-      const points = hist.map((h, i) => {
-        const x = hist.length === 1
-          ? padLeft + width / 2
-          : padLeft + (i / (hist.length - 1)) * (width - padLeft - 10);
-        const y = padTop + height - ((h.weight - minW) / range) * (height - 20);
-        return { x, y, weight: h.weight, date: h.date };
-      });
-
-      const polylinePoints = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-      let circlesHtml = '';
-      points.forEach(p => {
-        circlesHtml += `
+      const hist = (Array.isArray(exStat.history) ? exStat.history : [])
+        .filter(h => h && Number.isFinite(h.weight) && h.weight > 0);
+      if (!hist.length) {
+        svg.innerHTML = `<text x="180" y="75" text-anchor="middle" fill="#9ca3af" font-size="12">Henüz gerçek antrenman kaydı yok</text>`;
+      } else {
+        const weights = hist.map(h => h.weight);
+        const minW = Math.min(...weights) - 2;
+        const maxW = Math.max(...weights) + 2;
+        const range = Math.max(4, maxW - minW);
+        const width = 340;
+        const height = 120;
+        const padLeft = 28;
+        const padTop = 15;
+        const points = hist.map((h, i) => {
+          const x = hist.length === 1
+            ? padLeft + width / 2
+            : padLeft + (i / (hist.length - 1)) * (width - padLeft - 10);
+          const y = padTop + height - ((h.weight - minW) / range) * (height - 20);
+          return { x, y, weight: h.weight, date: h.date };
+        });
+        const polylinePoints = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+        const circlesHtml = points.map(p => `
           <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="#10b981" stroke="#07080a" stroke-width="2"></circle>
           <text x="${p.x.toFixed(1)}" y="${(p.y - 9).toFixed(1)}" text-anchor="middle" fill="#d1fae5" font-size="10" font-family="JetBrains Mono">${p.weight}kg</text>
+        `).join('');
+        svg.innerHTML = `
+          <line x1="${padLeft}" y1="${padTop + height}" x2="${width}" y2="${padTop + height}" stroke="#232730" stroke-width="1"></line>
+          <line x1="${padLeft}" y1="${padTop}" x2="${width}" y2="${padTop}" stroke="#232730" stroke-dasharray="3 3" stroke-width="1"></line>
+          ${points.length > 1 ? `<polyline fill="none" stroke="#10b981" stroke-width="2.5" points="${polylinePoints}"></polyline>` : ''}
+          ${circlesHtml}
         `;
-      });
-
-      svg.innerHTML = `
-        <line x1="${padLeft}" y1="${padTop + height}" x2="${width}" y2="${padTop + height}" stroke="#232730" stroke-width="1"></line>
-        <line x1="${padLeft}" y1="${padTop}" x2="${width}" y2="${padTop}" stroke="#232730" stroke-dasharray="3 3" stroke-width="1"></line>
-        ${points.length > 1 ? `<polyline fill="none" stroke="#10b981" stroke-width="2.5" points="${polylinePoints}"></polyline>` : ''}
-        ${circlesHtml}
-      `;
+      }
 
       // Render Arm Measurements
       const armList = document.getElementById('armMeasurementsList');
