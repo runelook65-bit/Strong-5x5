@@ -100,6 +100,20 @@ Ayrıntılar için [v0.7 tasarım spesifikasyonu](V07_UX.md).
 - [ ] `npm install && npm test && npm run build` ve Android/VoiceOver performans testi.
 - [ ] Kullanıcı isterse manuel Vercel yayını; mevcut canlı v0.7.0 sürümüne dokunulmaz.
 
+## v0.7.2 — Visual Covers (kod ve varlıklar tamamlandı)
+
+- [x] Üretilmiş 5 ekran kapağı optimize edilip `public/visual-assets/arm-covers-atlas.webp` dosyasına eklendi.
+- [x] Üretilmiş 3 egzersiz görseli `public/visual-assets/arm-exercises-atlas.webp` dosyasına eklendi.
+- [x] Home, Focus, Program, Progress ve Settings kapakları doğru atlas dilimlerine bağlandı.
+- [x] Barbell Curl, Hammer Curl, Skull Crusher küçük görselleri bağlandı; diğer hareketlerde eski görseller korunuyor.
+- [x] Safe-area, metin kontrastı ve kart hiyerarşisi korunarak sprite stil sistemi tamamlandı.
+- [x] 69/69 JS regresyon simülasyonu ve HTML yapı kontrolü geçti; kaynak dosyalar Git blob olarak doğrulandı.
+- [ ] Gerçek iPhone Safari küçük ekran, yoğun yazı ve görsel kırpma QA.
+- [ ] `npm test && npm run build`, PWA offline ve iOS erişilebilirlik testleri.
+- [ ] Kullanıcı ayrıca isterse manuel Vercel üretim dağıtımı.
+
+Ayrıntılı görsel harita: [Visual Covers](V072_VISUAL_ASSETS.md).
+
 ## Yayın kriterleri
 
 Yayına çıkmadan önce:
