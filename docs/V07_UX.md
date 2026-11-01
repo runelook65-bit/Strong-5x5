@@ -80,3 +80,9 @@ Kod düzeyi JavaScript test simülasyonu: **61/61 geçti**, HTML yapı dengesi a
 - [ ] Tasarım karşılaştırmasında mockup'ın tipografi, boşluk, kontrast ve set odak davranışlarının görsel doğrulanması.
 
 Kodun doğrudan kaydedilmesi tasarımın gerçek cihazda onaylandığı anlamına gelmez. Özellikle hareket görselleri mevcut yerleşik proje görselleridir; mockup'taki anatomi görsellerinin aynısı değildir.
+
+## v0.7.1 tasarım uyarlaması
+
+Referans görsellerin beş ekranlı bilgi mimarisi korunurken profesyonel glassmorphism katmanı seçici biçimde eklendi. Floating dock, glass hero, mat veriler, SVG ikonlar ve large kg/reps alanları için stil kaynağı `src/v7-glass.css` dosyasıdır. Gerçek antrenman durumunu gösteren etiket ve tamamlanmış seans butonu mantığı güncellendi.
+
+Bu sürümün görsel eşdeğerliği cihaz üzerinde karşılaştırılmadı. GitHub **v0.7.1**, Vercel canlı **v0.7.0** olarak ayrıdır.
