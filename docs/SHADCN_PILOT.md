@@ -20,7 +20,7 @@ Validate the true React/shadcn/ui stack on a small settings screen before rewrit
 
 - No changes to root index.html, src/, root package.json, root workflow or main.
 - No production deploy, PR merge or background monitoring.
-- Node 22 test suite and build verification required. Run on a workstation or the manual GitHub Actions verification workflow; they were not verified solely by writing code.
+- Node 22 test suite and build verification are mandatory. PR checks run npm test and npm run build on GitHub Actions, without deploying. The first CI verification passed (10/10 tests, Vite production build succeeded); browser visual QA remains open.
 - Check source output and accessibility against 375px iPhone screenshot before deciding a broader migration.
 
 Upstream docs: https://ui.shadcn.com/docs/installation/vite
