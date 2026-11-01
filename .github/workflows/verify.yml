@@ -1,0 +1,24 @@
+name: Verify ARM 5x5
+on:
+  workflow_dispatch: # manual only; never deploy on each code change
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Regression tests
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Save inspectable dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm-5x5-dist
+          path: dist/
