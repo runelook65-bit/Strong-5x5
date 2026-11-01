@@ -114,6 +114,21 @@ Ayrıntılar için [v0.7 tasarım spesifikasyonu](V07_UX.md).
 
 Ayrıntılı görsel harita: [Visual Covers](V072_VISUAL_ASSETS.md).
 
+## v0.8 — Minimal UI (kaynak kod tamamlandı)
+
+- [x] shadcn/ui tasarım ilkeleriyle mevcut vanilla Vite uygulamasına uyumlu token ve bileşen katmanı.
+- [x] Büyük fotoğraf kapakları görev alanlarından kaldırıldı; daha kısa ve dengeli kartlar.
+- [x] Sabit alt navigasyon inceltildi; iOS safe-area ve ekran altı boşluk güncellendi.
+- [x] Hareket listesi için tutarlı küçük SVG işaretleri, gerçek performans verileri korunuyor.
+- [x] Program, ilerleme ve ayarlar aynı mat tasarım sistemiyle düzenlendi.
+- [x] 79 JavaScript regresyon ve UI kontrat testi simülasyonda başarılı.
+- [ ] Bağımsız Node ortamında `npm install && npm test && npm run build`.
+- [ ] iPhone Safari 375–430 px gerçek görsel QA, klavye, PWA ve VoiceOver kontrolü.
+- [ ] Gerçek React/shadcn bileşen kurulumuna ancak mevcut antrenman/veri motoru modüler ayrıştırıldıktan sonra karar verilmesi.
+- [ ] Kullanıcı ayrıca isterse Vercel manuel üretim dağıtımı.
+
+Ayrıntılar: [v0.8 Minimal UI](UI_V08.md).
+
 ## Yayın kriterleri
 
 Yayına çıkmadan önce:
