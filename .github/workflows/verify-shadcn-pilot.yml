@@ -1,0 +1,26 @@
+name: Verify shadcn Settings Pilot
+on:
+  workflow_dispatch: # never publish or deploy automatically
+jobs:
+  verify-pilot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: pilot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pilot dependencies
+        run: npm install --no-audit --no-fund
+      - name: Pilot repository and safety tests
+        run: npm test
+      - name: Typecheck and production-style build (artifact only)
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arm-shadcn-settings-pilot-dist
+          path: pilot/dist/
