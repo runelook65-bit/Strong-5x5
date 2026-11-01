@@ -1631,181 +1631,231 @@
         : `${data.sessions} kayıtlı seans · ${data.legacySessions ? data.legacySessions + ' eski seansın set verisi bulunmuyor. ' : ''}Bu sayılar yalnızca alt tekrar hedefini karşılayan doğrudan çalışma setleridir. Diğer antrenmanlarda alınan dolaylı yük dahil değildir.`;
     }
 
-    function renderExercises() {
-      const wType = getActiveWorkoutType();
-      document.getElementById('activeWorkoutTitle').textContent =
-        wType === 'A' ? 'Antrenman A · Biceps ağırlıklı' : 'Antrenman B · Triceps ağırlıklı';
-
-      const snapshot = getSessionSnapshot();
-      const { exercises, recordedSets, totalSets, volume, missing, isSaved } = snapshot;
-      const container = document.getElementById('exerciseCardsContainer');
-      container.innerHTML = '';
-
-      const pct = totalSets ? Math.round(recordedSets / totalSets * 100) : 0;
-      const nextItem = exercises.find(item => item.setValues.some(v => v === null));
-      document.getElementById('dashboardWorkoutTitle').textContent = `Workout ${wType} · ${wType === 'A' ? 'Biceps' : 'Triceps'}`;
-      document.getElementById('dashboardWorkoutSubtitle').textContent =
-        `Hafta ${state.currentWeek} / 12 · ${DAY_NAMES[state.currentDayIdx]} · ${exercises.length} hareket`;
-      document.getElementById('dashboardPercent').textContent = `${pct}%`;
-      document.getElementById('sessionProgressFill').style.width = `${pct}%`;
-      document.getElementById('sessionProgressTrack').setAttribute('aria-valuenow', String(pct));
-      document.getElementById('dashboardCompleted').textContent = `${recordedSets} / ${totalSets} set tamamlandı`;
-      document.getElementById('dashboardNext').textContent =
-        isSaved ? 'Seans kaydedildi ✓' : nextItem ? `Sırada: ${nextItem.meta.name}` : 'Kaydetmeye hazır ✓';
-      document.getElementById('sessionProgressBadge').textContent = `${recordedSets}/${totalSets} set`;
-      document.getElementById('sessionVolumePreview').textContent = `${volume} kg hacim`;
-      document.getElementById('sessionRemainingPreview').textContent =
-        isSaved ? 'Kaydedildi' : missing.length ? `${missing.length} set kaldı` : 'Tüm setler girildi';
-      document.getElementById('completeWorkoutBtn').disabled = isSaved;
-      document.getElementById('completeWorkoutBtn').classList.toggle('opacity-50', isSaved);
-      document.getElementById('resetCurrentSessionBtn').disabled = isSaved;
-      document.getElementById('resetCurrentSessionBtn').classList.toggle('opacity-40', isSaved);
-
-      exercises.forEach(item => {
-        const { index, meta, sets, reps, setValues, stats } = item;
-        const focused = !isSaved && nextItem && nextItem.setKey === item.setKey;
-        const done = setValues.every(v => v !== null);
-        const previous = Array.isArray(stats.history) && stats.history.length ? stats.history[stats.history.length - 1] : null;
-
-        const card = document.createElement('article');
-        card.className = `bg-card border ${focused ? 'border-emerald-500/60' : 'border-borderDark'} rounded-2xl p-3.5 space-y-3.5`;
-        const heading = document.createElement('div');
-        heading.className = 'flex gap-3 items-start';
-        heading.innerHTML = `
-          <img src="${meta.img}" alt="" loading="lazy" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover bg-white shrink-0" />
-          <div class="flex-1 min-w-0 space-y-1">
-            <div class="flex flex-wrap items-start justify-between gap-1">
-              <h3 class="text-sm sm:text-base font-extrabold leading-snug text-white">${index}. ${meta.name}</h3>
-              ${isSaved ? '<span class="text-[10px] text-emerald-400">Kaydedildi</span>' : focused ? '<span class="text-[10px] text-emerald-400">Sıradaki hareket</span>' : done ? '<span class="text-[10px] text-emerald-400">Setler tamam</span>' : ''}
-            </div>
-            <div class="flex flex-wrap items-center gap-2 text-sm font-bold text-emerald-300">
-              <span>${sets} × ${item.minReps < reps ? `${item.minReps}–${reps}` : reps}</span>
-              ${stats.failStreak ? `<span class="text-[10px] font-medium text-amber-300">Başarısız seri ${stats.failStreak}/3</span>` : ''}
-              ${state.currentWeek === 7 ? '<span class="text-[10px] text-sky-300">Hafif hafta</span>' : ''}
-            </div>
-            <p class="text-[11px] text-gray-400">${previous ? `Son kayıt: ${Number(previous.weight).toFixed(1)} kg × ${previous.reps} · ${escapeHTML(previous.date)}` : 'İlk kayıt · başlangıç ağırlığını ayarla'}</p>
-          </div>
-        `;
-        card.appendChild(heading);
-
-        const weightBar = document.createElement('div');
-        weightBar.className = 'bg-oled border border-borderDark rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2';
-        weightBar.innerHTML = `
-          <div>
-            <span class="text-[11px] text-gray-400 block">Sıradaki setin ağırlığı <span class="text-gray-500">· toplam kg</span></span>
-            <span class="font-mono text-base font-extrabold text-emerald-400">${stats.weight.toFixed(1)} kg</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button data-act="decWeight" type="button" ${isSaved ? 'disabled' : ''} aria-label="${meta.name} ağırlığını ${stats.increment} kilogram azalt" class="px-2.5 py-2 rounded-lg bg-card border border-borderDark text-xs font-mono font-bold text-gray-200 disabled:opacity-40">−${stats.increment}</button>
-            <button data-act="incWeight" type="button" ${isSaved ? 'disabled' : ''} aria-label="${meta.name} ağırlığını ${stats.increment} kilogram artır" class="px-2.5 py-2 rounded-lg bg-card border border-borderDark text-xs font-mono font-bold text-emerald-400 disabled:opacity-40">+${stats.increment}</button>
-            <button data-act="plateCalc" type="button" class="px-2.5 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs font-semibold text-emerald-300">Plaka</button>
-          </div>
-        `;
-        weightBar.querySelector('[data-act="decWeight"]').addEventListener('click', () => {
-          if (isSaved) return;
-          stats.weight = Math.max(0.5, +(stats.weight - stats.increment).toFixed(1));
-          saveState();
-          renderExercises();
-          renderWeightsConfig();
-        });
-        weightBar.querySelector('[data-act="incWeight"]').addEventListener('click', () => {
-          if (isSaved) return;
-          stats.weight = +(stats.weight + stats.increment).toFixed(1);
-          saveState();
-          renderExercises();
-          renderWeightsConfig();
-        });
-        weightBar.querySelector('[data-act="plateCalc"]').addEventListener('click', () =>
-          openPlateCalculator(stats.weight, meta.barWeight));
-        card.appendChild(weightBar);
-
-        const setsGrid = document.createElement('div');
-        setsGrid.className = 'grid grid-cols-3 sm:grid-cols-5 gap-2';
-        setValues.forEach((val, setIdx) => {
-          const actualWeight = getRecordedWeight(item, setIdx);
-          const isFull = val !== null && val >= reps;
-          const partial = val !== null && val > 0 && val < reps;
-          const zero = val === 0;
-          const cls = isFull ? 'bg-[#092214] border-emerald-500/60 text-emerald-200'
-            : partial ? 'bg-amber-950/40 border-amber-500/50 text-amber-200'
-            : zero ? 'bg-rose-950/40 border-rose-500/50 text-rose-300'
-            : 'bg-[#1b1e24] border-borderDark text-gray-300';
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.disabled = isSaved;
-          btn.className = `set-btn min-h-[85px] min-w-0 rounded-xl border py-2 px-1 flex flex-col items-center justify-center gap-1 disabled:opacity-65 ${cls}`;
-          btn.setAttribute('aria-label', `${meta.name} ${setIdx + 1}. set: ${val === null ? 'Henüz kaydedilmedi, tamamlamak için dokun' : `${val} tekrar, ${actualWeight} kilogram, düzenlemek için dokun`}`);
-          btn.innerHTML = `
-            <span class="text-[10px] font-semibold text-gray-400">${setIdx + 1}. SET</span>
-            <span class="text-lg leading-tight font-mono font-extrabold">${val === null ? '＋' : val >= reps ? '✓' : String(val)}</span>
-            <span class="text-[10px] font-mono">${val === null ? (item.minReps < reps ? `${item.minReps}–${reps} hedef` : `${reps} hedef`) : `${val}/${reps} tekrar`}</span>
-            <span class="text-[10px] text-gray-400">${actualWeight.toFixed(1)} kg</span>
-          `;
-          btn.addEventListener('click', () => {
-            if (isSaved) return;
-            if (val === null) recordExerciseSet(item.setKey, setIdx, reps, stats.weight, true);
-            else openSetEditor(item, setIdx);
-          });
-          setsGrid.appendChild(btn);
-        });
-        card.appendChild(setsGrid);
-
-        // A single compact input row for the next unrecorded set; fast even with gloves.
-        const nextSetIndex = setValues.findIndex(value => value === null);
-        if (!isSaved && nextSetIndex !== -1) {
-          const quickRow = document.createElement('div');
-          quickRow.className = 'rounded-xl bg-[#17221d] border border-emerald-500/25 p-3';
-          const rowLabel = document.createElement('div');
-          rowLabel.className = 'text-xs font-bold text-emerald-300 mb-2';
-          rowLabel.textContent = `Sıradaki set · ${nextSetIndex + 1}/${sets}`;
-          quickRow.appendChild(rowLabel);
-          const fields = document.createElement('div');
-          fields.className = 'grid grid-cols-[1fr_1fr_auto] gap-2 items-end';
-          const makeInput = (labelText, value, step) => {
-            const wrapper = document.createElement('label');
-            wrapper.className = 'text-[11px] text-gray-300 min-w-0';
-            wrapper.textContent = labelText;
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.inputMode = step === 1 ? 'numeric' : 'decimal';
-            input.min = String(step === 1 ? 0 : 0.5);
-            input.max = String(step === 1 ? 30 : 500);
-            input.step = String(step);
-            input.value = String(value);
-            input.className = 'mt-1 w-full bg-oled border border-borderDark rounded-xl px-2 py-2.5 text-sm font-mono text-white';
-            wrapper.appendChild(input);
-            fields.appendChild(wrapper);
-            return input;
-          };
-          const weightInput = makeInput('Toplam kg', stats.weight, 0.5);
-          const repsInput = makeInput('Tekrar', reps, 1);
-          const commit = document.createElement('button');
-          commit.type = 'button';
-          commit.textContent = 'Kaydet ✓';
-          commit.className = 'bg-emerald-500 text-oled font-bold rounded-xl px-3 py-3 text-xs whitespace-nowrap';
-          commit.setAttribute('aria-label', `${meta.name} ${nextSetIndex + 1}. setini kaydet`);
-          commit.addEventListener('click', () => {
-            const count = Number(repsInput.value);
-            const weight = Number(weightInput.value);
-            if (!repsInput.value || !weightInput.value || !recordExerciseSet(item.setKey, nextSetIndex, count, weight, true)) {
-              showToast('Geçerli tekrar (0–30) ve ağırlık (0.5–500 kg) gir.');
-            }
-          });
-          fields.appendChild(commit);
-          quickRow.appendChild(fields);
-          card.appendChild(quickRow);
-        }
-
-        const tips = document.createElement('details');
-        tips.className = 'border-t border-borderDark pt-2';
-        tips.innerHTML = `<summary class="text-xs text-gray-400 cursor-pointer py-1">Hareket tekniği ve dinlenme</summary>
-          <p class="text-xs text-gray-300 mt-2 leading-relaxed">${meta.tips}</p>
-          <p class="text-xs text-gray-300 mt-1"><strong>Isınma:</strong> İlk çalışma setinden önce eklemleri hazırlayan hafif yükle 1–2 kontrollü set uygula. Bunları ana setlere dahil etme.</p>
-          <p class="text-xs text-emerald-400 mt-1">${meta.restText}</p>`;
-        card.appendChild(tips);
-        container.appendChild(card);
-      });
+    function getPreviousSetPerformance(exId,index,templateKey) {
+  for (let i = (state.workoutLogs || []).length - 1; i >= 0; i--) {
+    const log = state.workoutLogs[i];
+    if (!log || (log.templateKey || 'standard') !== templateKey || !Array.isArray(log.exercises)) continue;
+    const exercise = log.exercises.find(ex => ex && ex.exId === exId && Array.isArray(ex.sets));
+    const result = exercise?.sets?.[index];
+    if (result && Number.isInteger(result.reps) && Number.isFinite(result.weight) && result.weight > 0) {
+      return { reps: result.reps, weight: result.weight };
     }
+  }
+  return null;
+}
+
+    function renderExercises() {
+  const wType = getActiveWorkoutType();
+  document.getElementById('activeWorkoutTitle').textContent =
+    wType === 'A' ? 'Antrenman A · Biceps ağırlıklı' : 'Antrenman B · Triceps ağırlıklı';
+
+  const snapshot = getSessionSnapshot();
+  const { exercises, recordedSets, totalSets, volume, missing, isSaved } = snapshot;
+  const container = document.getElementById('exerciseCardsContainer');
+  const expanded = new Set([...container.querySelectorAll('details[data-exercise-key][open]')]
+    .map(el => el.getAttribute('data-exercise-key')));
+  container.innerHTML = '';
+
+  const percent = totalSets ? Math.round(recordedSets / totalSets * 100) : 0;
+  const nextItem = exercises.find(item => item.setValues.some(v => v === null));
+  document.getElementById('dashboardWorkoutTitle').textContent = `Antrenman ${wType}`;
+  document.getElementById('dashboardWorkoutSubtitle').textContent =
+    `Hafta ${state.currentWeek}/12 · ${DAY_NAMES[state.currentDayIdx]} · ${exercises.length} hareket`;
+  document.getElementById('dashboardPercent').textContent = `${percent}%`;
+  document.getElementById('sessionProgressFill').style.width = `${percent}%`;
+  document.getElementById('sessionProgressTrack').setAttribute('aria-valuenow', String(percent));
+  document.getElementById('dashboardCompleted').textContent = `${recordedSets} / ${totalSets} set`;
+  document.getElementById('dashboardNext').textContent =
+    isSaved ? 'Seans kaydedildi' : nextItem ? `Sırada: ${nextItem.meta.name}` : 'Kaydetmeye hazır';
+  document.getElementById('sessionProgressBadge').textContent = `${recordedSets}/${totalSets} set`;
+  document.getElementById('sessionVolumePreview').textContent = `${volume} kg hacim`;
+  document.getElementById('sessionRemainingPreview').textContent =
+    isSaved ? 'Kaydedildi' : missing.length ? `${missing.length} set kaldı` : 'Tüm setler girildi';
+  document.getElementById('completeWorkoutBtn').disabled = isSaved;
+  document.getElementById('completeWorkoutBtn').classList.toggle('opacity-50', isSaved);
+  document.getElementById('resetCurrentSessionBtn').disabled = isSaved;
+  document.getElementById('resetCurrentSessionBtn').classList.toggle('opacity-40', isSaved);
+
+  exercises.forEach(item => {
+    const { index, meta, sets, reps, setValues, stats } = item;
+    const focused = !isSaved && nextItem && nextItem.setKey === item.setKey;
+    const doneCount = setValues.filter(v => v !== null).length;
+    const done = doneCount === sets;
+    const prior = Array.isArray(stats.history) && stats.history.length
+      ? stats.history[stats.history.length - 1] : null;
+
+    const panel = document.createElement('details');
+    panel.className = `exercise-panel bg-card border ${focused ? 'border-emerald-500/65' : 'border-borderDark'} rounded-2xl overflow-hidden`;
+    panel.setAttribute('data-exercise-key', item.setKey);
+    panel.open = !!(focused || (!done && expanded.has(item.setKey)));
+    if (isSaved) panel.open = expanded.has(item.setKey);
+
+    const title = document.createElement('summary');
+    title.className = 'flex items-center gap-3 p-3 cursor-pointer select-none min-h-[72px]';
+    title.innerHTML = `
+      <img src="${meta.img}" alt="" loading="lazy" class="w-11 h-11 rounded-lg object-cover bg-[#252b2e] shrink-0"/>
+      <div class="flex-1 min-w-0 space-y-1">
+        <div class="flex items-center gap-2">
+          <h3 class="text-sm font-extrabold text-white truncate">${index}. ${escapeHTML(meta.name)}</h3>
+          ${focused ? '<span class="text-[9px] bg-emerald-500/15 text-emerald-300 px-2 py-0.5 rounded-full shrink-0">AKTİF</span>' : ''}
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="font-semibold text-emerald-300">${sets} × ${item.minReps < reps ? `${item.minReps}–${reps}` : reps}</span>
+          <span class="text-gray-400">${doneCount}/${sets} set</span>
+          ${done ? '<span class="text-emerald-300">✓ Tamam</span>' : ''}
+        </div>
+      </div>
+      <svg class="exercise-chevron w-4 h-4 text-gray-400 shrink-0" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>`;
+    panel.appendChild(title);
+
+    const content = document.createElement('div');
+    content.className = 'px-3 pb-3 space-y-3';
+
+    const history = document.createElement('p');
+    history.className = 'text-[11px] text-gray-400';
+    history.textContent = prior
+      ? `Son kayıt: ${Number(prior.weight).toFixed(1)} kg × ${prior.reps}`
+      : 'İlk antrenman · başlangıç ağırlığını kendine göre ayarla';
+    content.appendChild(history);
+
+    const head = document.createElement('div');
+    head.className = 'workout-set-heading';
+    ['SET','ÖNCEKİ','KG','TEKRAR','ONAY'].forEach(t => {
+      const el = document.createElement('span');
+      el.textContent = t;
+      head.appendChild(el);
+    });
+    content.appendChild(head);
+
+    const rows = document.createElement('div');
+    rows.className = 'space-y-1';
+
+    setValues.forEach((val, setIdx) => {
+      const wasRecorded = val !== null;
+      const previous = getPreviousSetPerformance(item.exId, setIdx, state.templateKey);
+      const isCurrent = focused && setIdx === setValues.findIndex(v => v === null);
+      const row = document.createElement('div');
+      row.className = `workout-set-row ${wasRecorded ? 'is-done' : ''} ${isCurrent ? 'is-current' : ''}`.trim();
+      row.setAttribute('data-set-index', String(setIdx));
+
+      const number = document.createElement('span');
+      number.className = 'text-xs font-bold text-gray-300 text-center';
+      number.textContent = String(setIdx + 1);
+      row.appendChild(number);
+
+      const last = document.createElement('span');
+      last.className = 'text-[10px] text-gray-400 text-center leading-tight font-mono';
+      last.textContent = previous ? `${previous.weight}×${previous.reps}` : '—';
+      row.appendChild(last);
+
+      const weightInput = document.createElement('input');
+      weightInput.type = 'number';
+      weightInput.inputMode = 'decimal';
+      weightInput.step = '0.5';
+      weightInput.min = '0.5';
+      weightInput.max = '500';
+      weightInput.value = String(wasRecorded ? getRecordedWeight(item, setIdx) : stats.weight);
+      weightInput.disabled = isSaved;
+      weightInput.className = 'set-cell-input';
+      weightInput.setAttribute('aria-label', `${meta.name}, ${setIdx+1}. set, toplam ağırlık kilogram`);
+      row.appendChild(weightInput);
+
+      const repsInput = document.createElement('input');
+      repsInput.type = 'number';
+      repsInput.inputMode = 'numeric';
+      repsInput.step = '1';
+      repsInput.min = '0';
+      repsInput.max = '30';
+      repsInput.value = String(wasRecorded ? val : reps);
+      repsInput.disabled = isSaved;
+      repsInput.className = 'set-cell-input';
+      repsInput.setAttribute('aria-label', `${meta.name}, ${setIdx+1}. set, gerçek tekrar`);
+      row.appendChild(repsInput);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.disabled = isSaved;
+      btn.className = `set-row-action ${wasRecorded ? 'is-done' : ''} ${isCurrent ? 'is-next' : ''}`;
+      btn.textContent = wasRecorded ? '✓' : '+';
+      btn.setAttribute('aria-label', `${meta.name} ${setIdx+1}. setini ${wasRecorded ? 'güncelle veya düzenle' : 'kaydet'}`);
+      const submit = () => {
+        const weight = Number(weightInput.value);
+        const count = Number(repsInput.value);
+        if (weightInput.value.trim() === '' || repsInput.value.trim() === '' ||
+            !Number.isFinite(weight) || weight < 0.5 || weight > 500 ||
+            !Number.isInteger(count) || count < 0 || count > 30) {
+          showToast('Geçerli ağırlık (0.5–500 kg) ve tekrar (0–30) gir.');
+          return;
+        }
+        if (wasRecorded && count === val && weight === getRecordedWeight(item,setIdx)) {
+          openSetEditor(item, setIdx); // full editor supports removing a recorded set
+          return;
+        }
+        if (!recordExerciseSet(item.setKey, setIdx, count, weight, !wasRecorded)) {
+          showToast('Set kaydedilemedi.');
+        }
+      };
+      btn.addEventListener('click', submit);
+      [weightInput,repsInput].forEach(el => el.addEventListener('keydown',e => {
+        if (e.key === 'Enter') { e.preventDefault(); submit(); }
+      }));
+      row.appendChild(btn);
+      rows.appendChild(row);
+    });
+    content.appendChild(rows);
+
+    if (!isSaved && setValues.some(v => v === null)) {
+      const hint = document.createElement('p');
+      hint.className = 'text-[11px] text-gray-400';
+      hint.textContent = 'Gerçek kg ve tekrarı gir → + ile kaydet. Kaydedilen ✓ işaretine tekrar dokunarak seti silebilirsin.';
+      content.appendChild(hint);
+    }
+
+    const options = document.createElement('details');
+    options.className = 'border-t border-borderDark pt-3';
+    const summary = document.createElement('summary');
+    summary.className = 'text-xs text-gray-400 cursor-pointer py-1 font-medium';
+    summary.textContent = `Hedef ağırlık ${stats.weight.toFixed(1)} kg · Plaka ve ayarlar`;
+    options.appendChild(summary);
+    const actions = document.createElement('div');
+    actions.className = 'flex gap-2 flex-wrap pt-3';
+    const controls = [
+      {label:`−${stats.increment} kg`,action:()=>{stats.weight=Math.max(0.5,+(stats.weight-stats.increment).toFixed(1));saveState();renderExercises();renderWeightsConfig();}},
+      {label:`+${stats.increment} kg`,action:()=>{stats.weight=+(stats.weight+stats.increment).toFixed(1);saveState();renderExercises();renderWeightsConfig();}},
+      {label:'Plaka hesabı',action:()=>openPlateCalculator(stats.weight,meta.barWeight)}
+    ];
+    controls.forEach((info,i) => {
+      const control = document.createElement('button');
+      control.type='button';
+      control.textContent=info.label;
+      control.disabled=isSaved && i!==2;
+      control.className='min-h-[44px] border border-borderDark rounded-lg px-3 py-2 text-xs font-semibold text-emerald-300 disabled:opacity-40';
+      control.addEventListener('click',info.action);
+      actions.appendChild(control);
+    });
+    options.appendChild(actions);
+    content.appendChild(options);
+
+    const tips = document.createElement('details');
+    tips.className = 'border-t border-borderDark pt-3';
+    const tech = document.createElement('summary');
+    tech.className = 'text-xs text-gray-400 cursor-pointer py-1 font-medium';
+    tech.textContent = 'Hareket tekniği ve ısınma';
+    tips.appendChild(tech);
+    const paragraph = document.createElement('p');
+    paragraph.className = 'text-xs text-gray-300 mt-2 leading-relaxed';
+    paragraph.textContent = meta.tips || 'Kontrollü tekrarlarla çalış.';
+    tips.appendChild(paragraph);
+    const warming = document.createElement('p');
+    warming.className = 'text-xs text-gray-400 mt-2 leading-relaxed';
+    warming.textContent = `İlk çalışma setinden önce 1–2 hafif ısınma seti uygula. Önerilen dinlenme: ${meta.restSec} saniye.`;
+    tips.appendChild(warming);
+    content.appendChild(tips);
+
+    panel.appendChild(content);
+    container.appendChild(panel);
+  });
+}
 
     function recordExerciseSet(setKey, setIdx, reps, weight, autoRest = false) {
       const snapshot = getSessionSnapshot();
