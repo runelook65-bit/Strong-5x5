@@ -12,6 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="/icons/arm-5x5.svg" />
   <link rel="stylesheet" href="/src/styles.css" />
   <link rel="stylesheet" href="/src/v7.css" />
+  <link rel="stylesheet" href="/src/v7-glass.css" />
   <style>
     * { -webkit-tap-highlight-color: transparent; }
     body {
@@ -302,21 +303,21 @@
         </div>
         <div><h2 class="v7-section-title mb-3">Antrenman Tercihleri</h2>
           <div class="v7-card">
-            <button id="v7RestPrefBtn" type="button" class="v7-setting-row"><span class="v7-accent">◷</span><span>Dinlenme süresi</span><span id="v7RestPrefValue" class="v7-row-end">90 sn ›</span></button>
-            <button id="v7SoundBtn" type="button" class="v7-setting-row"><span class="v7-accent">◖</span><span>Sesli bildirimler</span><span id="v7SoundValue" class="v7-row-end">Açık</span></button>
-            <div class="v7-setting-row"><span class="v7-accent">KG</span><span>Ölçü birimi</span><span class="v7-row-end">kg</span></div>
+            <button id="v7RestPrefBtn" type="button" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></span><span>Dinlenme süresi</span><span id="v7RestPrefValue" class="v7-row-end">90 sn ›</span></button>
+            <button id="v7SoundBtn" type="button" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><path d="M4 10h4l5-4v12l-5-4H4v-4ZM17 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg></span><span>Sesli bildirimler</span><span id="v7SoundValue" class="v7-row-end">Açık</span></button>
+            <div class="v7-setting-row"><span class="v7-accent v8-kg-icon">kg</span><span>Ölçü birimi</span><span class="v7-row-end">kg</span></div>
           </div>
         </div>
         <div><h2 class="v7-section-title mb-3">Araçlar</h2><div class="v7-card">
-            <button type="button" id="v7PlateBtn" class="v7-setting-row"><span class="v7-accent">▦</span><span>Plaka Hesaplayıcı</span><span class="v7-row-end">›</span></button>
-            <button type="button" id="v7MeasurementsBtn" class="v7-setting-row"><span class="v7-accent">◎</span><span>Kol Ölçümü Kaydı</span><span class="v7-row-end">›</span></button>
-            <button type="button" id="v7WeightsBtn" class="v7-setting-row"><span class="v7-accent">◉</span><span>Başlangıç Ağırlıkları</span><span class="v7-row-end">›</span></button>
-            <button type="button" id="v7CalcBtn" class="v7-setting-row"><span class="v7-accent">▤</span><span>1RM Hesaplayıcı</span><span class="v7-row-end">›</span></button>
+            <button type="button" id="v7PlateBtn" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><path d="M2 12h20M5 7v10M9 5v14M15 5v14M19 7v10"/></svg></span><span>Plaka Hesaplayıcı</span><span class="v7-row-end">›</span></button>
+            <button type="button" id="v7MeasurementsBtn" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span><span>Kol Ölçümü Kaydı</span><span class="v7-row-end">›</span></button>
+            <button type="button" id="v7WeightsBtn" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><path d="M4 9v6M7 6v12M17 6v12M20 9v6M7 12h10"/></svg></span><span>Başlangıç Ağırlıkları</span><span class="v7-row-end">›</span></button>
+            <button type="button" id="v7CalcBtn" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2m4 0h2M8 16h2m4 0h2"/></svg></span><span>1RM Hesaplayıcı</span><span class="v7-row-end">›</span></button>
           </div></div>
         <div><h2 class="v7-section-title mb-3">Veri</h2><div class="v7-card">
-            <button id="v7ExportBtn" type="button" class="v7-setting-row"><span class="v7-accent">⇧</span><span>JSON Yedeğini Dışa Aktar</span><span class="v7-row-end">›</span></button>
-            <button id="v7ImportBtn" type="button" class="v7-setting-row"><span class="v7-accent">⇩</span><span>Yedekten Geri Yükle</span><span class="v7-row-end">›</span></button>
-            <button id="v7ResetBtn" type="button" class="v7-setting-row v7-destructive"><span>⌫</span><span>Verileri Sıfırla</span><span class="v7-row-end">›</span></button>
+            <button id="v7ExportBtn" type="button" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M5 17v3h14v-3"/></svg></span><span>JSON Yedeğini Dışa Aktar</span><span class="v7-row-end">›</span></button>
+            <button id="v7ImportBtn" type="button" class="v7-setting-row"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><path d="M12 4v12m-5-5 5 5 5-5M5 17v3h14v-3"/></svg></span><span>Yedekten Geri Yükle</span><span class="v7-row-end">›</span></button>
+            <button id="v7ResetBtn" type="button" class="v7-setting-row v7-destructive"><span class="v7-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5m4-5v5"/></svg></span><span>Verileri Sıfırla</span><span class="v7-row-end">›</span></button>
           </div></div>
         <div class="v7-info">ⓘ &nbsp; Sürüm 0.7.1 · Precision Glass UI</div>
       </section>
