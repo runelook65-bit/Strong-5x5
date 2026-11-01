@@ -1,59 +1,74 @@
-# ARM 5×5
+# ARM 5×5 — Workout Tracker
 
-**12 haftalık kol odaklı antrenman takipçisi.**
+**v0.5.0 (geliştirme sürümü)** · 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
 
-Telefon öncelikli, tarayıcıda çalışan ücretsiz bir antrenman uygulaması. Bar, dambıl ve sehpa ile yapılabilecek kol antrenmanları için A/B planı, set/tekrar kaydı, dinlenme sayacı, antrenman geçmişi ve ölçü takibi içerir.
+Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım otomatik değildir.
 
-## Çalıştırma
+## Hızlı başlangıç
 
-`index.html` dosyasını tarayıcıda aç veya statik site sunucusu kullan:
+Gereksinimler: **Node.js 20.19+**, npm.
 
 ```bash
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Ardından `http://localhost:8000` adresini ziyaret et.
+Terminalde gösterilen yerel adresi aç. Kaynak `index.html` dosyasını doğrudan `file://` ile açmak artık desteklenen çalışma yöntemi değildir; stiller Vite ile derlenir.
 
-## Özellikler
+```bash
+npm test
+npm run build
+npm run preview
+```
 
-- 12 haftalık A/B/A – B/A/B programı; 7. hafta hacim azaltımı
-- Odaklanmış seans ekranı: set ilerlemesi, sıradaki hareket, ısınma ve teknik notları
-- Tek dokunuşla set tamamlama; kaydı tekrar açıp gerçek tekrar ve ağırlığı düzenleme
-- Hareket ve set bazında gerçek ağırlık/hacim hesabı, dinlenme zamanlayıcısı
-- Kaydetmeden önce eksik set kontrolü, bir sonraki çalışma ağırlığı önizlemesi
-- 7. haftada hafifletilmiş set sayısı ve yük artışının durdurulması
-- **ARM Growth (isteğe bağlı):** 6–15 tekrar aralıkları, çift ilerleme ve ayrı başlangıç ağırlıkları
-- Öz-bildirime dayalı toparlanma takibi; düşük enerji veya eklem rahatsızlığında ağırlık artışını durdurma
-- Program haftası bazında kaydedilmiş doğrudan biceps/triceps setleri ve gerçek hacim
-- Gerçek set kaydı olmadan tahmini 1RM veya grafik verisi üretmeme
-- Gerçek kayıtlara dayalı ağırlık ilerlemesi ve geçmiş
-- Plaka ve tahmini 1RM hesaplayıcıları
-- Kol çevresi ölçüm kaydı
-- Yerel depolama ve panoya JSON yedekleme
+Statik yayına hazırlanmış dosyalar `dist/` klasöründedir. **Bu depoda otomatik canlı dağıtım bulunmaz.** Manuel doğrulama için GitHub **Actions → Verify ARM 5x5 → Run workflow** kullanılabilir. Bu işlem yalnızca test eder, build çıktısını artifact olarak saklar; siteyi yayına almaz.
 
-## Gizlilik
+## Antrenman deneyimi
 
-Veriler varsayılan olarak yalnızca tarayıcının `localStorage` alanında saklanır. Sunucu hesabı veya analitik bulunmaz. Tarayıcı verileri silinirse kayıtlar kaybolabilir; düzenli JSON yedeği al. JSON dosyası içe aktarma henüz eklenmedi.
+- 12 hafta; A/B/A → B/A/B döngüsü ve 7. hafta toparlanma.
+- Seans panosu, hedef tekrar aralıkları, sıradaki hareket ve set ilerlemesi.
+- **Tek dokunuşla** önerilen seti kaydet; gerekirse tekrar ve ağırlığı düzenle.
+- **Hızlı giriş satırı:** gerçek kg / tekrar değerini doğrudan yazıp kaydet.
+- Önceki antrenman ağırlığını ve tekrarını görüntüle.
+- Dinlenme sayacı ve ±15 saniye kısayolu.
+- Kaydetmeden önce eksik set kontrolü ve gelecek yük önerisi.
+- **Son seansı geri al:** son kayda ait gerçek setleri, ağırlık artışını ve ilerleme konumunu geri yükler; eski sürümden kalan loglarda gerekli geri alma verisi yoksa bu buton çalışmaz.
+- **Growth programı:** bağımsız çalışma ağırlıkları, 6–15 tekrar aralıkları, kullanıcı tarafından bildirilen enerji/eklem durumuna göre yük artışı önerisi.
+- **Gelişim:** haftalık doğrudan biceps/triceps setleri, 12 haftalık SVG grafik, kas yükü gösterimi, gerçek kayıtlardan tahmini 1RM.
+- Kol ölçümü: soğuk ve pump ölçümleri ayrı kaydedilir; büyüme farkına yalnızca soğuk ölçüler girer.
 
-## Growth şablonunu kullanma
+**Antrenman notu:** 5×5 veya Growth için varsayılan ağırlıklar kişisel reçete değildir; kendi kondisyonuna ve ekipmana göre düzenle. Dirsek/bilek ağrısını zorlayarak sürdürme. Hacim grafiği yalnızca burada kaydedilmiş doğrudan setleri sayar; başka antrenmanların dolaylı yükünü bilmez.
 
-1. **Antrenman** ekranında **Program / gün / şablon seçimi** bölümünü aç.
-2. Şablon olarak **ARM Growth · Hipertrofi** seç.
-3. Growth ağırlıkları, 5×5 hedeflerinden bağımsız ve daha düşük **örnek** başlangıç değerleridir. Gerçek kapasiten ve ekipmanına göre ayarla.
-4. Seans öncesi enerji durumunu seç; dirsek/bilek rahatsızlığın varsa belirt.
-5. Her sette gerçek tekrar ve toplam ağırlığı gir. Örn. 3×6–10 için tüm setler 10 tekrara ulaşmadan ağırlık artmaz.
-6. **İlerleme** ekranında program haftasının doğrudan set hacmini gör. Eski özet kayıtlarının set kırılımı yoksa sayılmaz.
+## Veri güvenliği ve yedek
 
-**Veri notu:** Mevcut `localStorage` anahtarı korunur. Henüz gerçek cihazda v0.2→v0.3 geçiş testi ve JSON içe aktarma doğrulaması yapılmadı.
+Kayıtlar varsayılan olarak cihazın `localStorage` alanındadır; hesap, reklam, analitik veya otomatik bulut senkronizasyonu bulunmaz.
 
-## Uyarı
+**Araçlar → Veri Yedekleme & Sıfırlama:**
+1. **JSON Yedeğini İndir:** sürümlenmiş bir `.json` dosyası indirir.
+2. **JSON'dan Geri Yükle:** dosya (≤2 MB) doğrulanır; kullanıcı onayından **sonra** yerel kayıtların yerini alır. Geçersiz dosya mevcut kayıtları değiştirmez.
+3. **Fabrika Ayarları:** tüm yerel kayıtları siler; önce yedek indir.
 
-Bu uygulama tıbbi danışmanlık sağlamaz. Antrenman yükünü ve hareketleri kapasitenize göre ayarlayın. Aşırı ağrı durumunda egzersizi bırakın.
+Yedek içe aktarma eski v0.3 durum nesnelerini de kabul eder. JSON dosyaları güvenilmeyen girdi olarak değerlendirilir; seanslar, setler, ağırlıklar ve ölçümler doğrulanır. Kötü amaçlı HTML gösterimine karşı tarih ve açıklama alanları escape edilir. **Cihazı sıfırlamadan önce yedek al.**
 
-## Kontrol
+## Offline kullanım
 
-Node.js 20+ ile `npm test` komutu regresyon testlerini çalıştırır. Kod düzeyindeki 23 senaryonun JavaScript test simülasyonunda geçtiği kontrol edilmiştir; GitHub Actions / gerçek tarayıcı CI henüz kurulmadı. Gerçek iPhone/Android tarayıcı kabul testi henüz yapılmadı. Bu aşamada canlı dağıtım etkin değil.
+- Vite + Tailwind CSS v3 yerel derlemesi; çalışma anında Tailwind CDN'ine bağımlı değildir.
+- `vite-plugin-pwa` (MIT) ile Workbox tabanlı cache ve manifest.
+- Özelleştirilmiş ARM 5×5 SVG ikon; fontlarda sistem fallback.
+- İlk kurulum ve güncelleme için internet bağlantısı gerekir; kurulmuş build sonrası temel antrenman ekranı offline çalışacak şekilde yapılandırılmıştır.
+- Service worker yalnızca uygun HTTPS (ve localhost) ortamında etkinleşir. iOS Safari/Android gerçek cihaz kabul testleri ve **bağımsız production build doğrulaması halen yapılmalıdır**.
 
-## Geliştirme
+## Tasarım ve lisans politikası
 
-Ürünün ilk sürümü tek dosyalı HTML/CSS/JS mimarisini korur; refactor ve otomatik testler sonraki iterasyonların hedefidir. `docs/ROADMAP.md` dosyasına bakın.
+ARM uygulama ikonu ve SVG kas yükü gösterimi bu projeye özgü olarak yazıldı. **Setlog, Ischys, openGym veya MuscleMap'in kaynak kodu/görselleri doğrudan kopyalanmadı.** Davranış ve etkileşim yaklaşımları referans alındı. Kullanılan açık kaynak paketler ve lisansları `docs/OPEN_SOURCE.md` dosyasında kaydedilmiştir. Açık kaynak depoların public olması, içeriklerinin serbestçe kopyalanabileceği anlamına gelmez.
+
+Uygulama deposuna henüz bir genel açık kaynak **LICENSE** dosyası eklenmedi; kodun tamamına MIT gibi bir lisans verme kararı ayrıca alınmalıdır.
+
+## Kalite durumu
+
+- Regresyon testleri `tests/app.test.cjs` dosyasında, Node'un test çalıştırıcısını kullanır.
+- 34 senaryo kod simülasyonunda geçti. Uygulama HTML denge ve JavaScript syntax kontrolleri yapıldı.
+- Manuel GitHub Actions workflow eklendi; workflow çalıştırıldığı doğrulanmadı.
+- Gerçek cihaz, VoiceOver, uzun süreli offline ve soğuk başlatma testleri henüz tamamlanmadı.
+
+Ayrıntılar için `docs/ROADMAP.md`, `docs/DESIGN.md` ve `docs/OPEN_SOURCE.md` dosyalarına bak.
