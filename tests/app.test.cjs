@@ -65,6 +65,7 @@ function createApp(saved) {
       v7EditValue, v7ChangeWeek, v7ChangeDay, v7RenderProgram, v7RenderProgress,
       v7RenderSettings, v7BuildStrengthChart, v7BuildVolumeChart, v7OpenValueModal,
       v7SaveValueModal, v7CloseValueModal, v7RenderSettings, v7OpenTool, v7SelectSet,
+      v10OpenExerciseGuide, v10CloseExerciseGuide,
       getState: () => state,
       setState: next => { state = next; }
     };
@@ -926,16 +927,55 @@ test('v0.9 consolidate-only CSS keeps minimal design and removes legacy glass ru
   assert.match(html, /application-version" content="0\.9\.0-dev"/);
 });
 
-test('Exercise rows use consistent SVG icon thumbnails rather than mixed GIFs', () => {
+test('Guided Today list uses consistent photo frames, SVG fallback and actual plan data', () => {
   const { app, document } = createApp();
   app.v7RenderToday();
   const children=document.getElementById('v7TodayExercises').children;
   assert.equal(children.length,3);
   for(const row of children) {
-    assert.match(row.innerHTML,/ui-exercise-mark/);
+    assert.match(row.innerHTML,/v10-exercise-art/);
     assert.match(row.innerHTML,/<svg /);
-    assert.ok(!row.innerHTML.includes('<img src='));
+    assert.match(row.innerHTML,/<img src="data:image\//);
+    assert.match(row.innerHTML,/v10-exercise-target/);
   }
+});
+
+test('Exercise guide renders actual movement notes and photo without modifying workout state', () => {
+  const { app, document, storage } = createApp();
+  app.v7EnterFocus(0);
+  const before=storage.size;
+  assert.equal(app.v10OpenExerciseGuide(),true);
+  assert.equal(document.getElementById('v10GuideDialog').classList.contains('flex'),true);
+  assert.equal(document.getElementById('v10GuideTitle').textContent,'Barbell Curl');
+  assert.match(document.getElementById('v10GuideDescription').textContent,/Ana pazı hareketi/);
+  assert.match(document.getElementById('v10GuideImage').src,/^data:image\//);
+  assert.equal(document.getElementById('v10GuideSteps').children.length,2);
+  assert.match(document.getElementById('v10GuideSteps').children[0].textContent,/Dirseklerini/);
+  assert.equal(app.getSessionSnapshot().recordedSets,0);
+  assert.equal(storage.size,before);
+  app.v10CloseExerciseGuide();
+  assert.equal(document.getElementById('v10GuideDialog').classList.contains('hidden'),true);
+});
+
+test('Exercise guide follows Workout B and preserves original set logger',()=>{
+  const {app,document}=createApp();
+  app.v7ChangeDay(1);
+  app.v7EnterFocus(0);
+  const expected=app.getSessionSnapshot().exercises[0].meta.name;
+  assert.equal(app.v10OpenExerciseGuide(),true);
+  assert.equal(document.getElementById('v10GuideTitle').textContent,expected);
+  assert.equal(app.v7LogCurrentSet(),true);
+  assert.equal(app.getSessionSnapshot().recordedSets,1);
+  app.v10CloseExerciseGuide();
+});
+
+test('Exercise guide provides dialog accessibility and labels static images honestly',()=>{
+  assert.match(html,/id="v10GuideDialog"[^>]*role="dialog" aria-modal="true"/);
+  assert.match(html,/id="v10ShowGuideBtn"[^>]*aria-haspopup="dialog"/);
+  assert.match(html,/Bu görsel sabittir; video veya hareketli gösterim değildir/);
+  assert.match(html,/v10GuideCloseBtn/);
+  assert.match(html,/v10GuideDoneBtn/);
+  assert.match(html,/if\(event.key==='Escape'\)/);
 });
 
 test('Design has only one primary button and preserves existing set tracking', () => {
