@@ -64,3 +64,16 @@ Only development branch `design/shadcn-mobile-v09` is changed.
 - New source version: `0.9.0-dev`
 
 The code-level regression simulations are not a substitute for real mobile device testing.
+
+## v0.10 Guided Exercise UI (reference-based feature)
+The supplied App Store screenshot is a product-experience reference, not a license to reuse its imagery or program. ARM 5×5 retains its original 12-week alternating A/B programming and recording algorithms.
+
+- Today exercise rows now render existing per-exercise catalog photos in one consistent thumbnail frame, with actual selected template set and rep targets.
+- Focus shows a large photo reference with an actionable **Nasıl yapılır?** button.
+- A new accessible sheet displays the existing exercise database name, short explanation, technique guidance and rest recommendation. It can be closed by the explicit button, Escape or backdrop, with keyboard Tab wrapping and return focus.
+- All instructions and imagery originate from the application's existing exercise catalog; the guide does not write, reset or synthesize a workout log.
+- The illustration is clearly marked as a static photograph, not a video or moving demonstration.
+- No third-party assets from the reference screenshot were copied.
+- QA gate: npm test, production build and mobile Safari checks (320 / 375 / 390 / 430px, VoiceOver) before merging into production.
+
+The feature remains on branch `feat/guided-exercise-experience` pending verification.
