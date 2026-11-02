@@ -180,7 +180,7 @@
           <div class="v7-stat"><span class="v7-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4"/></svg></span><span class="v7-muted text-xs">Kol değişimi</span><strong id="v7StatArm">—</strong></div>
         </div>
         <div>
-          <h2 class="v7-section-title mb-3">Hareketler</h2>
+          <div class="v10-list-heading"><div><h2 class="v7-section-title mb-1">Bugünkü hareketler</h2><p class="v7-muted text-xs">Hareketi seç, nasıl yapıldığını incele ve setlerini kaydet.</p></div><span class="v10-guide-kicker">REHBERLİ ANTRENMAN</span></div>
           <div id="v7TodayExercises" class="v7-card divide-y divide-[#2b3339]"></div>
         </div>
         <div id="v7LastWorkout" class="v7-recent" aria-live="polite"></div>
@@ -197,7 +197,11 @@
           <div class="v8-focus-label"><span class="v8-status-dot"></span> ŞU ANDA</div>
           <h2 id="v7ExerciseName" class="v7-hero-title">Barbell Curl</h2>
           <p id="v7ExercisePrescription" class="v7-muted mt-1">5 set × 5 tekrar</p>
-          <img id="v7ExerciseImage" class="v7-exercise-image" alt="" loading="lazy"/>
+          <div class="v10-demo-panel" aria-label="Hareket görseli">
+            <div class="v10-demo-topline"><span>HAREKET GÖRSELİ</span><span class="v10-media-type">FOTOĞRAF</span></div>
+            <div class="v10-demo-image-wrap"><img id="v7ExerciseImage" class="v7-exercise-image" alt="" loading="eager" decoding="async" /></div>
+            <div class="v10-demo-footer"><p>Hareketi görselden incele, ardından setini kaydet.</p><button id="v10ShowGuideBtn" type="button" class="v10-guide-button" aria-haspopup="dialog" aria-controls="v10GuideDialog"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7h.01"/></svg> Nasıl yapılır?</button></div>
+          </div>
         </div>
         <div class="v7-card v7-work-control ui-panel ui-logger ui9-focus-logger">
           <div class="ui9-metrics-grid">
@@ -1031,6 +1035,17 @@
     </div>
   </div>
 
+  <div id="v10GuideDialog" class="v10-guide-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="v10GuideTitle" aria-describedby="v10GuideDescription">
+    <div class="v10-guide-sheet" role="document">
+      <div class="v10-guide-sheet-head"><div><p class="v10-guide-eyebrow">HAREKET REHBERİ</p><h2 id="v10GuideTitle">Hareket bilgisi</h2></div><button id="v10GuideCloseBtn" type="button" class="v10-guide-close" aria-label="Hareket rehberini kapat">×</button></div>
+      <div class="v10-guide-image-wrap"><img id="v10GuideImage" alt="" decoding="async" /></div>
+      <p id="v10GuideDescription" class="v10-guide-description"></p>
+      <h3 class="v10-guide-step-title">Teknik ve dinlenme notları</h3>
+      <ol id="v10GuideSteps" class="v10-guide-steps"></ol>
+      <p class="v10-guide-disclaimer">Bu görsel sabittir; video veya hareketli gösterim değildir. Keskin ağrı hissedersen hareketi durdur.</p>
+      <button id="v10GuideDoneBtn" type="button" class="v10-guide-done">Anladım, Antrenmana Dön</button>
+    </div>
+  </div>
   <!-- Toast Notification -->
   <div id="toastBanner" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-emerald-500 text-oled font-bold text-xs shadow-lg transition-all duration-200 opacity-0 pointer-events-none">
     Bildirim
@@ -2889,7 +2904,8 @@
   // Mixed generated thumbnails and GIFs made the program list visually inconsistent.
   const known={barbell_curl:'barbell',hammer_curl:'hammer',skull_crusher:'skull'};
   const type=known[exId] || 'generic';
-  return `<span class="v7-exercise-art arm-thumb arm-thumb-${type} ui-exercise-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4m3-6v8m3-4h6m3-4v8m3-6v4"/><path d="M9 12h6"/></svg></span>`;
+  const image=typeof fallbackSrc==='string'&&fallbackSrc.startsWith('data:image/')?`<img src="${fallbackSrc}" alt="" loading="lazy" decoding="async"/>`:'';
+  return `<span class="v7-exercise-art arm-thumb arm-thumb-${type} ui-exercise-mark v10-exercise-art" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4m3-6v8m3-4h6m3-4v8m3-6v4"/><path d="M9 12h6"/></svg>${image}</span>`;
 }
 
 function v7RenderToday(){
@@ -2908,7 +2924,7 @@ function v7RenderToday(){
   snapshot.exercises.forEach((item,i)=>{
     const row=document.createElement('button');
     row.type='button';row.className='v7-exercise-row';
-    row.innerHTML=`${v7ArtworkMarkup(item.exId,item.meta.img)}<span class="flex-1 min-w-0"><span class="v7-ex-name block">${i+1}. ${escapeHTML(item.meta.name)}</span><span class="v7-chip">${v7GoalText(item)} tekrar</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
+    row.innerHTML=`${v7ArtworkMarkup(item.exId,item.meta.img)}<span class="flex-1 min-w-0"><span class="v7-ex-name block">${i+1}. ${escapeHTML(item.meta.name)}</span><span class="v10-exercise-target">${v7GoalText(item)} tekrar</span><span class="v10-exercise-caption">Hareketi ve tekniğini gör</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
     row.setAttribute('aria-label',`${item.meta.name}, ${v7GoalText(item)}. Antrenmana geç`);
     row.addEventListener('click',()=>v7EnterFocus(i));
     list.appendChild(row);
@@ -2953,7 +2969,7 @@ function v7RenderToday(){
   v7SetText('v7FocusSubtitle',`${v7FocusIndex+1} / ${list.length} hareket · Hafta ${state.currentWeek}`);
   v7SetText('v7ExerciseName',item.meta.name);
   v7SetText('v7ExercisePrescription',`${v7GoalText(item)} tekrar · ${item.setValues.filter(value=>value!==null).length}/${item.sets} set`);
-  const img=v7Element('v7ExerciseImage');img.src=item.meta.img;img.alt='';
+  const img=v7Element('v7ExerciseImage');img.src=item.meta.img;img.alt=`${item.meta.name} hareketinin görsel referansı`;
   v7Element('v7FocusHero').classList.toggle('arm-cover',item.exId==='barbell_curl');
   v7Element('v7FocusHero').classList.toggle('arm-cover-focus',item.exId==='barbell_curl');
   const pct=snapshot.totalSets ? Math.round(snapshot.recordedSets/snapshot.totalSets*100):0;
@@ -3025,10 +3041,29 @@ function v7RenderToday(){
   v7SetText('v7RestPause',timerRunning?'Duraklat':'Devam Et');
 }
 
-    function v7OpenExerciseInfo(){
-  const item=getSessionSnapshot().exercises[v7FocusIndex];if(!item)return;
-  window.alert(`${item.meta.name}\n\n${item.meta.tips||''}\n\nDinlenme: ${item.meta.restSec} saniye.`);
+    let v10GuideReturnFocus=null;
+    function v10OpenExerciseGuide(){
+  const item=getSessionSnapshot().exercises[v7FocusIndex];if(!item)return false;
+  const dialog=v7Element('v10GuideDialog');
+  v7SetText('v10GuideTitle',item.meta.name);
+  v7SetText('v10GuideDescription',item.meta.desc||'Hareketin uygulanışı ve dinlenme önerileri.');
+  const image=v7Element('v10GuideImage');image.src=item.meta.img;image.alt=`${item.meta.name} hareketinin sabit görseli`;
+  const steps=v7Element('v10GuideSteps');steps.innerHTML='';
+  [item.meta.tips,item.meta.restText].filter(t=>typeof t==='string'&&t.trim()).forEach(t=>{
+    const li=document.createElement('li');li.textContent=t;steps.appendChild(li);
+  });
+  v10GuideReturnFocus=document.activeElement||null;
+  dialog.classList.remove('hidden');dialog.classList.add('flex');
+  const close=v7Element('v10GuideCloseBtn');if(typeof close.focus==='function')close.focus();
+  return true;
 }
+function v10CloseExerciseGuide(){
+  const dialog=v7Element('v10GuideDialog');
+  dialog.classList.add('hidden');dialog.classList.remove('flex');
+  if(v10GuideReturnFocus&&typeof v10GuideReturnFocus.focus==='function')v10GuideReturnFocus.focus();
+  v10GuideReturnFocus=null;
+}
+function v7OpenExerciseInfo(){return v10OpenExerciseGuide();}
 
     function v7EditCurrentSet(){
   const item=getSessionSnapshot().exercises[v7FocusIndex];if(!item)return;
@@ -3281,6 +3316,23 @@ function v7RenderToday(){
   bind('v7FinishBtn',openFinishPreview);
   bind('v7EditSetBtn',v7EditCurrentSet);
   bind('v7ExerciseInfoBtn',v7OpenExerciseInfo);
+  bind('v10ShowGuideBtn',v10OpenExerciseGuide);
+  bind('v10GuideCloseBtn',v10CloseExerciseGuide);
+  bind('v10GuideDoneBtn',v10CloseExerciseGuide);
+  v7Element('v10GuideDialog').addEventListener('click',event=>{
+    if(event.target===v7Element('v10GuideDialog'))v10CloseExerciseGuide();
+  });
+  document.addEventListener('keydown',event=>{
+    const dialog=v7Element('v10GuideDialog');
+    if(dialog.classList.contains('hidden'))return;
+    if(event.key==='Escape'){event.preventDefault();v10CloseExerciseGuide();return;}
+    if(event.key!=='Tab')return;
+    const buttons=Array.from(dialog.querySelectorAll('button:not([disabled])'));
+    if(!buttons.length)return;
+    const first=buttons[0],last=buttons[buttons.length-1];
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+  });
   bind('v7RestPause',toggleRestTimer);
   bind('v7RestSkip',()=>resetRestTimer());
   bind('v7RestMinus',()=>{
