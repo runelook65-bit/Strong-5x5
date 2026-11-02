@@ -814,3 +814,22 @@ body .app-shell {
 @media (prefers-reduced-motion:reduce) {
  .app-shell .v10-exercise-art, .app-shell .v10-guide-button, .v10-guide-dialog { animation:none !important; transition:none !important; }
 }
+
+
+/* Correct historical v0.9 overrides that intentionally hid and faded old imagery.
+ * The new guided design explicitly re-enables its own bounded media surface.
+ */
+.app-shell #v7Today .v7-exercise-row { min-height:86px; padding:12px; }
+.app-shell #v7Today .v10-exercise-art {
+ width:58px; height:58px; min-width:58px; min-height:58px; flex-basis:58px;
+ border-radius:12px;
+}
+.app-shell #v7Today .v10-exercise-art > img {
+ position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+ border:0; border-radius:inherit; opacity:1;
+}
+.app-shell #v7Today .v10-exercise-art > svg { width:25px; height:25px; }
+.app-shell .ui9-exercise-header .v7-exercise-image {
+ display:block !important; position:static; opacity:1; mask-image:none;
+ -webkit-mask-image:none; width:100%; height:100%; object-fit:contain;
+}
