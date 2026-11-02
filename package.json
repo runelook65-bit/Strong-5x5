@@ -1,6 +1,6 @@
 {
   "name": "arm-5x5",
-  "version": "0.8.0",
+  "version": "0.9.0-dev",
   "private": true,
   "description": "ARM 5x5 offline-first arm workout tracker",
   "scripts": {

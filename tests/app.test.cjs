@@ -652,11 +652,11 @@ test('Inline logger uses nonsticky rest panel and never duplicates set entry for
   assert.ok(!html.includes('Sıradaki set · 1/5'));
 });
 
-test('PWA release 0.8.0 exposes five-screen architecture and update UI', () => {
+test('PWA release 0.9.0-dev exposes five-screen architecture and update UI', () => {
   for (const id of ['v7Today','v7Focus','v7Program','v7Progress','v7Settings','v7ToolDetail']) {
     assert.match(html, new RegExp('id="'+id+'"'));
   }
-  assert.match(html, /<meta name="application-version" content="0\.8\.0"/);
+  assert.match(html, /<meta name="application-version" content="0\.9\.0-dev"/);
   assert.match(html, /id="appUpdateBanner"/);
   assert.match(html, /serviceWorker\.addEventListener\('controllerchange'/);
 });
@@ -832,8 +832,8 @@ test('Growth readiness remains independently associated with each training day',
   assert.equal(document.getElementById('v7Joint').checked,false);
 });
 
-test('Precision Glass design is loaded after the base v0.7 stylesheet', () => {
-  assert.match(html, /href="\/src\/v7.css"\s*\/?>[\s\S]*href="\/src\/v7-glass.css"/);
+test('Consolidated design is loaded after the structural v0.7 stylesheet', () => {
+  assert.match(html, /href="\/src\/v7.css"\s*\/?>[\s\S]*href="\/src\/ui-v09.css"/);
   assert.match(html, /class="v8-hero-watermark"/);
   assert.match(html, /class="v8-hero-context"/);
   assert.match(html, /id="v7WeightValueBtn"/);
@@ -885,10 +885,11 @@ test('Precision Glass navigation uses scalable vector icons in focus and footer'
 });
 
 test('Visual Covers: five distinct cover surfaces are mounted in correct pages', () => {
-  for (const cls of ['arm-cover-home','arm-cover-program','arm-cover-progress','arm-cover-settings']) {
+  for (const cls of ['arm-cover-home','arm-cover-program','arm-cover-settings']) {
     assert.match(html,new RegExp('class="[^"]*'+cls));
   }
-  assert.match(html,/id="v7FocusHero" class="v7-hero v7-exercise-hero"/);
+  assert.ok(!html.includes('class="v7-hero v7-progress-cover'), 'Progress is a data dashboard without a decorative hero');
+  assert.match(html,/id="v7FocusHero" class="v7-hero v7-exercise-hero ui9-exercise-header"/);
   assert.ok(html.includes("v7Element('v7FocusHero').classList.toggle('arm-cover-focus'"));
 });
 
@@ -916,11 +917,13 @@ test('Visual Covers: session data remains independent of imagery', () => {
   assert.equal(app.getSessionSnapshot().recordedSets,1);
 });
 
-test('Minimal UI v0.8 stylesheet supersedes the overgrown Glass theme', () => {
-  assert.match(html, /href="\/src\/v7-glass.css"[\s\S]*href="\/src\/ui-system.css"/);
-  assert.match(html, /class="v7-hero v7-home-hero arm-cover arm-cover-home ui-panel ui-next-session"/);
+test('v0.9 consolidate-only CSS keeps minimal design and removes legacy glass runtime', () => {
+  assert.ok(!html.includes('href="/src/v7-glass.css"'));
+  assert.ok(!html.includes('href="/src/ui-system.css"'));
+  assert.match(html, /href="\/src\/ui-v09.css"/);
+  assert.match(html, /class="v7-hero v7-home-hero arm-cover arm-cover-home ui-panel ui-next-session ui9-primary-panel"/);
   assert.match(html, /class="v7-navigation ui-tabbar"/);
-  assert.match(html, /application-version" content="0\.8\.0"/);
+  assert.match(html, /application-version" content="0\.9\.0-dev"/);
 });
 
 test('Exercise rows use consistent SVG icon thumbnails rather than mixed GIFs', () => {
@@ -952,4 +955,126 @@ test('The old generated cover layer remains in source but not required for app w
   assert.match(html,/id="v7Program"/);
   assert.match(html,/id="v7Progress"/);
   assert.match(html,/id="v7Settings"/);
+});
+
+test('v0.9 one active design stylesheet follows the legacy structural base', () => {
+  const order=['/src/v7.css','/src/ui-v09.css'].map(x=>html.indexOf(x));
+  assert.ok(order.every(v=>v>=0));
+  assert.ok(order[0]<order[1]);
+  assert.match(html,/class="v7-card v7-work-control ui-panel ui-logger ui9-focus-logger"/);
+  assert.match(html,/class="ui9-metrics-grid"/);
+});
+
+test('v0.9 focus separates true KG and repetitions into semantic controls', () => {
+  const block=html.slice(html.indexOf('class="ui9-metrics-grid"'),html.indexOf('id="v7SetHint"'));
+  assert.match(block,/role="group" aria-label="Çalışma ağırlığı"/);
+  assert.match(block,/role="group" aria-label="Tekrar sayısı"/);
+  for(const id of ['v7WeightMinus','v7WeightValueBtn','v7WeightPlus','v7RepsMinus','v7RepsValueBtn','v7RepsPlus']) {
+    assert.match(block,new RegExp('id="'+id+'"'));
+  }
+});
+
+test('v0.9 compact focus still logs actual changed values and advances sets', () => {
+  const {app,document}=createApp();
+  app.v7EnterFocus(0);
+  app.v7EditValue('weight',-.5);
+  app.v7EditValue('reps',1);
+  assert.equal(app.v7LogCurrentSet(),true);
+  assert.equal(app.getSessionSnapshot().recordedSets,1);
+  assert.equal(app.getActiveWorkoutExercises()[0].setValues[0],6);
+  assert.equal(app.getActiveWorkoutExercises()[0].setWeights[0],27);
+  assert.equal(document.getElementById('v7ExercisePrescription').textContent,'5 × 5 tekrar · 1/5 set');
+});
+
+test('v0.9 program summary reports real completed sessions and exposes accessible progress', () => {
+  const {app,document}=createApp();
+  app.getState().completedSlots['w1_d0']=true;
+  app.getState().completedSlots['w1_d2']=true;
+  app.v7RenderProgram();
+  assert.equal(document.getElementById('v9ProgramSlotCount').textContent,'2 / 36 seans');
+  assert.equal(document.getElementById('v9ProgramProgressTrack').getAttribute('aria-valuenow'),'2');
+  assert.equal(document.getElementById('v7WeekDays').children.length,3);
+  const day=document.getElementById('v7WeekDays').children[0];
+  assert.equal(day.getAttribute('aria-pressed'),'true');
+  assert.match(day.innerHTML,/Tamamlandı/);
+});
+
+test('v0.9 Program A/B cards derive counts and prescriptions from selected template', () => {
+  const {app,document}=createApp();
+  app.getState().templateKey='hybrid5x5';
+  app.v7RenderProgram();
+  const buttons=document.getElementById('v7WorkoutTemplates').children;
+  assert.equal(buttons.length,2);
+  assert.match(buttons[0].innerHTML,/13 set/);
+  assert.match(buttons[1].innerHTML,/11 set/);
+  assert.match(buttons[0].innerHTML,/ui9-program-exercise-list/);
+  assert.equal(buttons[0].getAttribute('aria-pressed'),'true');
+  assert.equal(buttons[1].getAttribute('aria-pressed'),'false');
+  assert.equal(document.getElementById('v7TemplateSelect').value,'hybrid5x5');
+});
+
+test('v0.9 Program roadmap preserves 7th-week deload and original week switching', () => {
+  const {app,document}=createApp();
+  app.v7RenderProgram();
+  const weeks=document.getElementById('v7WeekGrid').children;
+  assert.equal(weeks.length,12);
+  assert.match(weeks[6].innerHTML,/Toparlanma/);
+  assert.equal(weeks[6].getAttribute('aria-label').includes('toparlanma haftası'),true);
+  assert.equal(app.v7ChangeWeek(7),true);
+  app.v7RenderProgram();
+  assert.equal(document.getElementById('v9ProgramCurrentWeek').textContent,'7');
+  assert.match(document.getElementById('v7ProgramWeekText').textContent,/A \/ B \/ A/);
+});
+
+test('v0.9 progress uses no fake scores on an empty fresh install', () => {
+  const {app,document}=createApp();
+  app.v7RenderProgress();
+  assert.equal(document.getElementById('v7ProgressSessions').textContent,'0');
+  assert.equal(document.getElementById('v7ProgressVolume').textContent,'—');
+  assert.equal(document.getElementById('v7ProgressArm').textContent,'—');
+  assert.match(document.getElementById('v9ProgressStatus').textContent,/İlk antrenmanını/);
+  assert.match(document.getElementById('v7PersonalRecords').innerHTML,/Kayıtlı set/);
+  assert.equal(document.getElementById('v9StrengthNote').textContent,'Bu hareket için kayıtlı çalışma ağırlığı yok.');
+});
+
+test('v0.9 progress cards calculate recorded volume, actual PRs and cold measurement delta', () => {
+  const {app,document}=createApp();
+  const s=app.getState();
+  s.workoutLogs=[
+    {id:'w1_d0_standard_A',title:'Workout A',volume:1234,exercises:[{exId:'barbell_curl',sets:[{weight:20,reps:5},{weight:22,reps:5}]}]},
+    {id:'w2_d0_standard_B',title:'Workout B',volume:444,exercises:[]}
+  ];
+  s.armMeasurements=[{note:'Soğuk',cm:34},{note:'Pump',cm:36},{note:'Soğuk',cm:35.5}];
+  s.exStats.barbell_curl.history=[{weight:20,reps:5,date:'2026-10-20'},{weight:22,reps:5,date:'2026-10-25'}];
+  app.v7RenderProgress();
+  assert.equal(document.getElementById('v7ProgressSessions').textContent,'2');
+  assert.equal(document.getElementById('v7ProgressVolume').textContent,'1.678 kg');
+  assert.equal(document.getElementById('v7ProgressArm').textContent,'+1.5 cm');
+  assert.equal(document.getElementById('v9StrengthNote').textContent,'Son 2 kayıt gösteriliyor');
+  assert.match(document.getElementById('v9VolumeNote').textContent,/2 haftada/);
+  assert.equal(document.getElementById('v7PersonalRecords').children.length,1);
+  assert.match(document.getElementById('v7PersonalRecords').children[0].innerHTML,/22.0 kg/);
+  assert.match(document.getElementById('v7LastMeasurements').innerHTML,/35.5 cm/);
+  assert.match(document.getElementById('v7LastMeasurements').innerHTML,/36.0 cm/);
+});
+
+test('v0.9 progress excludes missing or invalid set weights from PRs', () => {
+  const {app,document}=createApp();
+  app.getState().workoutLogs=[{id:'w1_d0_standard_A',volume:0,exercises:[
+    {exId:'barbell_curl',sets:[{weight:40,reps:0},{weight:NaN,reps:5},{weight:0,reps:5}]}
+  ]}];
+  app.v7RenderProgress();
+  assert.equal(document.getElementById('v7PersonalRecords').children.length,0);
+  assert.match(document.getElementById('v9RecordsNote').textContent,/Kaydedilmiş setlerde/);
+});
+
+test('v0.9 progress keeps exercise chart selection on rerender and tracks true history', () => {
+  const {app,document}=createApp();
+  const selector=document.getElementById('v7ChartExercise');
+  selector.value='hammer_curl';
+  app.getState().exStats.hammer_curl.history=[{weight:11,reps:8,date:'2026-10-20'}];
+  app.v7RenderProgress();
+  assert.equal(selector.value,'hammer_curl');
+  assert.equal(document.getElementById('v9StrengthNote').textContent,'Son 1 kayıt gösteriliyor');
+  assert.match(document.getElementById('v7StrengthChart').innerHTML,/11\.0 kg/);
 });
