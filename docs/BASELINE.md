@@ -21,3 +21,12 @@ The uploaded code names the third-party StrongLifts brand. Do not imply an offic
 ## Modular Vite refactor (v1.1.0)
 
 Original inline style blocks were extracted to `src/styles/base.css`, `effects.css`, and `components.css` **without reordering declarations**. The JavaScript now uses an ES module entrypoint, domain config, state persistence, workout progression and display-format modules. The remaining screen controllers live in `src/app.js`, with a temporary `window` bridge to preserve inline HTML handler contracts. The localStorage key `sl5x5` and app behavior remain unchanged. This is not a React rewrite and does not re-enable the old ARM engine.
+
+## Hardened recording and imports (2026-11-04)
+
+- `src/data/validation.js` validates JSON backups and shared programs (structure, set/repetition limits, working weights, list sizes, identifiers, input length).
+- Malformed imports are rejected **before** overwriting `sl5x5`. Persistence occurs before swapping the in-memory state; the retired `arm_5x5_app_state_v1` key stays untouched.
+- Save failures display a user-facing notice rather than silently reporting success.
+- Starting a session, completing sets, editing weights, saving a workout, discarding a session and resetting records now roll back in-memory changes if the browser rejects their storage write.
+- Fatal app errors offer a readonly copy of local data and a retry button rather than encouraging an immediate one-click factory reset.
+- Remaining gaps: full DOM/iPhone automated smoke tests; migrating `src/app.js` template-inline handlers to delegated events; storage corruption recovery on initial load; browser notifications cannot fire while the PWA is closed without a push-capable backend.

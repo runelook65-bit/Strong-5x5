@@ -252,3 +252,47 @@ test('runtime recovery never prompts a one-click factory reset',()=>{
  assert.ok(!markup.includes('onclick="resetAll()"'));
  assert.doesNotThrow(()=>a.run('recoverData()'));
 });
+
+test('a failed write does not start an unpersisted workout',()=>{
+ const a=harness();
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage quota exceeded')};
+ a.run('start()');
+ assert.equal(a.run('S.act'),null);
+ assert.equal(a.store.has('sl5x5'),false);
+});
+
+test('failed set recording keeps the previously logged repetitions intact',()=>{
+ const a=harness();a.run('start()');
+ const original=a.store.get('sl5x5');
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage denied')};
+ a.run('tap(0,0)');
+ assert.equal(a.run('S.act.ex[0].sets[0]'),null);
+ assert.equal(a.store.get('sl5x5'),original);
+});
+
+test('weight edits do not appear saved if browser storage rejects the update',()=>{
+ const a=harness();a.run('start()');
+ const old=a.run('S.act.ex[0].w');
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage denied')};
+ a.run('adj(0,5)');
+ assert.equal(a.run('S.act.ex[0].w'),old);
+});
+
+test('failed storage preserves an active session when canceling it',()=>{
+ const a=harness();a.run('start()');
+ const original=a.store.get('sl5x5');
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage denied')};
+ a.run('delWo()');a.run('delWo()');
+ assert.equal(a.run('S.act!==null'),true);
+ assert.equal(a.store.get('sl5x5'),original);
+});
+
+test('failed reset restores in-memory records instead of silently losing them',()=>{
+ const a=harness();a.run('start()');
+ const before=a.store.get('sl5x5');
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage denied')};
+ a.ctx.resetButton=a.get('reset');
+ a.run('rstS(resetButton)');a.run('rstS(resetButton)');
+ assert.equal(a.run('S.act!==null'),true);
+ assert.equal(a.store.get('sl5x5'),before);
+});
