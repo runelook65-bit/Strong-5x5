@@ -2906,6 +2906,187 @@
   return true;
 }
 
+
+    // Navigation presentation state: the 12-week session engine stays authoritative.
+    let v11FocusMode='overview';
+    let v11HistoryView='calendar';
+    let v11HistoryMonth=new Date();
+    v11HistoryMonth.setDate(1);
+    let v11SelectedDate=null;
+
+    function v11RenderUpcoming(){
+      const root=v7Element('v11Upcoming');root.innerHTML='';
+      const template=TEMPLATES[state.templateKey]||TEMPLATES.standard;
+      let shown=0;
+      for(let week=state.currentWeek;week<=12&&shown<2;week++){
+        for(let day=week===state.currentWeek?state.currentDayIdx+1:0;day<3&&shown<2;day++){
+          if(state.completedSlots['w'+week+'_d'+day])continue;
+          const type=getScheduledWorkoutType(week,day);
+          const card=document.createElement('article');card.className='v11-upcoming-card';
+          const title=document.createElement('div');title.className='v11-upcoming-heading';
+          const date=document.createElement('span');date.textContent='Hafta '+week+' · '+DAY_NAMES[day];
+          const name=document.createElement('strong');name.textContent='Antrenman '+type;
+          title.appendChild(date);title.appendChild(name);card.appendChild(title);
+          const rows=document.createElement('div');rows.className='v11-upcoming-exercises';
+          (template[type]||[]).forEach(item=>{
+            const meta=EXERCISE_DB[item.exId];
+            const stats=getExerciseStats(item.exId);
+            const sets=week===7?Math.max(2,Math.ceil(item.sets/2)):item.sets;
+            const reps=item.minReps&&item.minReps<item.reps?item.minReps+'–'+item.reps:String(item.reps);
+            const row=document.createElement('div');row.className='v11-upcoming-row';
+            const label=document.createElement('span');label.textContent=meta.name;
+            const goal=document.createElement('strong');
+            goal.textContent=sets+'×'+reps+' '+Number(stats.weight).toLocaleString('tr-TR',{maximumFractionDigits:1})+'kg';
+            row.appendChild(label);row.appendChild(goal);rows.appendChild(row);
+          });
+          card.appendChild(rows);root.appendChild(card);shown++;
+        }
+      }
+      if(shown===0){const empty=document.createElement('p');empty.className='v11-empty';empty.textContent='Programda ileride planlanan başka seans bulunmuyor.';root.appendChild(empty);}
+    }
+
+    function v11RenderFocusOverview(snapshot){
+      const screen=v7Element('v7Focus');
+      screen.classList.toggle('v11-overview-active',v11FocusMode==='overview');
+      screen.classList.toggle('v11-warmup-active',v11FocusMode==='warmup');
+      screen.classList.toggle('v11-detail-active',v11FocusMode==='detail');
+      v7Element('v11DetailBack').classList.toggle('hidden',v11FocusMode!=='detail');
+      v7Element('v11Warmup').classList.toggle('hidden',v11FocusMode!=='warmup');
+      v7Element('v11FocusOverview').classList.toggle('hidden',v11FocusMode!=='overview');
+      document.querySelectorAll('[data-v11focus]').forEach(button=>{
+        const current=button.getAttribute('data-v11focus')===(v11FocusMode==='warmup'?'warmup':'overview');
+        button.classList.toggle('is-active',current);
+        button.setAttribute('aria-selected',String(current));
+      });
+      if(v11FocusMode!=='overview')return;
+      const root=v7Element('v11FocusOverview');root.innerHTML='';
+      snapshot.exercises.forEach((item,exerciseIndex)=>{
+        const section=document.createElement('section');section.className='v11-focus-exercise';
+        const heading=document.createElement('button');heading.type='button';heading.className='v11-focus-exercise-heading';
+        const title=document.createElement('span');title.textContent=item.meta.name;
+        const detail=document.createElement('strong');
+        detail.textContent=v7GoalText(item)+' · '+Number(item.stats.weight).toLocaleString('tr-TR',{maximumFractionDigits:1})+'kg ›';
+        heading.appendChild(title);heading.appendChild(detail);
+        heading.setAttribute('aria-label',item.meta.name+', hareketi aç');
+        heading.addEventListener('click',()=>{
+          v7FocusIndex=exerciseIndex;v7ChosenSet=null;v7DraftKey='';
+          v11FocusMode='detail';v7RenderFocus();
+        });
+        section.appendChild(heading);
+        const bubbles=document.createElement('div');bubbles.className='v11-set-bubbles';
+        item.setValues.forEach((value,setIndex)=>{
+          const bubble=document.createElement('button');bubble.type='button';
+          bubble.className='v11-set-bubble'+(value!==null?' is-recorded':'');
+          bubble.textContent=String(value===null?item.reps:value);
+          bubble.setAttribute('aria-label',item.meta.name+', '+(setIndex+1)+'. set: '+(value===null?'kaydedilmedi':'kaydedildi, '+value+' tekrar'));
+          bubble.setAttribute('aria-pressed',String(value!==null));
+          bubble.addEventListener('click',()=>{
+            v7FocusIndex=exerciseIndex;v7ChosenSet=null;v7DraftKey='';
+            v11FocusMode='detail';v7RenderFocus();v7SelectSet(setIndex);
+          });
+          bubbles.appendChild(bubble);
+        });
+        section.appendChild(bubbles);root.appendChild(section);
+      });
+      const help=document.createElement('p');help.className='v11-overview-help';
+      help.textContent=snapshot.isSaved?'Bu seans daha önce kaydedildi.':'Kırmızı daire: tamamlanan set. Her daireye dokunarak gerçek ağırlık ve tekrarları kaydet.';
+      root.appendChild(help);
+    }
+
+    function v11LogDate(log){
+      if(typeof log?.timestamp!=='string')return null;
+      const date=new Date(log.timestamp);
+      if(!Number.isFinite(date.getTime()))return null;
+      return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+    }
+    function v11HistoryLogs(){
+      return (Array.isArray(state.workoutLogs)?state.workoutLogs:[])
+        .filter(log=>v11LogDate(log))
+        .slice().sort((a,b)=>new Date(b.timestamp).getTime()-new Date(a.timestamp).getTime());
+    }
+    function v11HistorySummary(log){
+      const card=document.createElement('article');card.className='v11-history-summary';
+      const title=document.createElement('h3');
+      title.textContent=(log.title||'Antrenman')+' · '+new Date(log.timestamp).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+      card.appendChild(title);
+      const meta=document.createElement('p');meta.className='v11-history-meta';
+      meta.textContent=(Array.isArray(log.exercises)?log.exercises.length:0)+' hareket · '+(Number.isFinite(log.volume)?Math.round(log.volume).toLocaleString('tr-TR')+' kg':'Hacim bilgisi yok');
+      card.appendChild(meta);
+      if(Array.isArray(log.exercises))log.exercises.forEach(ex=>{
+        const line=document.createElement('p');line.className='v11-history-exercise';
+        const sets=Array.isArray(ex.sets)?ex.sets:[];
+        line.textContent=(ex.name||EXERCISE_DB[ex.exId]?.name||'Hareket')+' · '+sets.map(s=>Number.isFinite(s.reps)&&Number.isFinite(s.weight)?s.reps+'×'+s.weight+' kg':'—').join(' · ');
+        card.appendChild(line);
+      });
+      return card;
+    }
+    function v11RenderHistoryList(root,logs){
+      if(!logs.length){const p=document.createElement('p');p.className='v11-empty';p.textContent='Henüz kayıtlı antrenman yok. Seans tamamladığında burada görünecek.';root.appendChild(p);return;}
+      logs.forEach(log=>root.appendChild(v11HistorySummary(log)));
+    }
+    function v11RenderHistoryNotes(root,logs){
+      const notes=logs.filter(log=>Array.isArray(log.details)&&log.details.some(t=>typeof t==='string'&&t.trim()));
+      const info=document.createElement('p');info.className='v11-history-note-help';
+      info.textContent='Burada sadece kaydedilmiş antrenmanların otomatik ilerleme notları gösterilir.';
+      root.appendChild(info);
+      if(!notes.length){const empty=document.createElement('p');empty.className='v11-empty';empty.textContent='Henüz kaydedilmiş seans notu yok.';root.appendChild(empty);return;}
+      notes.forEach(log=>{
+        const card=document.createElement('article');card.className='v11-history-summary';
+        const title=document.createElement('h3');title.textContent=(log.title||'Antrenman')+' · '+new Date(log.timestamp).toLocaleDateString('tr-TR');card.appendChild(title);
+        log.details.forEach(note=>{if(typeof note!=='string'||!note.trim())return;const p=document.createElement('p');p.className='v11-history-note';p.textContent=note;card.appendChild(p);});
+        root.appendChild(card);
+      });
+    }
+    function v11RenderCalendar(root,logs){
+      const year=v11HistoryMonth.getFullYear(),month=v11HistoryMonth.getMonth();
+      const header=document.createElement('div');header.className='v11-calendar-header';
+      const previous=document.createElement('button');previous.type='button';previous.textContent='‹';previous.setAttribute('aria-label','Önceki ay');
+      const title=document.createElement('strong');title.textContent=v11HistoryMonth.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
+      const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','Sonraki ay');
+      previous.addEventListener('click',()=>{v11HistoryMonth=new Date(year,month-1,1);v11SelectedDate=null;v11RenderHistory();});
+      next.addEventListener('click',()=>{v11HistoryMonth=new Date(year,month+1,1);v11SelectedDate=null;v11RenderHistory();});
+      header.appendChild(previous);header.appendChild(title);header.appendChild(next);root.appendChild(header);
+      const grid=document.createElement('div');grid.className='v11-calendar-grid';grid.setAttribute('role','group');grid.setAttribute('aria-label',title.textContent);
+      const weekdays=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+      weekdays.forEach(weekday=>{const cell=document.createElement('span');cell.className='v11-weekday';cell.textContent=weekday.charAt(0);cell.setAttribute('aria-label',weekday);grid.appendChild(cell);});
+      for(let i=0;i<(new Date(year,month,1).getDay()+6)%7;i++){const blank=document.createElement('span');blank.className='v11-calendar-blank';grid.appendChild(blank);}
+      const counts=new Map();logs.forEach(log=>{const key=v11LogDate(log);counts.set(key,(counts.get(key)||0)+1);});
+      const days=new Date(year,month+1,0).getDate();
+      for(let day=1;day<=days;day++){
+        const key=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+        const count=counts.get(key)||0;
+        const cell=document.createElement('button');cell.type='button';
+        cell.className='v11-calendar-day'+(count?' is-done':'')+(v11SelectedDate===key?' is-selected':'');
+        cell.textContent=String(day);cell.setAttribute('aria-label',day+' '+title.textContent+', '+count+' kayıtlı antrenman');
+        cell.setAttribute('aria-pressed',String(v11SelectedDate===key));
+        cell.addEventListener('click',()=>{v11SelectedDate=key;v11RenderHistory();});
+        grid.appendChild(cell);
+      }
+      root.appendChild(grid);
+      if(v11SelectedDate){
+        const heading=document.createElement('h2');heading.className='v11-selected-heading';heading.textContent='Seçilen gün';root.appendChild(heading);
+        const selected=logs.filter(log=>v11LogDate(log)===v11SelectedDate);
+        if(!selected.length){const p=document.createElement('p');p.className='v11-empty';p.textContent='Bu gün için kaydedilen antrenman yok.';root.appendChild(p);}
+        else selected.forEach(log=>root.appendChild(v11HistorySummary(log)));
+      }else{
+        const count=logs.filter(log=>{const d=new Date(log.timestamp);return d.getFullYear()===year&&d.getMonth()===month;}).length;
+        const hint=document.createElement('p');hint.className='v11-calendar-hint';
+        hint.textContent=count?count+' tamamlanan antrenman. Kırmızı günlere dokunarak ayrıntıları aç.':'Bu ay için henüz kayıtlı antrenman yok.';
+        root.appendChild(hint);
+      }
+    }
+    function v11RenderHistory(){
+      const logs=v11HistoryLogs();
+      document.querySelectorAll('[data-v11history]').forEach(button=>{
+        const active=button.getAttribute('data-v11history')===v11HistoryView;
+        button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));
+      });
+      const root=v7Element('v11HistoryContent');root.innerHTML='';
+      if(v11HistoryView==='list')v11RenderHistoryList(root,logs);
+      else if(v11HistoryView==='notes')v11RenderHistoryNotes(root,logs);
+      else v11RenderCalendar(root,logs);
+    }
+
     function v7ArtworkMarkup(exId, fallbackSrc){
   // Unified icon surfaces for the list; full motion references remain in the exercise library.
   // Mixed generated thumbnails and GIFs made the program list visually inconsistent.
