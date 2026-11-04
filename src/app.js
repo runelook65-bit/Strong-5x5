@@ -67,8 +67,10 @@ function draw(){acc();$('app').className=dir;dir='';
  navUp();(0)&&tabs.map(([k,i,l])=>`<button class="${k===tab?'on':''}" onclick="tab='${k}';draw();scrollTo(0,0)"><span>${ICN[k]}</span>${l}</button>`).join('')}
 
 function start(){try{!S.al&&navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
- if(!S.act)S.act={type:S.next,date:Date.now(),ex:PR[S.next].map(n=>({n,w:S.w[n],sets:[null,null,null,null,null]})),note:''};
- save();wo()}
+ if(S.act){wo();return}
+ S.act={type:S.next,date:Date.now(),ex:PR[S.next].map(n=>({n,w:S.w[n],sets:[null,null,null,null,null]})),note:''};
+ if(!save()){S.act=null;return}
+ wo()}
 function wo(){
  const a=S.act;if(!a){$('ovl').innerHTML='';clearInterval(timer);return}
  const d=new Date(a.date);
@@ -77,10 +79,10 @@ function wo(){
  <textarea id="nt" rows="3" placeholder="Not" style="margin-top:30px;display:${a.note||a.showNote?'block':'none'}" oninput="S.act.note=this.value;save()">${esc(a.note||'')}</textarea></div>
  <div class="rest" id="rs"><span>Dinlenme <b id="rt"></b></span><button class="pill" style="padding:8px 16px" onclick="rEnd=0">Atla</button></div><div class="bar"><button class="pill r" onclick="S.act.showNote=1;wo();$('nt').focus()">Not</button><button class="pill" id="tm"></button><button class="pill r" id="dl" onclick="delWo()">Sil</button></div></div>`;
  clearInterval(timer);const tick=()=>{const el=$('tm');if(el&&S.act)el.textContent=Math.floor((Date.now()-S.act.date)/60000)+'d';const r=$('rs');if(r){const l=Math.ceil((rEnd-Date.now())/1000);if(l>0){r.style.display='flex';$('rt').textContent=Math.floor(l/60)+':'+String(l%60).padStart(2,'0')}else{if(rEnd){rEnd=0;snd('rest');try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}r.style.display='none'}}};window.tk=tick;ovOpen=1;tick();timer=setInterval(tick,1000)}
-function tap(i,j){const s=S.act.ex[i].sets;const R=S.act.ex[i].r||5;s[j]=s[j]===null?R:s[j]>0?s[j]-1:null;save();rEnd=s[j]===null||S.nr?0:Date.now()+(s[j]===R?(S.r1||90):(S.r2||180))*1000;if(S.rn){clearTimeout(rT);if(rEnd)rT=setTimeout(()=>{if(document.hidden)notify('Dinlenme bitti','Sıradaki sete hazırsın 💪')},Math.max(0,rEnd-Date.now()))}snd(s[j]===null?'tap':s[j]===R?'ok':'fail');try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}const b=document.querySelectorAll('.sets')[i].children[j];b.textContent=s[j]===null?R:s[j];b.classList.toggle('off',s[j]===null);b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');$('pg').style.width=Math.round(S.act.ex.flatMap(e=>e.sets).filter(x=>x!==null).length/S.act.ex.flatMap(e=>e.sets).length*100)+'%';window.tk&&tk()}
+function tap(i,j){const s=S.act.ex[i].sets;const R=S.act.ex[i].r||5;const previous=s[j];s[j]=s[j]===null?R:s[j]>0?s[j]-1:null;if(!save()){s[j]=previous;return}rEnd=s[j]===null||S.nr?0:Date.now()+(s[j]===R?(S.r1||90):(S.r2||180))*1000;if(S.rn){clearTimeout(rT);if(rEnd)rT=setTimeout(()=>{if(document.hidden)notify('Dinlenme bitti','Sıradaki sete hazırsın 💪')},Math.max(0,rEnd-Date.now()))}snd(s[j]===null?'tap':s[j]===R?'ok':'fail');try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}const b=document.querySelectorAll('.sets')[i].children[j];b.textContent=s[j]===null?R:s[j];b.classList.toggle('off',s[j]===null);b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');$('pg').style.width=Math.round(S.act.ex.flatMap(e=>e.sets).filter(x=>x!==null).length/S.act.ex.flatMap(e=>e.sets).length*100)+'%';window.tk&&tk()}
 function warm(a){const r=x=>Math.max(20,Math.round(x/2.5)*2.5);return a.ex.map(e=>{const w=e.w,L=e.n==='Deadlift'?[[w*.4,5,1],[w*.6,3,1],[w*.8,2,1]]:[[20,5,2],[w*.4,5,1],[w*.6,3,1],[w*.8,2,1]];return `<div class="ex"><span>${e.n}</span><span class="mu">${kg(e.w)}</span></div><div class="card">${L.map(([x,q,n])=>`<div class="row"><span>${n}×${q}</span><span>${kg(r(x))}</span></div>`).join('')}</div>`}).join('')}
 function plates(w){let r=(w-20)/2,o=[];if(r<=0)return 'sadece bar';for(const p of [25,20,15,10,5,2.5,1.25]){while(r>=p-1e-9){o.push(String(p).replace('.',','));r-=p}}return o.join(' + ')+(r>0.01?' (+'+r+')':'')}
-function adj(i,d){const e=S.act.ex[i];e.w=Math.max(20,e.w+d);save();wo()}
+function adj(i,d){const e=S.act.ex[i],before=e.w;e.w=Math.max(20,e.w+d);if(!save()){e.w=before;return}wo()}
 function delH(d,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin?';setTimeout(()=>{delete b.dataset.a;b.textContent='Sil'},2500)}else{S.h=S.h.filter(x=>x.date!==d);save();draw()}}
 function addX(){const n=esc($('xn').value.trim()),w=+$('xw').value||20;if(!n)return;S.act.ex.push({n,w,sets:[null,null,null,null,null],x:1});save();wo()}
 function rmX(i){S.act.ex.splice(i,1);save();wo()}
@@ -98,8 +100,8 @@ function delC(id,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin?';s
 function startC(id){if(S.act){toast('Devam eden antrenman var');wo();return}const c=fw(id);if(!c)return;S.act={type:c.name,cid:c.id,date:Date.now(),ex:c.ex.map(e=>({n:e.n,w:e.w,r:e.r,sets:Array(e.s).fill(null)})),note:''};save();wo()}
 function adjC(id,j,d){const c=S.cw.find(x=>x.id===id);c.ex[j].w=Math.max(0,c.ex[j].w+d);save();draw()}
 function rmC(id,j){const c=S.cw.find(x=>x.id===id);c.ex.splice(j,1);if(!c.ex.length)S.cw=S.cw.filter(x=>x!==c);save();draw()}
-function delWo(){if(!dArm){dArm=1;$('dl').textContent='Emin misin?';setTimeout(()=>{dArm=0;if($('dl'))$('dl').textContent='Sil'},2500)}else{dArm=0;S.act=null;rEnd=0;save();closeWo()}}
-function rstS(b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin? Tekrar dokun';setTimeout(()=>{delete b.dataset.a;b.textContent='Verileri Sıfırla'},3000)}else{S=fresh();save();closeSh()}}
+function delWo(){if(!dArm){dArm=1;$('dl').textContent='Emin misin?';setTimeout(()=>{dArm=0;if($('dl'))$('dl').textContent='Sil'},2500)}else{const before=S.act;dArm=0;S.act=null;if(!save()){S.act=before;return}rEnd=0;closeWo()}}
+function rstS(b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin? Tekrar dokun';setTimeout(()=>{delete b.dataset.a;b.textContent='Verileri Sıfırla'},3000)}else{const before=S;S=fresh();if(!save()){S=before;return}closeSh()}}
 function expBk(){$('bk').value=JSON.stringify(S);$('bk').select()}
 function impBk(){
  const input=$('bk');
