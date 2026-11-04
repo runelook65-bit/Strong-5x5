@@ -1,3 +1,9 @@
+import {renderHome,renderCustomHome} from './features/home/view.js';
+import {renderHistory} from './features/history/view.js';
+import {renderProgress} from './features/progress/view.js';
+import {renderPrograms,renderProgramComposer} from './features/programs/view.js';
+import {renderSettings} from './features/settings/view.js';
+import {renderWorkoutMarkup} from './features/workout/view.js';
 import {D,M,PR,INC0,W0,AC,PLC,FORM} from './domain/config.js';
 import {fresh,loadState,saveState,getLoadWarning} from './data/storage.js';
 import {upcomingWorkouts,applyStandardProgression} from './domain/workout.js';
@@ -23,39 +29,14 @@ const tabs=[['home','⌂','Ana Sayfa'],['prog','🔥','Programlar'],['hist','▦
 const upcoming=()=>upcomingWorkouts(S);
 const dstr=displayDate;
 
-function home(){const P0=AP();if(P0)return homeP(P0);
- let h=`<div class="mu" style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:600">${greet()}${S.name?', '+esc(S.name):''}</div><h1 style="margin-top:4px">StrongLifts 5×5</h1><div class="week">${weekDots()}</div>
- <div class="card hero"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:30px;font-weight:700">Bugünkü Antrenman</div><div class="mu" style="font-size:19px;margin-top:6px">${dstr(new Date())}</div></div>
- <button class="badge" style="border:0;color:var(--tx);font-size:18px" onclick="S.next=S.next==='A'?'B':'A';save();draw()">${S.next} ⇄</button></div>
- <div style="margin-top:16px;background:var(--card2);border-radius:20px;padding:6px 16px">${PR[S.next].map(n=>`<div class="row"><span>${n}</span><span>${n==='Deadlift'?'':'5×5 '}${n==='Deadlift'?'5×':''}${kg(S.w[n])}</span></div>`).join('')}</div>
- <button class="btn" onclick="start()">${S.act?'Antrenmana Devam Et':'Antrenmanı Başlat'}</button></div>
- <div class="card" style="display:flex;justify-content:space-around;text-align:center;margin-top:14px"><div><b class="cu" style="font-size:26px">${S.h.length}</b><div class="mu">Toplam</div></div><div><b class="cu" style="font-size:26px">${S.h.filter(x=>Date.now()-x.date<6048e5).length}</b><div class="mu">Bu hafta</div></div><div><b class="cu" style="font-size:26px">${Math.round(S.h.reduce((t,x)=>t+x.ex.reduce((u,e)=>u+e.w*e.sets.reduce((p,s)=>p+(s||0),0),0),0)/1000)}t</b><div class="mu">Hacim</div></div></div><h2>Yaklaşan Antrenmanlar</h2>`;
- upcoming().forEach(u=>{h+=upCard(u);return;h+=`<div class="up-h"><span>${dstr(u.d)}</span><span class="badge" style="color:var(--tx)">${u.t}</span></div><div class="up-card">${u.l.map(([n,w])=>`<div class="row"><span>${n}</span><span><span class="up">↑</span>5×5 ${kg(w)}</span></div>`).join('')}</div>`});
- return h}
+function home(){return renderHome({S,AP,homeP,greet,esc,weekDots,dstr,PR,kg,upcoming,upCard});}
 
 function prog(){return '<h1>Programlar</h1>'+['A','B'].map(t=>`<div class="card"><b style="font-size:22px">Antrenman ${t}</b>${PR[t].map(n=>`<div class="row"><span>${n}</span><span class="mu">5×5 · +${String(S.inc[n]).replace('.',',')}kg</span></div>`).join('')}</div>`).join('')+'<p class="mu">A ve B antrenmanları dönüşümlü yapılır. Tüm setler 5 tekrar tamamlanırsa ağırlık artar.</p>'}
 
-function hist(){
- let h='<h1 style="text-align:center">Geçmiş</h1><div class="seg">'+['Liste','Takvim','Notlar'].map(s=>`<button class="${s===hsub?'on':''}" onclick="hsub='${s}';draw()">${s}</button>`).join('')+'</div>';
- const H=[...S.h].reverse();
- if(hsub==='Liste')h+=H.length?H.map(x=>`<div class="card" style="cursor:pointer" onclick="showH(${x.date})"><div style="display:flex;justify-content:space-between"><b>${dstr(new Date(x.date))}</b><span class="badge">${x.type}</span></div>${x.ex.map(e=>`<div class="row" style="font-size:16px"><span>${e.n}${e.pr?' 🏆':''}</span><span class="mu">${e.sets.filter(s=>s===(e.r||5)).length}/${e.sets.length} · ${kg(e.w)}</span></div>`).join('')}<div style="display:flex;justify-content:space-between;align-items:center"><span class="mu">${x.dur} dk</span><button class="pill r" style="padding:6px 14px;font-size:14px" onclick="event.stopPropagation();delH(${x.date},this)">Sil</button></div></div>`).join(''):'<p class="mu">Henüz antrenman yok.</p>';
- else if(hsub==='Notlar')h+=H.filter(x=>x.note).map(x=>`<div class="card"><b>${dstr(new Date(x.date))}</b><p>${esc(x.note)}</p></div>`).join('')||'<p class="mu">Not yok.</p>';
- else{const done=new Set(S.h.map(x=>key(x.date))),now=new Date(),tk=key(now);
-  for(let m=0;m>=-5;m--){const f=new Date(now.getFullYear(),now.getMonth()+m,1),n=new Date(f.getFullYear(),f.getMonth()+1,0).getDate(),off=(f.getDay()+6)%7;
-   h+=`<h3 style="text-align:center">${M[f.getMonth()].slice(0,3)} ${f.getFullYear()}</h3><div class="cal">${'PSÇPCCP'.split('').map(c=>`<b>${c}</b>`).join('')}${'<i></i>'.repeat(off)}`;
-   for(let d=1;d<=n;d++){const k=f.getFullYear()+'-'+(f.getMonth()+1)+'-'+d;h+=`<i class="${done.has(k)?'d':''} ${k===tk?'t':''}">${d}</i>`}
-   h+='</div>'}}
- return h}
+function hist(){return renderHistory({S,hsub,dstr,kg,esc,key,M});}
 const esc=escapeHTML;
 
-function stat(){
- let h='<h1>İlerleme</h1>';
- Object.keys(W0).forEach(n=>{
-  const pts=S.h.map(x=>(x.ex.find(e=>e.n===n)||{}).w).filter(Boolean);pts.push(S.w[n]);
-  const mn=Math.min(...pts),mx=Math.max(...pts),r=mx-mn||1;
-  const p=pts.map((v,i)=>`${pts.length>1?i/(pts.length-1)*300:150},${54-(v-mn)/r*48}`).join(' ');
-  h+=`<div class="card"><div style="display:flex;justify-content:space-between"><b style="font-size:20px">${n}</b><span class="red" style="font-weight:700">${kg(S.w[n])}</span></div><svg class="ch" viewBox="0 0 300 60" preserveAspectRatio="none"><polygon points="${p} 300,60 0,60" style="fill:var(--red);opacity:.14"/><polyline points="${p}" fill="none" style="stroke:var(--red)" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg><div class="mu">En iyi ${kg(mx)} · Tahmini 1TM ${kg(Math.round(S.w[n]*7/6/2.5)*2.5)} · ${S.h.length} antrenman</div></div>`});
- return h}
+function stat(){return renderProgress({S,W0,kg});}
 
 function sett(){
  return '<h1>Ayarlar</h1><div class="card"><b>Mevcut ağırlıklar (kg)</b>'+Object.keys(W0).map(n=>`<div class="row"><span>${n}</span><input class="w" type="number" step="0.5" value="${S.w[n]}" onchange="S.w['${n}']=+this.value;save()"></div>`).join('')+'</div><div class="card"><b>Artış miktarı (kg)</b>'+Object.keys(W0).map(n=>`<div class="row"><span>${n}</span><input class="w" type="number" step="0.5" value="${S.inc[n]}" onchange="S.inc['${n}']=+this.value;save()"></div>`).join('')+'</div><div class="card"><b>Dinlenme (sn)</b><div class="row"><span>5 tekrar sonrası</span><input class="w" type="number" value="'+(S.r1||90)+'" onchange="S.r1=+this.value;save()"></div><div class="row"><span>Başarısız set sonrası</span><input class="w" type="number" value="'+(S.r2||180)+'" onchange="S.r2=+this.value;save()"></div></div><div class="card"><b>Birim</b><div style="display:flex;gap:10px;margin-top:12px">'+['kg','lb'].map(u=>`<button class="pill" style="${(S.u||'kg')===u?'outline:3px solid var(--tx)':''}" onclick="S.u='${u}';save();draw()">${u}</button>`).join('')+'</div></div><div class="card"><b>Vurgu rengi</b><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">'+Object.keys(AC).map(k=>`<button class="pill" style="background:${AC[k][0]};color:${AC[k][2]};${(S.ac||'Nane')===k?'outline:3px solid var(--tx);':''}" onclick="S.ac='${k}';save();draw()">${k}</button>`).join('')+'</div></div><div class="card"><b>Yedek</b><textarea id="bk" rows="3" style="margin:10px 0" placeholder="Yedek verisi"></textarea><button class="pill" onclick="expBk()">Dışa Aktar</button> <button class="pill" onclick="impBk()">İçe Aktar</button></div><button class="btn" style="background:var(--card);color:var(--red)" onclick="rstS(this)">Verileri Sıfırla</button>'}
@@ -73,11 +54,7 @@ function start(){try{!S.al&&navigator.wakeLock&&navigator.wakeLock.request('scre
  wo()}
 function wo(){
  const a=S.act;if(!a){$('ovl').innerHTML='';clearInterval(timer);return}
- const d=new Date(a.date);
- $('ovl').innerHTML=`<div class="ov${ovOpen?'':' in'}"><div><div class="top"><button class="pill" onclick="closeWo()">✕</button><div style="text-align:center"><b style="font-size:20px">${a.cid?'':'Antrenman '}${a.type}</b><div class="mu">${d.getDate()} ${M[d.getMonth()].slice(0,3)}</div></div><button class="pill" onclick="finish()">Kaydet</button></div><div class="seg"><button class="${wtab==='a'?'on':''}" onclick="wtab='a';wo()">Antrenman</button><button class="${wtab==='w'?'on':''}" onclick="wtab='w';wo()">Isınma</button></div><div class="prog"><i id="pg" style="width:${Math.round(a.ex.flatMap(e=>e.sets).filter(s=>s!==null).length/a.ex.flatMap(e=>e.sets).length*100)}%"></i></div>
- ${wtab==='w'&&!S.nw?warm(a):a.ex.map((e,i)=>`<div class="ex"><span onclick="xv(${i})" style="cursor:pointer">${e.n} <span class="mu">›</span></span><span onclick="xv(${i})" style="cursor:pointer">${e.sets.length}×${e.r||5} ${kg(e.w)} <span class="mu">›</span></span></div><div class="sets">${e.sets.map((s,j)=>`<button class="set ${s===null?'off':''}" onclick="tap(${i},${j})">${s===null?(e.r||5):s}</button>`).join('')}</div><div class="mu" style="margin:10px 4px 0;font-size:15px">Her yan (kg): ${plates(e.w)}</div>`).join('')}
- <textarea id="nt" rows="3" placeholder="Not" style="margin-top:30px;display:${a.note||a.showNote?'block':'none'}" oninput="S.act.note=this.value;save()">${esc(a.note||'')}</textarea></div>
- <div class="rest" id="rs"><span>Dinlenme <b id="rt"></b></span><button class="pill" style="padding:8px 16px" onclick="rEnd=0">Atla</button></div><div class="bar"><button class="pill r" onclick="S.act.showNote=1;wo();$('nt').focus()">Not</button><button class="pill" id="tm"></button><button class="pill r" id="dl" onclick="delWo()">Sil</button></div></div>`;
+ $('ovl').innerHTML=renderWorkoutMarkup({a,ovOpen,M,wtab,S,warm,kg,plates,esc});
  clearInterval(timer);const tick=()=>{const el=$('tm');if(el&&S.act)el.textContent=Math.floor((Date.now()-S.act.date)/60000)+'d';const r=$('rs');if(r){const l=Math.ceil((rEnd-Date.now())/1000);if(l>0){r.style.display='flex';$('rt').textContent=Math.floor(l/60)+':'+String(l%60).padStart(2,'0')}else{if(rEnd){rEnd=0;snd('rest');try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}r.style.display='none'}}};window.tk=tick;ovOpen=1;tick();timer=setInterval(tick,1000)}
 function tap(i,j){const s=S.act.ex[i].sets;const R=S.act.ex[i].r||5;const previous=s[j];s[j]=s[j]===null?R:s[j]>0?s[j]-1:null;if(!save()){s[j]=previous;return}rEnd=s[j]===null||S.nr?0:Date.now()+(s[j]===R?(S.r1||90):(S.r2||180))*1000;if(S.rn){clearTimeout(rT);if(rEnd)rT=setTimeout(()=>{if(document.hidden)notify('Dinlenme bitti','Sıradaki sete hazırsın 💪')},Math.max(0,rEnd-Date.now()))}snd(s[j]===null?'tap':s[j]===R?'ok':'fail');try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}const b=document.querySelectorAll('.sets')[i].children[j];b.textContent=s[j]===null?R:s[j];b.classList.toggle('off',s[j]===null);b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');$('pg').style.width=Math.round(S.act.ex.flatMap(e=>e.sets).filter(x=>x!==null).length/S.act.ex.flatMap(e=>e.sets).length*100)+'%';window.tk&&tk()}
 function warm(a){const r=x=>Math.max(20,Math.round(x/2.5)*2.5);return a.ex.map(e=>{const w=e.w,L=e.n==='Deadlift'?[[w*.4,5,1],[w*.6,3,1],[w*.8,2,1]]:[[20,5,2],[w*.4,5,1],[w*.6,3,1],[w*.8,2,1]];return `<div class="ex"><span>${e.n}</span><span class="mu">${kg(e.w)}</span></div><div class="card">${L.map(([x,q,n])=>`<div class="row"><span>${n}×${q}</span><span>${kg(r(x))}</span></div>`).join('')}</div>`}).join('')}
@@ -87,13 +64,7 @@ function delH(d,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin?';se
 function addX(){const n=esc($('xn').value.trim()),w=+$('xw').value||20;if(!n)return;S.act.ex.push({n,w,sets:[null,null,null,null,null],x:1});save();wo()}
 function rmX(i){S.act.ex.splice(i,1);save();wo()}
 let draft={name:'',ex:[]};
-function prog2(){
- const e0=n=>`<div class="row"><span>${n}</span><span class="mu">5×5 · +${String(S.inc[n]).replace('.',',')}kg</span></div>`;
- let h='<h1>Programlar</h1>'+['A','B'].map(t=>`<div class="card"><b style="font-size:22px">Antrenman ${t}</b>${PR[t].map(e0).join('')}</div>`).join('')+'<h2>Kişisel Antrenmanlarım</h2>';
- const C=S.cw||[];
- h+=C.length?C.map(c=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:22px">${c.name}</b><button class="pill r" style="padding:8px 14px;font-size:14px" onclick="delC('${c.id}',this)">Sil</button></div>${c.ex.map((e,j)=>`<div class="row"><span>${e.n}</span><span class="mu">${e.s}×${e.r} · <button class="stp" onclick="adjC('${c.id}',${j},-${e.inc||2.5})">−</button> ${kg(e.w)} <button class="stp" onclick="adjC('${c.id}',${j},${e.inc||2.5})">+</button> <button class="stp" onclick="rmC('${c.id}',${j})">✕</button></span></div>`).join('')}<button class="pill" style="margin-top:12px" onclick="addCx('${c.id}')">+ Egzersiz Ekle</button><button class="btn" style="padding:14px;font-size:18px" onclick="startC('${c.id}')">Başlat</button></div>`).join(''):'<p class="mu">Henüz kişisel antrenman yok.</p>';
- h+=`<div class="card"><b style="font-size:20px">Yeni Antrenman</b><input id="dn" placeholder="Antrenman adı (ör. Kol Günü)" value="${draft.name.replace(/"/g,'&quot;')}" oninput="draft.name=this.value" style="margin:12px 0 4px">${draft.ex.map((e,i)=>`<div class="row"><span>${esc(e.n)}</span><span class="mu">${e.s}×${e.r} · ${kg(e.w)} <button class="stp" onclick="draft.ex.splice(${i},1);draw()">✕</button></span></div>`).join('')}<input id="en" placeholder="Egzersiz adı" style="margin-top:12px"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0"><input id="es" type="number" placeholder="Set"><input id="er" type="number" placeholder="Tekrar"><input id="ew" type="number" step="0.5" placeholder="kg"><input id="ei" type="number" step="0.5" placeholder="+kg"></div><div style="display:flex;gap:8px"><button class="pill" onclick="addD()">+ Egzersiz</button><button class="pill r" onclick="saveC()">Kaydet</button></div></div><p class="mu">A ve B dönüşümlü yapılır. Kişisel antrenmanlar kendi başına çalışır; tüm setler tamamlanırsa ağırlık +kg kadar artar.</p>`;
- return h}
+function prog2(){return renderProgramComposer({S,draft,esc,kg,PR});}
 function addD(){const n=$('en').value.trim();draft.name=$('dn').value;if(!n)return;draft.ex.push({n,s:Math.min(10,Math.max(1,+$('es').value||3)),r:+$('er').value||10,w:+$('ew').value||20,inc:+$('ei').value||2.5});draw()}
 function saveC(){draft.name=$('dn').value.trim();if(!draft.name||!draft.ex.length)return;(S.cw=S.cw||[]).push({id:'c'+Date.now(),name:esc(draft.name),ex:draft.ex.map(e=>({...e,n:esc(e.n)}))});draft={name:'',ex:[]};save();draw()}
 function delC(id,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin?';setTimeout(()=>{delete b.dataset.a;b.textContent='Sil'},2500)}else{S.cw=S.cw.filter(c=>c.id!==id);save();draw()}}
@@ -170,18 +141,7 @@ function go(n){
  vol:sg('vol','0.22',[['0.08','Düşük'],['0.22','Orta'],['0.4','Yüksek']]),
  reset:'<p class="mu">Tüm antrenmanlar, ağırlıklar ve kişisel programlar silinir.</p><button class="btn" onclick="rstS(this)">Verileri Sıfırla</button>'};
  sh(T[n],B[n])}
-function sett2(){
- const row=(l,v,n)=>`<div class="srow" onclick="go('${n}')"><span>${l}</span><span class="sv">${v}</span><svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>`,
- sw=(l,k)=>`<div class="srow"><span>${l}</span><button class="sw${SWV[k]()?' on':''}" onclick="${k==='rn'||k==='nd'?'tgN':'tg'}('${k}',this)"></button></div>`,
- grp=(t,r)=>`<div class="sl">${t}</div><div class="sg">${r.join('')}</div>`;
- return '<h1 style="text-align:center">Ayarlar</h1>'+
- grp('Hesap',[row('Profil',S.name?esc(S.name):'','prof')])+
- grp('Tercihler',[row('Birimler',S.u==='lb'?'Pound':'Kilogram','unit'),sw('Sesler','ns'),row('Ses Seviyesi',{'0.08':'Düşük','0.22':'Orta','0.4':'Yüksek'}[S.vol||'0.22'],'vol'),sw('Dinlenme Sayacı','nr'),row('Dinlenme Süreleri',(S.r1||90)+' / '+(S.r2||180)+' sn','rest'),sw('Isınma','nw'),sw('Ekranı Otomatik Kilitle','al'),row('Ağırlıklar','','w'),row('Artış Miktarları','','inc')])+
- grp('Bildirimler',[sw('Antrenman Günü Bildirimi','nd'),row('Bildirim Saati ve Günler',S.nt||'18:00','ndc'),sw('Set Süresi Bitiş Bildirimi','rn')])+
- grp('Görünüm',[row('Tema',{auto:'Otomatik (Sistem)',dark:'Koyu',light:'Açık'}[S.th||'auto'],'theme'),row('Vurgu Rengi',S.ac||'Nane','accent')])+
- grp('Destek',[row('StrongLifts 5×5 Rehberi','','guide')])+
- grp('Veriler ve Erişim',[row('Verileri Dışa / İçe Aktar','','data'),`<div class="srow" style="color:#ff453a" onclick="go('reset')"><span>Verileri Sıfırla</span></div>`])+
- '<p class="mu" style="text-align:center;margin:28px 0 0;font-size:13px">StrongLifts 5×5 · web sürümü</p>'}
+function sett2(){return renderSettings({S,SWV,esc});}
 function plArr(w){let r=(w-20)/2,o=[];if(r<=0)return o;for(const p of [25,20,15,10,5,2.5,1.25])while(r>=p-1e-9){o.push(p);r-=p}return o}
 let xi=0,xt='w';
 function xv(i){xi=i;xt='w';xr(1)}
@@ -207,18 +167,8 @@ function chkDay(){if(!S.nd)return;const n=new Date(),k=key(n);if(!(S.nds||[1,3,5
 setInterval(chkDay,30000);setTimeout(chkDay,1500);
 let pe=null;
 const allW=()=>[...(S.cw||[]),...(S.pg||[]).flatMap(p=>p.ws)],fw=id=>allW().find(w=>w.id===id),AP=()=>(S.pg||[]).find(p=>p.id===S.ap);
-function homeP(P){const n=P.ws.length,i=(S.pi||0)%n,w=P.ws[i];
- let h=`<div class="mu" style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:600">${greet()}${S.name?', '+esc(S.name):''}</div><h1 style="margin-top:4px">${P.name}</h1><div class="week">${weekDots()}</div><div class="card hero"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:30px;font-weight:700">Bugünkü Antrenman</div><div class="mu" style="font-size:19px;margin-top:6px">${dstr(new Date())}</div></div>${n>1?`<button class="badge" style="border:0;color:var(--tx);font-size:18px" onclick="S.pi=${(i+1)%n};save();draw()">${i+1}/${n} ⇄</button>`:''}</div><div class="mu" style="margin-top:14px">${w.name}</div><div style="margin-top:8px;background:var(--card2);border-radius:20px;padding:6px 16px">${w.ex.map(e=>`<div class="row"><span>${e.n}</span><span>${e.s}×${e.r} ${kg(e.w)}</span></div>`).join('')}</div><button class="btn" onclick="startC('${w.id}')">${S.act?'Antrenmana Devam Et':'Antrenmanı Başlat'}</button></div>`;
- h+=`<div class="card" style="display:flex;justify-content:space-around;text-align:center;margin-top:14px"><div><b class="cu" style="font-size:26px">${S.h.length}</b><div class="mu">Toplam</div></div><div><b class="cu" style="font-size:26px">${S.h.filter(x=>Date.now()-x.date<6048e5).length}</b><div class="mu">Bu hafta</div></div></div><h2>Yaklaşan Antrenmanlar</h2>`;
- for(let k=1;k<=4;k++){const x=P.ws[(i+k)%n],d=new Date();d.setDate(d.getDate()+2*k);h+=upCard({d,t:String((i+k)%n+1),n:x.name,l:x.ex.map(e=>[e.n,e.w]),inc:Object.fromEntries(x.ex.map(e=>[e.n,e.inc]))})}
- return h}
-function prog3(){
- const a=AP()?S.ap:'';
- let h=`<div style="display:flex;justify-content:space-between;align-items:center"><h1 style="margin:8px 0 16px">Programlar</h1><button class="pill r" onclick="pnew()">Yarat</button></div>`;
- h+=`<div class="card pgc${!a?' on':''}" onclick="setAp('')"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">StrongLifts 5×5</b><span class="rad"></span></div><div class="mu" style="font-size:14px;margin-top:6px">A: Squat, Bench Press, Barbell Row<br>B: Squat, Overhead Press, Deadlift</div></div>`;
- (S.pg||[]).forEach(p=>{h+=`<div class="card pgc${a===p.id?' on':''}" onclick="setAp('${p.id}')"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">${p.name}</b><span class="rad"></span></div><div class="mu" style="font-size:14px;margin-top:6px">${p.ws.map(w=>w.name+': '+w.ex.map(e=>e.n).join(', ')).join('<br>')}</div><div style="display:flex;gap:8px;margin-top:12px"><button class="pill" onclick="event.stopPropagation();pedit('${p.id}')">Düzenle</button><button class="pill r" onclick="event.stopPropagation();pdel('${p.id}',this)">Sil</button></div></div>`});
- h+=`<button class="pill" onclick="pimpo()">Program İçe Aktar</button>`;
- const q=prog2();return h+q.slice(q.indexOf('<h2>'))}
+function homeP(P){return renderCustomHome(P,{S,greet,esc,weekDots,dstr,kg,upCard});}
+function prog3(){return renderPrograms({S,AP,prog2,esc});}
 function setAp(id){S.ap=id||undefined;S.pi=0;save();draw();toast(id?'Aktif program değişti':'StrongLifts 5×5 aktif')}
 function pdel(id,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin?';setTimeout(()=>{delete b.dataset.a;b.textContent='Sil'},2500)}else{S.pg=S.pg.filter(p=>p.id!==id);if(S.ap===id){S.ap=undefined;S.pi=0}save();draw()}}
 function pnew(){pe={name:'',split:'Tüm Vücut',ws:[{id:'w'+Date.now(),name:'Antrenman A',ex:['Squat','Bench Press','Barbell Row'].map(n=>({n,s:5,r:5,w:S.w[n],inc:S.inc[n]}))}]};per(1)}
