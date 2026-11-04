@@ -45,12 +45,13 @@ function harness(initial = {}) {
       addEventListener(){}, createElement: element
     },
     navigator:{},
-    window:{ addEventListener(){} },
+    addEventListener(){},
     MutationObserver:class { observe(){} },
     setInterval:()=>1, clearInterval(){}, setTimeout:()=>1, clearTimeout(){},
     performance:{now:()=>0}, requestAnimationFrame(){}, scrollTo(){},
     location:{reload(){}}
   };
+  ctx.window = ctx; // window and the global object coincide in browsers
   vm.createContext(ctx);
   new vm.Script(source, {filename:'uploaded-stronglifts.js'}).runInContext(ctx,{timeout:5000});
   const run=(code)=>vm.runInContext(code,ctx,{timeout:5000});
