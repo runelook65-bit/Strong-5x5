@@ -190,3 +190,65 @@ test('package ships a single Vite app and no obsolete Tailwind or React runtime'
   assert.ok(!pkg.devDependencies.tailwindcss);
   assert.ok(!pkg.dependencies?.react);
 });
+
+test('invalid backup cannot overwrite live workout data',()=>{
+ const a=harness({arm_5x5_app_state_v1:'legacy'});
+ a.run('start()');
+ const original=a.store.get('sl5x5');
+ a.get('bk').value=JSON.stringify({w:{Squat:-10},inc:{Squat:2.5},h:[],next:'B'});
+ a.run('impBk()');
+ assert.equal(a.store.get('sl5x5'),original);
+ assert.equal(a.store.get('arm_5x5_app_state_v1'),'legacy');
+ assert.equal(a.run('S.act!==null'),true);
+ assert.match(a.get('bk').placeholder,/Geçersiz yedek/);
+});
+
+test('valid backup loads through the new validator without losing the old storage key',()=>{
+ const a=harness({arm_5x5_app_state_v1:'archive'});
+ a.run('start()');
+ const candidate=a.state();candidate.w.Squat=190;
+ a.get('bk').value=JSON.stringify(candidate);
+ a.run('impBk()');
+ assert.equal(a.state().w.Squat,190);
+ assert.equal(a.store.get('arm_5x5_app_state_v1'),'archive');
+});
+
+test('unsafe shared program import leaves existing workout history intact',()=>{
+ const a=harness();a.run('start()');
+ const old=a.store.get('sl5x5');
+ a.get('pj').value=JSON.stringify({name:'Unsafe',ws:[{name:'Day',ex:[{n:'Squat',s:9999,r:5,w:40,inc:2.5}]}]});
+ a.run('pimp()');
+ assert.equal(a.store.get('sl5x5'),old);
+ assert.equal(a.run('S.act!==null'),true);
+ assert.match(a.get('pj').placeholder,/Geçersiz program/);
+});
+
+test('valid shared program persists only validated exercises',()=>{
+ const a=harness();a.run('start()');
+ a.get('pj').value=JSON.stringify({name:'Kuvvet',split:'Özel',ws:[{name:'Gün 1',ex:[{n:'Squat',s:3,r:5,w:60,inc:2.5}]}]});
+ a.run('pimp()');
+ const saved=a.state();
+ assert.equal(saved.pg.length,1);
+ assert.equal(saved.pg[0].ws[0].ex[0].s,3);
+ assert.equal(saved.pg[0].ws[0].ex[0].w,60);
+ assert.equal(saved.act.ex.length,3);
+});
+
+test('storage write failure does not mark a workout complete or delete its active session',()=>{
+ const a=harness();a.run('start()');
+ const stored=a.store.get('sl5x5');
+ a.run('S.act.ex.forEach(e=>e.sets.fill(5))');
+ a.ctx.localStorage.setItem=()=>{throw Error('Quota exceeded')};
+ a.run('finish()');
+ assert.equal(a.store.get('sl5x5'),stored);
+ assert.equal(a.run('S.act!==null'),true);
+ assert.equal(a.run('S.h.length'),0);
+});
+
+test('runtime recovery never prompts a one-click factory reset',()=>{
+ const a=harness();a.run('showErr(new Error("temporary rendering failure"))');
+ const markup=a.get('app').innerHTML;
+ assert.match(markup,/Ham veriyi görüntüle/);
+ assert.ok(!markup.includes('onclick="resetAll()"'));
+ assert.doesNotThrow(()=>a.run('recoverData()'));
+});

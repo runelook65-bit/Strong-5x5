@@ -112,3 +112,31 @@ test('no retired ARM styles, pilot or app engine are imported',()=>{
   assert.ok(!app.includes('v7RenderToday'));
   assert.ok(!app.includes('arm_5x5_app_state_v1'));
 });
+
+test('bounded backup parser rejects corrupt sessions without executing or altering data',async()=>{
+ const {parseBackup, BACKUP_LIMIT}=await esm('src/data/validation.js');
+ const {fresh}=await esm('src/data/storage.js');
+ const valid=fresh();
+ const before=JSON.stringify(valid);
+ assert.strictEqual(parseBackup(before).next,'B');
+ assert.equal(JSON.stringify(valid),before);
+ assert.throws(()=>parseBackup('{bad'),/JSON/);
+ assert.throws(()=>parseBackup(' '.repeat(BACKUP_LIMIT+1)),/boyut/);
+ assert.throws(()=>parseBackup(JSON.stringify({...valid,w:{Squat:-1}})),/Ağırlık/);
+ assert.throws(()=>parseBackup(JSON.stringify({...valid,h:[{date:Date.now(),type:'A',ex:[{n:'Squat',w:175,sets:[-1]}]}]})),/Set/);
+});
+
+test('shared program parser enforces bounded sets and nonnegative finite loads',async()=>{
+ const {parseSharedProgram}=await esm('src/data/validation.js');
+ const valid={name:'Üst',ws:[{name:'Gün A',ex:[{n:'Press',s:5,r:5,w:45,inc:2.5}]}]};
+ assert.equal(parseSharedProgram(JSON.stringify(valid)).ws[0].ex[0].s,5);
+ assert.throws(()=>parseSharedProgram(JSON.stringify({...valid,ws:[{name:'Gün A',ex:[{n:'Press',s:100000,r:5,w:45,inc:2.5}]}]})),/Program hareketi/);
+ assert.throws(()=>parseSharedProgram(JSON.stringify({...valid,ws:[{name:'Gün A',ex:[{n:'Press',s:5,r:5,w:'NaN',inc:2.5}]}]})),/Program hareketi/);
+});
+
+test('GitHub Actions verifies every src change, not only HTML and tests',()=>{
+ const yaml=file('.github/workflows/verify.yml');
+ assert.match(yaml,/src\/\*\*/);
+ assert.match(yaml,/npm test/);
+ assert.match(yaml,/npm run build/);
+});
