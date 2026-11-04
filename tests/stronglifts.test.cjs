@@ -14,7 +14,7 @@ const generated=buildSync({
   bundle:true, format:'iife', platform:'browser', write:false, logLevel:'silent',
   loader:{'.css':'empty'}
 });
-const source=generated.outputFiles.find(x=>x.path.endsWith('.js')).text;
+const source=(generated.outputFiles.find(x=>x.path.endsWith('.js')) || generated.outputFiles[0]).text;
 const baseCSS=fs.readFileSync(path.join(root,'src','styles','base.css'),'utf8');
 const configSource=fs.readFileSync(path.join(root,'src','domain','config.js'),'utf8');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
