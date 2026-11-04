@@ -34,3 +34,7 @@ Original inline style blocks were extracted to `src/styles/base.css`, `effects.c
 ## Cold-start corruption safety
 
 The storage module tracks invalid original records per storage object and refuses to overwrite the `sl5x5` key during ordinary UI actions. The app displays a recovery screen with a raw-data export view and a validated manual JSON restore action. Only explicitly approved, valid replacement data can unlock a blocked store. This avoids silently turning an invalid but potentially recoverable old record into blank workout history.
+
+
+## Mobile browser click regression: resolved root cause
+Playwright mobile 320/390px viewport tests detected a real click interception in the navigation following the first page transition. The original \`fl\`/\`fr\` 40px horizontal animation caused the mobile layout viewport to grow by 24px (320→344 and 390→414), offsetting click coordinates. Page transitions now travel only 12px and horizontal page overflow is clipped; the existing animation and visual language remain. The browser test asserts that \`window.innerWidth\` remains equal to the requested mobile viewport width after every navigation.

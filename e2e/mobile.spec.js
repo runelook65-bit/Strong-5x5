@@ -11,17 +11,8 @@ test('main navigation loads five real screens without a runtime fallback',async(
     ['home','Bugünkü Antrenman']
   ];
   for(const [tab,title] of pages){
-    const snapshot=await page.evaluate((tab)=>{
-      const btn=document.querySelector('#nav button[data-ui-tab="'+tab+'"]');
-      const bar=document.querySelector('#nav');
-      const r=btn.getBoundingClientRect();
-      const cx=r.left+r.width/2,cy=r.top+r.height/2;
-      const hit=document.elementFromPoint(cx,cy);
-      const style=getComputedStyle(btn),barStyle=getComputedStyle(bar);
-      return {tab,viewport:[innerWidth,innerHeight],rect:[r.x,r.y,r.width,r.height],center:[cx,cy],hit:{tag:hit?.tagName,id:hit?.id,cls:hit?.className,text:hit?.textContent?.slice(0,25)},button:{z:style.zIndex,position:style.position,pointer:style.pointerEvents},nav:{rect:[bar.getBoundingClientRect().x,bar.getBoundingClientRect().y,bar.getBoundingClientRect().width,bar.getBoundingClientRect().height],z:barStyle.zIndex,position:barStyle.position,pointer:barStyle.pointerEvents}};
-    },tab);
-    console.log('NAV HIT DEBUG:',JSON.stringify(snapshot));
-    await page.locator('#nav button[data-ui-tab="'+tab+'"]').click({timeout:6000});
+    await page.locator('#nav button[data-ui-tab="'+tab+'"]').click();
+    expect(await page.evaluate(()=>window.innerWidth)).toBe(page.viewportSize().width);
     await expect(page.getByText(title,{exact:true}).first()).toBeVisible();
     await expect(page.locator('#app')).not.toContainText('Bir hata oluştu');
   }

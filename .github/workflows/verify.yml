@@ -5,6 +5,8 @@ on:
       - 'index.html'
       - 'src/**'
       - 'tests/**'
+      - 'e2e/**'
+      - 'playwright.config.js'
       - 'package.json'
       - 'vite.config.mjs'
       - '.github/workflows/verify.yml'
@@ -29,6 +31,13 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Browser interaction smoke tests
         run: npm run test:e2e
+      - name: Save browser test diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-browser-failures
+          path: test-results/
+          if-no-files-found: ignore
       - name: Save build artifact
         uses: actions/upload-artifact@v4
         with:

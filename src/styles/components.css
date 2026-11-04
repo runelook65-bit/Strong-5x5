@@ -48,8 +48,8 @@ nav{width:min(92%,440px);padding:6px}nav button{font-size:11px;padding:8px 0;gap
 .btn{font-size:18px;padding:16px}
 h1{font-size:26px}
 #app.l>*{animation-name:fl}#app.r>*{animation-name:fr}
-@keyframes fl{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
-@keyframes fr{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes fl{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes fr{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
 .btn,.set:not(.off),.toast,.rest,.cal i.d{color:var(--on)}.btn{box-shadow:0 8px 22px color-mix(in srgb,var(--red2) 40%,transparent)}
 html{scroll-behavior:smooth}button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .card{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
@@ -85,3 +85,7 @@ h1{letter-spacing:-.5px;background:linear-gradient(90deg,var(--tx),color-mix(in 
   touch-action:manipulation;
 }
 #nav button > span, #nav button > span * { pointer-events:none; }
+
+/* Keep mobile CSS viewport stable throughout horizontal page transitions. */
+html,body { overflow-x:clip; }
+#app { overflow-x:clip; }
