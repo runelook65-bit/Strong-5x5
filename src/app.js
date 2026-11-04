@@ -1,5 +1,5 @@
 import {D,M,PR,INC0,W0,AC,PLC,FORM} from './domain/config.js';
-import {fresh,loadState,saveState} from './data/storage.js';
+import {fresh,loadState,saveState,getLoadWarning} from './data/storage.js';
 import {upcomingWorkouts,applyStandardProgression} from './domain/workout.js';
 import {escapeHTML,dateKey,displayDate,displayWeight} from './lib/format.js';
 import {parseBackup,parseSharedProgram} from './data/validation.js';
@@ -258,10 +258,10 @@ function cu(){document.querySelectorAll('#app .cu').forEach(el=>{const m=el.text
 new MutationObserver(cu).observe($('app'),{childList:true});
 function resetAll(){try{localStorage.removeItem('sl5x5')}catch(e){}S=fresh();save();location.reload()}
 function showErr(err){
- $('app').innerHTML='<div class="card"><b>Bir hata oluştu</b><p class="mu">'+esc(String(err&&err.message||err))+'</p><p class="mu">Yerel kayıtların silinmedi. Önce yedek alabilirsin.</p><button class="btn" onclick="recoverData()">Ham veriyi görüntüle</button><button class="pill" onclick="location.reload()">Yeniden dene</button></div>';
+ $('app').innerHTML='<div class="card"><b>Veri kurtarma</b><p class="mu">'+esc(String(err&&err.message||err))+'</p><p class="mu">Mevcut kayıt silinmedi. Önce ham veriyi kopyala, ardından varsa geçerli yedeğini yapıştır.</p><button class="pill" onclick="recoverData()">Ham veriyi görüntüle</button><textarea id="recoveryImport" rows="5" placeholder="Geçerli JSON yedeğini buraya yapıştır" aria-label="Kurtarma yedeği"></textarea><button class="btn" onclick="recoverImport()">Doğrula ve yedeği geri yükle</button><button class="pill" onclick="location.reload()">Yeniden dene</button></div>';
 }
 function recoverData(){
- const backup=localStorage.getItem('sl5x5')||'';
+ let backup='';try{backup=localStorage.getItem('sl5x5')||''}catch(error){toast('Cihaz kayıtlarına erişim engellendi');return}
  const textarea=document.createElement('textarea');
  textarea.id='recoveryBackup';
  textarea.rows=8;
@@ -271,6 +271,13 @@ function recoverData(){
  $('app').appendChild(textarea);
  textarea.focus();
  textarea.select();
+}
+function recoverImport(){
+ try{
+  const candidate=parseBackup($('recoveryImport').value);
+  if(!saveState(localStorage,candidate,{replaceInvalid:true}))throw Error('Kayıt alanına yazılamadı');
+  S=candidate;draw();toast('Yedek güvenle geri yüklendi');
+ }catch(error){toast('Kurtarma başarısız; önceki kayıt korundu')}
 }
 window.addEventListener('error',e=>{if(!$('app').children.length)showErr(e.error||e.message)});
 
@@ -287,5 +294,5 @@ for (const [name, access] of Object.entries({
   rEnd: {get:()=>rEnd,set:value=>{rEnd=value}},
   dArm: {get:()=>dArm,set:value=>{dArm=value}}
 })) Object.defineProperty(window,name,{configurable:true,enumerable:false,...access});
-Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,save,$,kg,key,dstr,esc,upcoming});
-try{draw();if(S.act)wo()}catch(err){showErr(err)}
+Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,recoverImport,save,$,kg,key,dstr,esc,upcoming});
+try{const warning=getLoadWarning(localStorage);if(warning)showErr(new Error(warning));else{draw();if(S.act)wo()}}catch(err){showErr(err)}
