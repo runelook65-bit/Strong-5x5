@@ -194,6 +194,11 @@
         </div>
         <div id="v11FocusTabs" class="v11-focus-tabs" role="tablist" aria-label="Antrenman görünümü"><button type="button" data-v11focus="overview" role="tab" aria-selected="true">Antrenman</button><button type="button" data-v11focus="warmup" role="tab" aria-selected="false">Isınma</button></div>
         <div id="v11FocusOverview" class="v11-focus-overview"></div>
+        <div id="v11FocusBar" class="v11-focus-bar" role="group" aria-label="Antrenman oturumu araçları">
+          <button id="v11OverviewReset" type="button" class="v11-focus-pill v11-danger">Sıfırla</button>
+          <span id="v11OverviewCount" class="v11-focus-pill v11-count" role="status" aria-live="polite">0 / 0 set</span>
+          <button id="v11OverviewSave" type="button" class="v11-focus-pill v11-save" disabled>Kaydet</button>
+        </div>
         <div id="v11Warmup" class="v11-warmup hidden"><h2>Isınma</h2><p>Çalışma setlerine başlamadan önce hafif ağırlıklarla kontrollü tekrarlar yap. Isınma tekrarları antrenman kayıtlarına dahil edilmez.</p><button type="button" id="v11StartWorkingSets">Antrenmana Dön</button></div>
         <button type="button" id="v11DetailBack" class="v11-detail-back hidden">‹ Tüm hareketler</button>
         <div class="v7-thin-track" role="progressbar" aria-label="Antrenman ilerleme yüzdesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="v7FocusTrack"><div id="v7FocusFill"></div></div>
@@ -2950,6 +2955,11 @@
       screen.classList.toggle('v11-overview-active',v11FocusMode==='overview');
       screen.classList.toggle('v11-warmup-active',v11FocusMode==='warmup');
       screen.classList.toggle('v11-detail-active',v11FocusMode==='detail');
+      v7Element('v11FocusBar').classList.toggle('hidden',v11FocusMode!=='overview');
+      v7SetText('v11OverviewCount',snapshot.recordedSets+' / '+snapshot.totalSets+' set');
+      const overviewSave=v7Element('v11OverviewSave');overviewSave.disabled=!snapshot.ready;
+      overviewSave.textContent=snapshot.isSaved?'Kaydedildi':'Kaydet';
+      v7Element('v11OverviewReset').disabled=snapshot.isSaved;
       v7Element('v11DetailBack').classList.toggle('hidden',v11FocusMode!=='detail');
       v7Element('v11Warmup').classList.toggle('hidden',v11FocusMode!=='warmup');
       v7Element('v11FocusOverview').classList.toggle('hidden',v11FocusMode!=='overview');
@@ -3479,6 +3489,8 @@ function v7OpenExerciseInfo(){return v10OpenExerciseGuide();}
   bind('v11WorkoutPicker',()=>v7Navigate('program'));
   bind('v11SeeProgramBtn',()=>v7Navigate('program'));
   bind('v11DetailBack',()=>{v11FocusMode='overview';v7RenderFocus();});
+  bind('v11OverviewSave',openFinishPreview);
+  bind('v11OverviewReset',()=>v7Element('v7FocusMoreBtn').click());
   bind('v11StartWorkingSets',()=>{v11FocusMode='overview';v7RenderFocus();});
   document.querySelectorAll('[data-v11focus]').forEach(btn=>btn.addEventListener('click',()=>{
     v11FocusMode=btn.getAttribute('data-v11focus');v7RenderFocus();
