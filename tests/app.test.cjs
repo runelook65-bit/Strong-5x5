@@ -1181,9 +1181,16 @@ test('Geçmiş is isolated from original saved workout data schema',()=>{
   assert.match(document.getElementById('v11HistoryContent').children.find(x=>x.className==='v11-calendar-hint').textContent,/kayıtlı antrenman yok/);
 });
 
-test('v0.11 red theme, five tabs and safe-area rules are installed',()=>{
+test('v0.11 restored emerald theme, five tabs and safe-area rules are installed',()=>{
   const css=fs.readFileSync(path.join(__dirname,'..','src','ui-v09.css'),'utf8');
-  assert.match(css,/#e62838/);
+  assert.match(css,/--ui-primary:#62dba6;--ui-primary-foreground:#081d14;/);
+  assert.match(css,/--ui9-accent:#5cd89d/);
+  const currentTheme=css.slice(css.indexOf('/* v0.11 — ARM 5×5'));
+  for(const red of ['#e62838','#e8072b','#d92c35','#fa4053','#df2e3d']) {
+    assert.ok(!currentTheme.toLowerCase().includes(red),'No leftover crimson UI token: '+red);
+  }
+  assert.match(currentTheme,/v11-set-bubble\.is-recorded\{background:#62dba6;color:#081d14/);
+  assert.match(currentTheme,/v11-calendar-day\.is-done\{background:#62dba6;color:#081d14/);
   assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
   assert.match(css,/v11-set-bubble\.is-recorded/);
   assert.match(css,/v11-calendar-day\.is-done/);
