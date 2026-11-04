@@ -168,9 +168,12 @@
         </div>
         <div class="v7-hero v7-home-hero arm-cover arm-cover-home ui-panel ui-next-session ui9-primary-panel">
           <div class="v8-hero-watermark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 17c0-4 2-6 5-6V7l2-3 3 2-1 5h3l3-2 2 3-2 5c-2 3-5 4-9 4-3 0-5-1-6-4Z"/></svg></div>
-          <div class="v8-hero-context"><span class="v7-eyebrow">BUGÜNKÜ ANTRENMAN</span><span class="v8-hero-status"><span class="v8-status-dot"></span><span id="v8HeroState">Hazır</span></span></div>
+          <div class="v11-home-heading"><div><h2>Bugünkü Antrenman</h2><p id="v11TodayDate" class="v11-today-date"></p></div><button id="v11WorkoutPicker" type="button" class="v11-workout-picker" aria-label="Programdan antrenman seç">A ▾</button></div>
+           <div class="v8-hero-context"><span class="v7-eyebrow">HAFTA <span id="v11HeroWeek">1</span> · 12 HAFTALIK PLAN</span><span class="v8-hero-status"><span class="v8-status-dot"></span><span id="v8HeroState">Hazır</span></span></div>
           <h2 id="v7HeroTitle" class="v7-hero-title">Workout A</h2>
           <p id="v7HeroSubtitle" class="v7-muted mt-2 mb-6">3 hareket · 13 set</p>
+           <div id="v7TodayExercises" class="v11-home-exercise-list" aria-label="Bugünkü antrenmanın hareketleri"></div>
+           <div id="v11WorkoutMeta" class="v11-workout-meta">Set kaydına hazır</div>
           <button id="v7StartBtn" type="button" class="v7-cta ui-button ui-button-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 6 10 6-10 6V6Z"/></svg><span id="v7StartLabel">Antrenmanı Başlat</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h16m-7-7 7 7-7 7"/></svg></button>
           <button id="v7OpenProgramBtn" type="button" class="v7-text-link ui-link mt-3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg> Programı Gör <span aria-hidden="true">›</span></button>
         </div>
@@ -179,19 +182,20 @@
           <div class="v7-stat"><span class="v7-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h17M8 15l4-4 4 2 4-7"/></svg></span><span class="v7-muted text-xs">Bu hafta</span><strong id="v7StatSessions">0 / 3</strong></div>
           <div class="v7-stat"><span class="v7-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4"/></svg></span><span class="v7-muted text-xs">Kol değişimi</span><strong id="v7StatArm">—</strong></div>
         </div>
-        <div>
-          <div class="v10-list-heading"><div><h2 class="v7-section-title mb-1">Bugünkü hareketler</h2><p class="v7-muted text-xs">Hareketi seç, nasıl yapıldığını incele ve setlerini kaydet.</p></div><span class="v10-guide-kicker">REHBERLİ ANTRENMAN</span></div>
-          <div id="v7TodayExercises" class="v7-card divide-y divide-[#2b3339]"></div>
-        </div>
+        <section class="v11-upcoming" aria-labelledby="v11UpcomingTitle"><div class="v11-section-top"><h2 id="v11UpcomingTitle">Yaklaşan Antrenmanlar</h2><button id="v11SeeProgramBtn" type="button">Tüm program <span aria-hidden="true">›</span></button></div><div id="v11Upcoming" class="v11-upcoming-list"></div></section>
         <div id="v7LastWorkout" class="v7-recent" aria-live="polite"></div>
       </section>
 
       <section id="v7Focus" class="v7-screen v7-page v7-focus hidden" aria-label="Aktif antrenman">
         <div class="flex justify-between items-center gap-3">
-          <button id="v7FocusBackBtn" type="button" class="v7-icon-button" aria-label="Antrenmandan Bugün ekranına dön"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+          <button id="v7FocusBackBtn" type="button" class="v11-close-workout" aria-label="Antrenman özetine dön veya antrenmanı kapat">Kapat</button>
           <div class="flex-1 min-w-0"><h1 id="v7FocusTitle" class="v7-title truncate">Workout A</h1><p id="v7FocusSubtitle" class="v7-muted text-xs">1 / 3 hareket</p></div>
           <button id="v7FocusMoreBtn" type="button" class="v7-icon-button v8-focus-more" aria-label="Antrenman seçenekleri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
         </div>
+        <div id="v11FocusTabs" class="v11-focus-tabs" role="tablist" aria-label="Antrenman görünümü"><button type="button" data-v11focus="overview" role="tab" aria-selected="true">Antrenman</button><button type="button" data-v11focus="warmup" role="tab" aria-selected="false">Isınma</button></div>
+        <div id="v11FocusOverview" class="v11-focus-overview"></div>
+        <div id="v11Warmup" class="v11-warmup hidden"><h2>Isınma</h2><p>Çalışma setlerine başlamadan önce hafif ağırlıklarla kontrollü tekrarlar yap. Isınma tekrarları antrenman kayıtlarına dahil edilmez.</p><button type="button" id="v11StartWorkingSets">Antrenmana Dön</button></div>
+        <button type="button" id="v11DetailBack" class="v11-detail-back hidden">‹ Tüm hareketler</button>
         <div class="v7-thin-track" role="progressbar" aria-label="Antrenman ilerleme yüzdesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="v7FocusTrack"><div id="v7FocusFill"></div></div>
         <div id="v7FocusHero" class="v7-hero v7-exercise-hero ui9-exercise-header">
           <div class="v8-focus-label"><span class="v8-status-dot"></span> ŞU ANDA</div>
@@ -302,6 +306,7 @@
         </details>
       </section>
 
+      <section id="v7History" class="v7-screen v7-page hidden" aria-labelledby="v7HistoryTitle"><header class="v11-history-heading"><h1 id="v7HistoryTitle">Geçmiş</h1><p>Kaydedilen antrenmanlar</p></header><div class="v11-history-tabs" role="tablist" aria-label="Geçmiş görünümü"><button type="button" data-v11history="list" role="tab" aria-selected="false">Liste</button><button type="button" data-v11history="calendar" role="tab" aria-selected="true">Takvim</button><button type="button" data-v11history="notes" role="tab" aria-selected="false">Notlar</button></div><div id="v11HistoryContent" class="v11-history-content" aria-live="polite"></div></section>
       <section id="v7Progress" class="v7-screen v7-page space-y-5 hidden" aria-labelledby="v7ProgressTitle">
         <div class="v7-page-header">
           <div>
@@ -877,9 +882,10 @@
     </main>
 
     <nav id="v7Nav" aria-label="Ana gezinme" class="v7-navigation ui-tabbar">
-      <button type="button" data-v7tab="today" class="v7-nav-item is-active"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z"/></svg></span><span>Bugün</span></button>
-      <button type="button" data-v7tab="program" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></span><span>Program</span></button>
-      <button type="button" data-v7tab="progress" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h17M8 15l4-4 4 2 4-7"/></svg></span><span>İlerleme</span></button>
+      <button type="button" data-v7tab="today" class="v7-nav-item is-active"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z"/></svg></span><span>Ana Sayfa</span></button>
+      <button type="button" data-v7tab="program" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></span><span>Programlar</span></button>
+      <button type="button" data-v7tab="history" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v4M17 2v4M3 10h18M8 14h3M13 14h3M8 18h3"/></svg></span><span>Geçmiş</span></button>
+       <button type="button" data-v7tab="progress" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h17M8 15l4-4 4 2 4-7"/></svg></span><span>İlerleme</span></button>
       <button type="button" data-v7tab="settings" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="#0d1717"/><circle cx="16" cy="12" r="2" fill="#0d1717"/><circle cx="10" cy="18" r="2" fill="#0d1717"/></svg></span><span>Ayarlar</span></button>
     </nav>
 
