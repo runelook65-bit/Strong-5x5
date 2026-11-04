@@ -77,3 +77,13 @@ The supplied App Store screenshot is a product-experience reference, not a licen
 - QA gate: npm test, production build and mobile Safari checks (320 / 375 / 390 / 430px, VoiceOver) before merging into production.
 
 The feature remains on branch `feat/guided-exercise-experience` pending verification.
+
+## v0.11 — Screenshot-inspired dark/red strength-training UI
+The supplied StrongLifts screenshots guide layout and visual hierarchy only. ARM 5×5 retains its own branding, exercises, 12-week program, A/B alternation, saved weights and progression rules. No third-party media or sample achievements are copied.
+
+- Home: original session prescription, saved real working weights and recorded-set count; next two planned week/day slots without inventing absolute future dates.
+- Focus: an across-exercise overview of large set circles; red means a recorded set, grey means pending. Taps open the existing editor and weight/repetition logger. Warm-up is informational and does not log a set.
+- History: five-tab navigation with list, calendar and read-only notes from actual saved workout timestamps and exercises. No fake dates, entries or trends.
+- Program, Progress and Settings: unchanged state engine, recolored in the unified dark/red UI.
+- Compatibility: persistence key arm_5x5_app_state_v1, backup/restore and recorded set logic are unchanged.
+- QA gate: independent npm test and Vite build; device testing still needed on 320/375/390/430px, iOS Safari/VoiceOver and PWA service worker. No automatic deployment.
