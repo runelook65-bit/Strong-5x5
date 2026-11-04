@@ -1057,3 +1057,11 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
  .app-shell #v7Focus .v11-focus-bar{gap:4px;padding:5px;}
  .app-shell .v11-focus-pill{font-size:11px;padding:0 6px;min-height:44px;}
 }
+
+
+/* Consecutive historical months scroll below the current month, as on native iOS. */
+.app-shell #v7History .v11-archive-heading{
+  margin:54px 0 23px;text-align:center;font-size:22px;font-weight:820;
+  text-transform:capitalize;color:#fff;letter-spacing:-.4px;
+}
+.app-shell #v7History .v11-archive-grid{margin-bottom:16px;}
