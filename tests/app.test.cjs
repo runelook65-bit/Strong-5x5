@@ -66,6 +66,7 @@ function createApp(saved) {
       v7RenderSettings, v7BuildStrengthChart, v7BuildVolumeChart, v7OpenValueModal,
       v7SaveValueModal, v7CloseValueModal, v7RenderSettings, v7OpenTool, v7SelectSet,
       v10OpenExerciseGuide, v10CloseExerciseGuide,
+      v11RenderHistory, v11RenderUpcoming, v11LogDate, v11RenderFocusOverview,
       getState: () => state,
       setState: next => { state = next; }
     };
@@ -841,12 +842,13 @@ test('Consolidated design is loaded after the structural v0.7 stylesheet', () =>
   assert.match(html, /id="v7RepsValueBtn"/);
 });
 
-test('Floating nav uses coherent SVG icons and preserves real four-tab navigation', () => {
+test('Floating nav uses five real destinations including history', () => {
   const start=html.indexOf('<nav id="v7Nav"');
   const end=html.indexOf('</nav>',start);
   const nav=html.slice(start,end);
-  assert.equal((nav.match(/data-v7tab="/g)||[]).length,4);
-  assert.equal((nav.match(/<svg /g)||[]).length,4);
+  assert.equal((nav.match(/data-v7tab="/g)||[]).length,5);
+  assert.equal((nav.match(/<svg /g)||[]).length,5);
+  assert.match(nav,/data-v7tab="history"/);
   assert.match(nav,/data-v7tab="today"/);
   assert.match(nav,/data-v7tab="settings"/);
 });
@@ -878,7 +880,7 @@ test('Home hero displays Ready, In progress, and Completed truthfully', () => {
 });
 
 test('Precision Glass navigation uses scalable vector icons in focus and footer', () => {
-  for (const id of ['v7FocusBackBtn','v7FocusMoreBtn','v7PreviousExerciseBtn','v7NextExerciseBtn']) {
+  for (const id of ['v7FocusMoreBtn','v7PreviousExerciseBtn','v7NextExerciseBtn']) {
     const index = html.indexOf('id="'+id+'"');
     assert.ok(index>=0);
     assert.match(html.slice(index,index+450), /<svg /);
@@ -927,17 +929,20 @@ test('v0.9 consolidate-only CSS keeps minimal design and removes legacy glass ru
   assert.match(html, /application-version" content="0\.9\.0-dev"/);
 });
 
-test('Guided Today list uses consistent photo frames, SVG fallback and actual plan data', () => {
-  const { app, document } = createApp();
+test('Home shows compact real exercise prescriptions and upcoming A/B sessions', () => {
+  const { app, document, storage } = createApp();
+  const before=storage.size;
   app.v7RenderToday();
   const children=document.getElementById('v7TodayExercises').children;
   assert.equal(children.length,3);
   for(const row of children) {
-    assert.match(row.innerHTML,/v10-exercise-art/);
-    assert.match(row.innerHTML,/<svg /);
-    assert.match(row.innerHTML,/<img src="data:image\//);
-    assert.match(row.innerHTML,/v10-exercise-target/);
+    assert.match(row.innerHTML,/v11-ex-prescription/);
+    assert.match(row.innerHTML,/v11-ex-weight/);
+    assert.ok(!row.innerHTML.includes('<img src='),'home uses compact exercise text');
   }
+  assert.equal(document.getElementById('v11Upcoming').children.length,2);
+  assert.match(document.getElementById('v11Upcoming').children[0].children[0].children[0].textContent,/Çarşamba/);
+  assert.equal(storage.size,before);
 });
 
 test('Exercise guide renders actual movement notes and photo without modifying workout state', () => {
@@ -1117,4 +1122,99 @@ test('v0.9 progress keeps exercise chart selection on rerender and tracks true h
   assert.equal(selector.value,'hammer_curl');
   assert.equal(document.getElementById('v9StrengthNote').textContent,'Son 1 kayıt gösteriliyor');
   assert.match(document.getElementById('v7StrengthChart').innerHTML,/11\.0 kg/);
+});
+
+test('v0.11 start workout opens genuine set overview; recorded sets are red and pending grey',()=>{
+  const {app,document}=createApp();
+  assert.equal(app.v7EnterFocus(),true);
+  const root=document.getElementById('v11FocusOverview');
+  assert.equal(document.getElementById('v7Focus').classList.contains('v11-overview-active'),true);
+  assert.equal(root.children.length,4);
+  const first=root.children[0];
+  assert.equal(first.children[1].children.length,5);
+  assert.equal(first.children[1].children[0].className.includes('is-recorded'),false);
+  const ex=app.getActiveWorkoutExercises()[0];
+  app.recordExerciseSet(ex.setKey,0,5,ex.stats.weight);
+  app.v7RenderFocus();
+  assert.equal(root.children[0].children[1].children[0].className.includes('is-recorded'),true);
+  assert.equal(root.children[0].children[1].children[1].className.includes('is-recorded'),false);
+  assert.equal(app.getSessionSnapshot().recordedSets,1);
+});
+
+test('Overview bubbles open the original recording controls without directly writing',()=>{
+  const {app,document}=createApp();
+  app.v7EnterFocus();
+  const root=document.getElementById('v11FocusOverview');
+  root.children[0].children[1].children[2].listeners.click();
+  assert.equal(document.getElementById('v7Focus').classList.contains('v11-detail-active'),true);
+  assert.equal(app.getSessionSnapshot().recordedSets,0);
+  assert.equal(app.v7LogCurrentSet(),true);
+  assert.equal(app.getSessionSnapshot().recordedSets,1);
+});
+
+test('Geçmiş calendar uses persisted timestamps instead of manufactured training dates',()=>{
+  const {app,document,storage}=createApp();
+  const timestamp=new Date().toISOString();
+  const todayKey=app.v11LogDate({timestamp});
+  assert.match(todayKey,/^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(app.v11LogDate({timestamp:'not a date'}),null);
+  app.getState().workoutLogs.push({id:'w1_d0',timestamp,title:'Antrenman A',volume:225,
+    exercises:[{name:'Barbell Curl',sets:[{reps:5,weight:25}]}],details:['Seans tamamlandı']});
+  const before=storage.size;
+  assert.equal(app.v7Navigate('history'),true);
+  const screen=document.getElementById('v7History');
+  assert.equal(screen.classList.contains('hidden'),false);
+  const content=document.getElementById('v11HistoryContent');
+  const grid=content.children[1];
+  const recorded=grid.children.filter(cell=>cell.className&&cell.className.includes('is-done'));
+  assert.equal(recorded.length,1);
+  recorded[0].listeners.click();
+  assert.ok(document.getElementById('v11HistoryContent').children.some(child=>child.className==='v11-history-summary'));
+  assert.equal(storage.size,before);
+});
+
+test('Geçmiş is isolated from original saved workout data schema',()=>{
+  const {app,document}=createApp();
+  const original=JSON.stringify(app.getState());
+  app.v7Navigate('history');
+  assert.equal(JSON.stringify(app.getState()),original);
+  assert.match(document.getElementById('v11HistoryContent').children.find(x=>x.className==='v11-calendar-hint').textContent,/kayıtlı antrenman yok/);
+});
+
+test('v0.11 red theme, five tabs and safe-area rules are installed',()=>{
+  const css=fs.readFileSync(path.join(__dirname,'..','src','ui-v09.css'),'utf8');
+  assert.match(css,/#e62838/);
+  assert.match(css,/grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
+  assert.match(css,/v11-set-bubble\.is-recorded/);
+  assert.match(css,/v11-calendar-day\.is-done/);
+  assert.match(css,/safe-area-inset-bottom/);
+  assert.match(html,/id="v7History"/);
+  assert.match(html,/id="v11FocusOverview"/);
+});
+
+test('Overview session actions are gated by real completed-set readiness',()=>{
+  const {app,document}=createApp();
+  app.v7EnterFocus();
+  assert.equal(document.getElementById('v11OverviewSave').disabled,true);
+  assert.equal(document.getElementById('v11OverviewCount').textContent,'0 / 13 set');
+  recordAll(app);
+  app.v7RenderFocus();
+  assert.equal(document.getElementById('v11OverviewSave').disabled,false);
+  assert.equal(document.getElementById('v11OverviewCount').textContent,'13 / 13 set');
+  assert.equal(document.getElementById('v11OverviewReset').disabled,false);
+});
+
+test('History scrolls across previous months and colors only actual past dates',()=>{
+  const {app,document}=createApp();
+  const now=new Date();
+  const archived=new Date(now.getFullYear(),now.getMonth()-1,15,12,0,0).toISOString();
+  app.getState().workoutLogs.push({timestamp:archived,title:'Antrenman B',volume:320,exercises:[]});
+  app.v7Navigate('history');
+  const content=document.getElementById('v11HistoryContent');
+  const archiveGrids=content.children.filter(child=>child.className==='v11-calendar-grid v11-archive-grid');
+  assert.equal(archiveGrids.length,2);
+  const marked=archiveGrids[0].children.filter(child=>(child.className||'').includes('is-done'));
+  assert.equal(marked.length,1);
+  const other=archiveGrids[1].children.filter(child=>(child.className||'').includes('is-done'));
+  assert.equal(other.length,0);
 });

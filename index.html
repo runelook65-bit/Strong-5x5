@@ -168,9 +168,12 @@
         </div>
         <div class="v7-hero v7-home-hero arm-cover arm-cover-home ui-panel ui-next-session ui9-primary-panel">
           <div class="v8-hero-watermark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 17c0-4 2-6 5-6V7l2-3 3 2-1 5h3l3-2 2 3-2 5c-2 3-5 4-9 4-3 0-5-1-6-4Z"/></svg></div>
-          <div class="v8-hero-context"><span class="v7-eyebrow">BUGÜNKÜ ANTRENMAN</span><span class="v8-hero-status"><span class="v8-status-dot"></span><span id="v8HeroState">Hazır</span></span></div>
+          <div class="v11-home-heading"><div><h2>Bugünkü Antrenman</h2><p id="v11TodayDate" class="v11-today-date"></p></div><button id="v11WorkoutPicker" type="button" class="v11-workout-picker" aria-label="Programdan antrenman seç">A ▾</button></div>
+           <div class="v8-hero-context"><span class="v7-eyebrow">HAFTA <span id="v11HeroWeek">1</span> · 12 HAFTALIK PLAN</span><span class="v8-hero-status"><span class="v8-status-dot"></span><span id="v8HeroState">Hazır</span></span></div>
           <h2 id="v7HeroTitle" class="v7-hero-title">Workout A</h2>
           <p id="v7HeroSubtitle" class="v7-muted mt-2 mb-6">3 hareket · 13 set</p>
+           <div id="v7TodayExercises" class="v11-home-exercise-list" aria-label="Bugünkü antrenmanın hareketleri"></div>
+           <div id="v11WorkoutMeta" class="v11-workout-meta">Set kaydına hazır</div>
           <button id="v7StartBtn" type="button" class="v7-cta ui-button ui-button-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 6 10 6-10 6V6Z"/></svg><span id="v7StartLabel">Antrenmanı Başlat</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h16m-7-7 7 7-7 7"/></svg></button>
           <button id="v7OpenProgramBtn" type="button" class="v7-text-link ui-link mt-3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg> Programı Gör <span aria-hidden="true">›</span></button>
         </div>
@@ -179,19 +182,25 @@
           <div class="v7-stat"><span class="v7-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h17M8 15l4-4 4 2 4-7"/></svg></span><span class="v7-muted text-xs">Bu hafta</span><strong id="v7StatSessions">0 / 3</strong></div>
           <div class="v7-stat"><span class="v7-stat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4"/></svg></span><span class="v7-muted text-xs">Kol değişimi</span><strong id="v7StatArm">—</strong></div>
         </div>
-        <div>
-          <div class="v10-list-heading"><div><h2 class="v7-section-title mb-1">Bugünkü hareketler</h2><p class="v7-muted text-xs">Hareketi seç, nasıl yapıldığını incele ve setlerini kaydet.</p></div><span class="v10-guide-kicker">REHBERLİ ANTRENMAN</span></div>
-          <div id="v7TodayExercises" class="v7-card divide-y divide-[#2b3339]"></div>
-        </div>
+        <section class="v11-upcoming" aria-labelledby="v11UpcomingTitle"><div class="v11-section-top"><h2 id="v11UpcomingTitle">Yaklaşan Antrenmanlar</h2><button id="v11SeeProgramBtn" type="button">Tüm program <span aria-hidden="true">›</span></button></div><div id="v11Upcoming" class="v11-upcoming-list"></div></section>
         <div id="v7LastWorkout" class="v7-recent" aria-live="polite"></div>
       </section>
 
       <section id="v7Focus" class="v7-screen v7-page v7-focus hidden" aria-label="Aktif antrenman">
         <div class="flex justify-between items-center gap-3">
-          <button id="v7FocusBackBtn" type="button" class="v7-icon-button" aria-label="Antrenmandan Bugün ekranına dön"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+          <button id="v7FocusBackBtn" type="button" class="v11-close-workout" aria-label="Antrenman özetine dön veya antrenmanı kapat">Kapat</button>
           <div class="flex-1 min-w-0"><h1 id="v7FocusTitle" class="v7-title truncate">Workout A</h1><p id="v7FocusSubtitle" class="v7-muted text-xs">1 / 3 hareket</p></div>
           <button id="v7FocusMoreBtn" type="button" class="v7-icon-button v8-focus-more" aria-label="Antrenman seçenekleri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
         </div>
+        <div id="v11FocusTabs" class="v11-focus-tabs" role="tablist" aria-label="Antrenman görünümü"><button type="button" data-v11focus="overview" role="tab" aria-selected="true">Antrenman</button><button type="button" data-v11focus="warmup" role="tab" aria-selected="false">Isınma</button></div>
+        <div id="v11FocusOverview" class="v11-focus-overview"></div>
+        <div id="v11FocusBar" class="v11-focus-bar" role="group" aria-label="Antrenman oturumu araçları">
+          <button id="v11OverviewReset" type="button" class="v11-focus-pill v11-danger">Sıfırla</button>
+          <span id="v11OverviewCount" class="v11-focus-pill v11-count" role="status" aria-live="polite">0 / 0 set</span>
+          <button id="v11OverviewSave" type="button" class="v11-focus-pill v11-save" disabled>Kaydet</button>
+        </div>
+        <div id="v11Warmup" class="v11-warmup hidden"><h2>Isınma</h2><p>Çalışma setlerine başlamadan önce hafif ağırlıklarla kontrollü tekrarlar yap. Isınma tekrarları antrenman kayıtlarına dahil edilmez.</p><button type="button" id="v11StartWorkingSets">Antrenmana Dön</button></div>
+        <button type="button" id="v11DetailBack" class="v11-detail-back hidden">‹ Tüm hareketler</button>
         <div class="v7-thin-track" role="progressbar" aria-label="Antrenman ilerleme yüzdesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="v7FocusTrack"><div id="v7FocusFill"></div></div>
         <div id="v7FocusHero" class="v7-hero v7-exercise-hero ui9-exercise-header">
           <div class="v8-focus-label"><span class="v8-status-dot"></span> ŞU ANDA</div>
@@ -302,6 +311,7 @@
         </details>
       </section>
 
+      <section id="v7History" class="v7-screen v7-page hidden" aria-labelledby="v7HistoryTitle"><header class="v11-history-heading"><h1 id="v7HistoryTitle">Geçmiş</h1><p>Kaydedilen antrenmanlar</p></header><div class="v11-history-tabs" role="tablist" aria-label="Geçmiş görünümü"><button type="button" data-v11history="list" role="tab" aria-selected="false">Liste</button><button type="button" data-v11history="calendar" role="tab" aria-selected="true">Takvim</button><button type="button" data-v11history="notes" role="tab" aria-selected="false">Notlar</button></div><div id="v11HistoryContent" class="v11-history-content" aria-live="polite"></div></section>
       <section id="v7Progress" class="v7-screen v7-page space-y-5 hidden" aria-labelledby="v7ProgressTitle">
         <div class="v7-page-header">
           <div>
@@ -877,10 +887,11 @@
     </main>
 
     <nav id="v7Nav" aria-label="Ana gezinme" class="v7-navigation ui-tabbar">
-      <button type="button" data-v7tab="today" class="v7-nav-item is-active"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z"/></svg></span><span>Bugün</span></button>
-      <button type="button" data-v7tab="program" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></span><span>Program</span></button>
-      <button type="button" data-v7tab="progress" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h17M8 15l4-4 4 2 4-7"/></svg></span><span>İlerleme</span></button>
-      <button type="button" data-v7tab="settings" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="#0d1717"/><circle cx="16" cy="12" r="2" fill="#0d1717"/><circle cx="10" cy="18" r="2" fill="#0d1717"/></svg></span><span>Ayarlar</span></button>
+      <button type="button" data-v7tab="today" class="v7-nav-item is-active"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z"/></svg></span><span>Ana Sayfa</span></button>
+      <button type="button" data-v7tab="program" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 22c4 0 7-3 7-7 0-2-1-4-3-6 0 3-2 5-4 6 0-4-2-8-5-11 0 4-3 7-3 11 0 4 3 7 8 7Z"/></svg></span><span>Programlar</span></button>
+      <button type="button" data-v7tab="history" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 2v4M17 2v4M3 10h18M8 14h3M13 14h3M8 18h3"/></svg></span><span>Geçmiş</span></button>
+       <button type="button" data-v7tab="progress" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V5M4 20h17M8 15l4-4 4 2 4-7"/></svg></span><span>İlerleme</span></button>
+      <button type="button" data-v7tab="settings" class="v7-nav-item"><span class="v7-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2.5v2.3M12 19.2v2.3M2.5 12h2.3M19.2 12h2.3M5.28 5.28l1.63 1.63m10.18 10.18 1.63 1.63M18.72 5.28l-1.63 1.63M6.91 17.09l-1.63 1.63"/><circle cx="12" cy="12" r="7.2"/><circle cx="12" cy="12" r="3.2"/></svg></span><span>Ayarlar</span></button>
     </nav>
 
 
@@ -2876,7 +2887,7 @@
     function v7CurrentSnapshot(){return getSessionSnapshot();}
 
     function v7Navigate(page){
-  const pages={today:"v7Today",focus:"v7Focus",program:"v7Program",progress:"v7Progress",settings:"v7Settings",tool:"v7ToolDetail"};
+  const pages={today:"v7Today",focus:"v7Focus",program:"v7Program",history:"v7History",progress:"v7Progress",settings:"v7Settings",tool:"v7ToolDetail"};
   if(!Object.prototype.hasOwnProperty.call(pages,page))return false;
   if(v7Page==='tool'&&page!=='tool'&&v7ToolNode&&v7ToolOrigin){
     v7ToolOrigin.appendChild(v7ToolNode);
@@ -2893,11 +2904,229 @@
   if(page==='focus')v7RenderFocus();
   if(page==='today')v7RenderToday();
   if(page==='program')v7RenderProgram();
+  if(page==='history')v11RenderHistory();
   if(page==='progress')v7RenderProgress();
   if(page==='settings')v7RenderSettings();
   if(typeof window.scrollTo==='function')window.scrollTo(0,0);
   return true;
 }
+
+
+    // Navigation presentation state: the 12-week session engine stays authoritative.
+    let v11FocusMode='overview';
+    let v11HistoryView='calendar';
+    let v11HistoryMonth=new Date();
+    v11HistoryMonth.setDate(1);
+    let v11SelectedDate=null;
+
+    function v11RenderUpcoming(){
+      const root=v7Element('v11Upcoming');root.innerHTML='';
+      const template=TEMPLATES[state.templateKey]||TEMPLATES.standard;
+      let shown=0;
+      for(let week=state.currentWeek;week<=12&&shown<2;week++){
+        for(let day=week===state.currentWeek?state.currentDayIdx+1:0;day<3&&shown<2;day++){
+          if(state.completedSlots['w'+week+'_d'+day])continue;
+          const type=getScheduledWorkoutType(week,day);
+          const card=document.createElement('article');card.className='v11-upcoming-card';
+          const title=document.createElement('div');title.className='v11-upcoming-heading';
+          const date=document.createElement('span');date.textContent='Hafta '+week+' · '+DAY_NAMES[day];
+          const name=document.createElement('strong');name.textContent='Antrenman '+type;
+          title.appendChild(date);title.appendChild(name);card.appendChild(title);
+          const rows=document.createElement('div');rows.className='v11-upcoming-exercises';
+          (template[type]||[]).forEach(item=>{
+            const meta=EXERCISE_DB[item.exId];
+            const stats=getExerciseStats(item.exId);
+            const sets=week===7?Math.max(2,Math.ceil(item.sets/2)):item.sets;
+            const reps=item.minReps&&item.minReps<item.reps?item.minReps+'–'+item.reps:String(item.reps);
+            const row=document.createElement('div');row.className='v11-upcoming-row';
+            const label=document.createElement('span');label.textContent=meta.name;
+            const goal=document.createElement('strong');
+            goal.textContent=sets+'×'+reps+' '+Number(stats.weight).toLocaleString('tr-TR',{maximumFractionDigits:1})+'kg';
+            row.appendChild(label);row.appendChild(goal);rows.appendChild(row);
+          });
+          card.appendChild(rows);root.appendChild(card);shown++;
+        }
+      }
+      if(shown===0){const empty=document.createElement('p');empty.className='v11-empty';empty.textContent='Programda ileride planlanan başka seans bulunmuyor.';root.appendChild(empty);}
+    }
+
+    function v11RenderFocusOverview(snapshot){
+      const screen=v7Element('v7Focus');
+      screen.classList.toggle('v11-overview-active',v11FocusMode==='overview');
+      screen.classList.toggle('v11-warmup-active',v11FocusMode==='warmup');
+      screen.classList.toggle('v11-detail-active',v11FocusMode==='detail');
+      v7Element('v11FocusBar').classList.toggle('hidden',v11FocusMode!=='overview');
+      v7SetText('v11OverviewCount',snapshot.recordedSets+' / '+snapshot.totalSets+' set');
+      const overviewSave=v7Element('v11OverviewSave');overviewSave.disabled=!snapshot.ready;
+      overviewSave.textContent=snapshot.isSaved?'Kaydedildi':'Kaydet';
+      v7Element('v11OverviewReset').disabled=snapshot.isSaved;
+      v7Element('v11DetailBack').classList.toggle('hidden',v11FocusMode!=='detail');
+      v7Element('v11Warmup').classList.toggle('hidden',v11FocusMode!=='warmup');
+      v7Element('v11FocusOverview').classList.toggle('hidden',v11FocusMode!=='overview');
+      document.querySelectorAll('[data-v11focus]').forEach(button=>{
+        const current=button.getAttribute('data-v11focus')===(v11FocusMode==='warmup'?'warmup':'overview');
+        button.classList.toggle('is-active',current);
+        button.setAttribute('aria-selected',String(current));
+      });
+      if(v11FocusMode!=='overview')return;
+      const root=v7Element('v11FocusOverview');root.innerHTML='';
+      snapshot.exercises.forEach((item,exerciseIndex)=>{
+        const section=document.createElement('section');section.className='v11-focus-exercise';
+        const heading=document.createElement('button');heading.type='button';heading.className='v11-focus-exercise-heading';
+        const title=document.createElement('span');title.textContent=item.meta.name;
+        const detail=document.createElement('strong');
+        detail.textContent=v7GoalText(item)+' · '+Number(item.stats.weight).toLocaleString('tr-TR',{maximumFractionDigits:1})+'kg ›';
+        heading.appendChild(title);heading.appendChild(detail);
+        heading.setAttribute('aria-label',item.meta.name+', hareketi aç');
+        heading.addEventListener('click',()=>{
+          v7FocusIndex=exerciseIndex;v7ChosenSet=null;v7DraftKey='';
+          v11FocusMode='detail';v7RenderFocus();
+        });
+        section.appendChild(heading);
+        const bubbles=document.createElement('div');bubbles.className='v11-set-bubbles';
+        item.setValues.forEach((value,setIndex)=>{
+          const bubble=document.createElement('button');bubble.type='button';
+          bubble.className='v11-set-bubble'+(value!==null?' is-recorded':'');
+          bubble.textContent=String(value===null?item.reps:value);
+          bubble.setAttribute('aria-label',item.meta.name+', '+(setIndex+1)+'. set: '+(value===null?'kaydedilmedi':'kaydedildi, '+value+' tekrar'));
+          bubble.setAttribute('aria-pressed',String(value!==null));
+          bubble.addEventListener('click',()=>{
+            v7FocusIndex=exerciseIndex;v7ChosenSet=null;v7DraftKey='';
+            v11FocusMode='detail';v7RenderFocus();v7SelectSet(setIndex);
+          });
+          bubbles.appendChild(bubble);
+        });
+        section.appendChild(bubbles);root.appendChild(section);
+      });
+      const help=document.createElement('p');help.className='v11-overview-help';
+      help.textContent=snapshot.isSaved?'Bu seans daha önce kaydedildi.':'Kırmızı daire: tamamlanan set. Her daireye dokunarak gerçek ağırlık ve tekrarları kaydet.';
+      root.appendChild(help);
+    }
+
+    function v11LogDate(log){
+      if(typeof log?.timestamp!=='string')return null;
+      const date=new Date(log.timestamp);
+      if(!Number.isFinite(date.getTime()))return null;
+      return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+    }
+    function v11HistoryLogs(){
+      return (Array.isArray(state.workoutLogs)?state.workoutLogs:[])
+        .filter(log=>v11LogDate(log))
+        .slice().sort((a,b)=>new Date(b.timestamp).getTime()-new Date(a.timestamp).getTime());
+    }
+    function v11HistorySummary(log){
+      const card=document.createElement('article');card.className='v11-history-summary';
+      const title=document.createElement('h3');
+      title.textContent=(log.title||'Antrenman')+' · '+new Date(log.timestamp).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+      card.appendChild(title);
+      const meta=document.createElement('p');meta.className='v11-history-meta';
+      meta.textContent=(Array.isArray(log.exercises)?log.exercises.length:0)+' hareket · '+(Number.isFinite(log.volume)?Math.round(log.volume).toLocaleString('tr-TR')+' kg':'Hacim bilgisi yok');
+      card.appendChild(meta);
+      if(Array.isArray(log.exercises))log.exercises.forEach(ex=>{
+        const line=document.createElement('p');line.className='v11-history-exercise';
+        const sets=Array.isArray(ex.sets)?ex.sets:[];
+        line.textContent=(ex.name||EXERCISE_DB[ex.exId]?.name||'Hareket')+' · '+sets.map(s=>Number.isFinite(s.reps)&&Number.isFinite(s.weight)?s.reps+'×'+s.weight+' kg':'—').join(' · ');
+        card.appendChild(line);
+      });
+      return card;
+    }
+    function v11RenderHistoryList(root,logs){
+      if(!logs.length){const p=document.createElement('p');p.className='v11-empty';p.textContent='Henüz kayıtlı antrenman yok. Seans tamamladığında burada görünecek.';root.appendChild(p);return;}
+      logs.forEach(log=>root.appendChild(v11HistorySummary(log)));
+    }
+    function v11RenderHistoryNotes(root,logs){
+      const notes=logs.filter(log=>Array.isArray(log.details)&&log.details.some(t=>typeof t==='string'&&t.trim()));
+      const info=document.createElement('p');info.className='v11-history-note-help';
+      info.textContent='Burada sadece kaydedilmiş antrenmanların otomatik ilerleme notları gösterilir.';
+      root.appendChild(info);
+      if(!notes.length){const empty=document.createElement('p');empty.className='v11-empty';empty.textContent='Henüz kaydedilmiş seans notu yok.';root.appendChild(empty);return;}
+      notes.forEach(log=>{
+        const card=document.createElement('article');card.className='v11-history-summary';
+        const title=document.createElement('h3');title.textContent=(log.title||'Antrenman')+' · '+new Date(log.timestamp).toLocaleDateString('tr-TR');card.appendChild(title);
+        log.details.forEach(note=>{if(typeof note!=='string'||!note.trim())return;const p=document.createElement('p');p.className='v11-history-note';p.textContent=note;card.appendChild(p);});
+        root.appendChild(card);
+      });
+    }
+    function v11RenderArchiveMonth(root,logs,date){
+      const year=date.getFullYear(),month=date.getMonth();
+      const heading=document.createElement('h2');heading.className='v11-archive-heading';
+      heading.textContent=date.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
+      root.appendChild(heading);
+      const grid=document.createElement('div');grid.className='v11-calendar-grid v11-archive-grid';
+      grid.setAttribute('role','group');grid.setAttribute('aria-label',heading.textContent);
+      ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'].forEach(weekday=>{
+        const label=document.createElement('span');label.className='v11-weekday';label.textContent=weekday.charAt(0);label.setAttribute('aria-label',weekday);grid.appendChild(label);
+      });
+      for(let i=0;i<(new Date(year,month,1).getDay()+6)%7;i++){
+        const blank=document.createElement('span');blank.className='v11-calendar-blank';grid.appendChild(blank);
+      }
+      const dates=new Map();
+      logs.forEach(log=>{const key=v11LogDate(log);dates.set(key,(dates.get(key)||0)+1);});
+      for(let day=1;day<=new Date(year,month+1,0).getDate();day++){
+        const key=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+        const count=dates.get(key)||0;
+        const cell=document.createElement('button');cell.type='button';
+        cell.className='v11-calendar-day'+(count?' is-done':'')+(v11SelectedDate===key?' is-selected':'');
+        cell.textContent=String(day);
+        cell.setAttribute('aria-label',day+' '+heading.textContent+', '+count+' kayıtlı antrenman');
+        cell.setAttribute('aria-pressed',String(v11SelectedDate===key));
+        cell.addEventListener('click',()=>{v11SelectedDate=key;v11RenderHistory();});
+        grid.appendChild(cell);
+      }
+      root.appendChild(grid);
+    }
+    function v11RenderCalendar(root,logs){
+      const year=v11HistoryMonth.getFullYear(),month=v11HistoryMonth.getMonth();
+      const header=document.createElement('div');header.className='v11-calendar-header';
+      const previous=document.createElement('button');previous.type='button';previous.textContent='‹';previous.setAttribute('aria-label','Önceki ay');
+      const title=document.createElement('strong');title.textContent=v11HistoryMonth.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
+      const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','Sonraki ay');
+      previous.addEventListener('click',()=>{v11HistoryMonth=new Date(year,month-1,1);v11SelectedDate=null;v11RenderHistory();});
+      next.addEventListener('click',()=>{v11HistoryMonth=new Date(year,month+1,1);v11SelectedDate=null;v11RenderHistory();});
+      header.appendChild(previous);header.appendChild(title);header.appendChild(next);root.appendChild(header);
+      const grid=document.createElement('div');grid.className='v11-calendar-grid';grid.setAttribute('role','group');grid.setAttribute('aria-label',title.textContent);
+      const weekdays=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+      weekdays.forEach(weekday=>{const cell=document.createElement('span');cell.className='v11-weekday';cell.textContent=weekday.charAt(0);cell.setAttribute('aria-label',weekday);grid.appendChild(cell);});
+      for(let i=0;i<(new Date(year,month,1).getDay()+6)%7;i++){const blank=document.createElement('span');blank.className='v11-calendar-blank';grid.appendChild(blank);}
+      const counts=new Map();logs.forEach(log=>{const key=v11LogDate(log);counts.set(key,(counts.get(key)||0)+1);});
+      const days=new Date(year,month+1,0).getDate();
+      for(let day=1;day<=days;day++){
+        const key=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+        const count=counts.get(key)||0;
+        const cell=document.createElement('button');cell.type='button';
+        cell.className='v11-calendar-day'+(count?' is-done':'')+(v11SelectedDate===key?' is-selected':'');
+        cell.textContent=String(day);cell.setAttribute('aria-label',day+' '+title.textContent+', '+count+' kayıtlı antrenman');
+        cell.setAttribute('aria-pressed',String(v11SelectedDate===key));
+        cell.addEventListener('click',()=>{v11SelectedDate=key;v11RenderHistory();});
+        grid.appendChild(cell);
+      }
+      root.appendChild(grid);
+      if(v11SelectedDate){
+        const heading=document.createElement('h2');heading.className='v11-selected-heading';heading.textContent='Seçilen gün';root.appendChild(heading);
+        const selected=logs.filter(log=>v11LogDate(log)===v11SelectedDate);
+        if(!selected.length){const p=document.createElement('p');p.className='v11-empty';p.textContent='Bu gün için kaydedilen antrenman yok.';root.appendChild(p);}
+        else selected.forEach(log=>root.appendChild(v11HistorySummary(log)));
+      }else{
+        const count=logs.filter(log=>{const d=new Date(log.timestamp);return d.getFullYear()===year&&d.getMonth()===month;}).length;
+        const hint=document.createElement('p');hint.className='v11-calendar-hint';
+        hint.textContent=count?count+' tamamlanan antrenman. Kırmızı günlere dokunarak ayrıntıları aç.':'Bu ay için henüz kayıtlı antrenman yok.';
+        root.appendChild(hint);
+      }
+      // Scrolling history: show the previous two months without invented sessions.
+      v11RenderArchiveMonth(root,logs,new Date(year,month-1,1));
+      v11RenderArchiveMonth(root,logs,new Date(year,month-2,1));
+    }
+    function v11RenderHistory(){
+      const logs=v11HistoryLogs();
+      document.querySelectorAll('[data-v11history]').forEach(button=>{
+        const active=button.getAttribute('data-v11history')===v11HistoryView;
+        button.classList.toggle('is-active',active);button.setAttribute('aria-selected',String(active));
+      });
+      const root=v7Element('v11HistoryContent');root.innerHTML='';
+      if(v11HistoryView==='list')v11RenderHistoryList(root,logs);
+      else if(v11HistoryView==='notes')v11RenderHistoryNotes(root,logs);
+      else v11RenderCalendar(root,logs);
+    }
 
     function v7ArtworkMarkup(exId, fallbackSrc){
   // Unified icon surfaces for the list; full motion references remain in the exercise library.
@@ -2912,6 +3141,9 @@ function v7RenderToday(){
   const snapshot=v7CurrentSnapshot();
   const wType=getActiveWorkoutType();
   v7SetText('v7HeroTitle',`Workout ${wType}`);
+  v7SetText('v11TodayDate',new Date().toLocaleDateString('tr-TR',{day:'numeric',month:'long',weekday:'long'}));
+  v7SetText('v11HeroWeek',String(state.currentWeek));
+  v7SetText('v11WorkoutPicker',wType+' ▾');
   v7SetText('v7HeroSubtitle',`${snapshot.exercises.length} hareket · ${snapshot.totalSets} set · Hafta ${state.currentWeek}`);
   v7SetText('v7StartLabel',snapshot.isSaved ? 'Kaydedilen Seansı Gör' : snapshot.recordedSets ? 'Antrenmana Devam Et' : 'Antrenmanı Başlat');
   v7SetText('v8HeroState', snapshot.isSaved ? 'Tamamlandı' : snapshot.recordedSets ? 'Devam ediyor' : 'Hazır');
@@ -2920,15 +3152,17 @@ function v7RenderToday(){
   const cold=(state.armMeasurements||[]).filter(m=>m.note==='Soğuk'&&Number.isFinite(m.cm));
   const delta=cold.length>=2?cold.at(-1).cm-cold[0].cm:null;
   v7SetText('v7StatArm',delta===null?'—':`${delta>=0?'+':''}${delta.toFixed(1)} cm`);
+  v7SetText('v11WorkoutMeta',snapshot.recordedSets?`${snapshot.recordedSets} / ${snapshot.totalSets} set kaydedildi`:'Çalışma ağırlıkları gösteriliyor');
   const list=v7Element('v7TodayExercises');list.innerHTML='';
   snapshot.exercises.forEach((item,i)=>{
     const row=document.createElement('button');
     row.type='button';row.className='v7-exercise-row';
-    row.innerHTML=`${v7ArtworkMarkup(item.exId,item.meta.img)}<span class="flex-1 min-w-0"><span class="v7-ex-name block">${i+1}. ${escapeHTML(item.meta.name)}</span><span class="v10-exercise-target">${v7GoalText(item)} tekrar</span><span class="v10-exercise-caption">Hareketi ve tekniğini gör</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
+    row.innerHTML=`<span class="v11-ex-main"><span class="v11-ex-name">${escapeHTML(item.meta.name)}</span><span class="v11-ex-secondary">${item.setValues.filter(x=>x!==null).length}/${item.sets} set</span></span><span class="v11-ex-prescription">${escapeHTML(v7GoalText(item))} <span class="v11-ex-weight">${Number(item.stats.weight).toLocaleString('tr-TR',{maximumFractionDigits:1})} kg</span></span><span class="v11-ex-arrow" aria-hidden="true">›</span>`;
     row.setAttribute('aria-label',`${item.meta.name}, ${v7GoalText(item)}. Antrenmana geç`);
     row.addEventListener('click',()=>v7EnterFocus(i));
     list.appendChild(row);
   });
+  v11RenderUpcoming();
   const last=state.workoutLogs?.at(-1);
   if(last){
     const header=escapeHTML(last.title||'Antrenman kaydedildi');
@@ -2943,6 +3177,7 @@ function v7RenderToday(){
   const defaultIndex=items.findIndex(x=>x.setValues.some(v=>v===null));
   v7FocusIndex=Number.isInteger(index)?Math.max(0,Math.min(items.length-1,index)):Math.max(0,defaultIndex);
   v7ChosenSet=null;v7DraftKey='';
+  v11FocusMode=Number.isInteger(index)?'detail':'overview';
   return v7Navigate('focus');
 }
 
@@ -2965,7 +3200,7 @@ function v7RenderToday(){
   v7FocusIndex=Math.max(0,Math.min(list.length-1,v7FocusIndex));
   const item=list[v7FocusIndex];
   const wType=getActiveWorkoutType();
-  v7SetText('v7FocusTitle',`Workout ${wType}`);
+  v7SetText('v7FocusTitle',`Antrenman ${wType}`);
   v7SetText('v7FocusSubtitle',`${v7FocusIndex+1} / ${list.length} hareket · Hafta ${state.currentWeek}`);
   v7SetText('v7ExerciseName',item.meta.name);
   v7SetText('v7ExercisePrescription',`${v7GoalText(item)} tekrar · ${item.setValues.filter(value=>value!==null).length}/${item.sets} set`);
@@ -3009,6 +3244,7 @@ function v7RenderToday(){
   const finish=v7Element('v7FinishBtn');finish.disabled=!snapshot.ready;
   finish.textContent=snapshot.ready?'✓ Seansı Bitir ve Kaydet':snapshot.isSaved?'Seans Kaydedildi':`${snapshot.missing.length} set kaldı · Seans Özeti`;
   v7UpdateRest();
+  v11RenderFocusOverview(snapshot);
 }
 
     function v7EditValue(field,delta){
@@ -3281,6 +3517,18 @@ function v7OpenExerciseInfo(){return v10OpenExerciseGuide();}
   });
   bind('v7StartBtn',()=>v7EnterFocus());
   bind('v7OpenProgramBtn',()=>v7Navigate('program'));
+  bind('v11WorkoutPicker',()=>v7Navigate('program'));
+  bind('v11SeeProgramBtn',()=>v7Navigate('program'));
+  bind('v11DetailBack',()=>{v11FocusMode='overview';v7RenderFocus();});
+  bind('v11OverviewSave',openFinishPreview);
+  bind('v11OverviewReset',()=>v7Element('v7FocusMoreBtn').click());
+  bind('v11StartWorkingSets',()=>{v11FocusMode='overview';v7RenderFocus();});
+  document.querySelectorAll('[data-v11focus]').forEach(btn=>btn.addEventListener('click',()=>{
+    v11FocusMode=btn.getAttribute('data-v11focus');v7RenderFocus();
+  }));
+  document.querySelectorAll('[data-v11history]').forEach(btn=>btn.addEventListener('click',()=>{
+    v11HistoryView=btn.getAttribute('data-v11history');v11RenderHistory();
+  }));
   bind('v7FocusBackBtn',()=>v7Navigate('today'));
   bind('v7FocusMoreBtn',()=>{
     if(!window.confirm('Bu seansın girilen setlerini sıfırla? Bu işlem yalnızca mevcut seansı etkiler.'))return;
@@ -3466,6 +3714,7 @@ function v7OpenExerciseInfo(){return v10OpenExerciseGuide();}
       v7RenderProgram();
       v7RenderProgress();
       v7RenderSettings();
+      if(v7Page==='history')v11RenderHistory();
       if(v7Page==='focus')v7RenderFocus();
     }
 
