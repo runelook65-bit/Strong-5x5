@@ -60,3 +60,6 @@ h1{letter-spacing:-.5px;background:linear-gradient(90deg,var(--tx),color-mix(in 
 .toast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--red2);color:#fff;padding:14px 22px;border-radius:26px;font-weight:700;z-index:20;animation:tn .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.35)}@keyframes tn{from{opacity:0;margin-top:-20px}to{opacity:1;margin-top:0}}nav button{transition:background .2s,color .2s}
 .stp{border:0;background:var(--card2);color:var(--tx);border-radius:50%;width:30px;height:30px;font-size:18px;font-weight:700;vertical-align:middle}
 .rest{position:fixed;left:16px;right:16px;max-width:488px;margin:auto;bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--red2);color:#fff;border-radius:26px;padding:12px 20px;display:none;justify-content:space-between;align-items:center;font-size:20px;font-weight:700}
+
+/* Keyboard access for exercise details (original text spans retain layout). */
+.ex [data-ui-action="edit-exercise"]:focus-visible{outline:2px solid var(--red);outline-offset:3px;border-radius:6px;}

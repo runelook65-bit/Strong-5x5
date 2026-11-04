@@ -4,6 +4,7 @@ import {renderProgress} from './features/progress/view.js';
 import {renderPrograms,renderProgramComposer} from './features/programs/view.js';
 import {renderSettings} from './features/settings/view.js';
 import {renderWorkoutMarkup} from './features/workout/view.js';
+import {registerUIActions} from './features/navigation/events.js';
 import {D,M,PR,INC0,W0,AC,PLC,FORM} from './domain/config.js';
 import {fresh,loadState,saveState,getLoadWarning} from './data/storage.js';
 import {upcomingWorkouts,applyStandardProgression} from './domain/workout.js';
@@ -116,7 +117,7 @@ const ICN={home:sv('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>'
 function showH(d){const x=S.h.find(h=>h.date===d);if(!x)return;const vol=Math.round(x.ex.reduce((t,e)=>t+e.w*e.sets.reduce((p,s)=>p+(s||0),0),0)),sets=x.ex.reduce((t,e)=>t+e.sets.length,0),el=document.createElement('div');el.className='sheet';el.onclick=e=>{if(e.target===el)el.remove()};
 el.innerHTML=`<div class="sh"><div class="grab"></div><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px">${dstr(new Date(x.date))}</b><span class="badge">${x.type}</span></div><div class="stt"><div><b>${x.dur}</b><small>dakika</small></div><div><b>${kg(vol)}</b><small>hacim</small></div><div><b>${sets}</b><small>set</small></div></div>${x.ex.map(e=>`<div class="row"><span>${e.n}${e.pr?' 🏆':''}</span><span class="mu">${kg(e.w)}</span></div><div class="dots">${e.sets.map(s=>`<i class="${s===(e.r||5)?'f':''}">${s===null?'–':s}</i>`).join('')}</div>`).join('')}${x.note?`<p class="mu" style="margin-top:12px">${esc(x.note)}</p>`:''}<button class="btn" onclick="this.closest('.sheet').remove()">Kapat</button></div>`;document.body.appendChild(el)}
 function upCard(u){const days=Math.round((u.d-new Date())/864e5),rel=days<=1?'Yarın':days+' gün sonra';return `<div class="uc"><div class="ut"><div class="ul">${u.t}</div><div><b>${dstr(u.d)}</b><small>${u.n?u.n+' · ':''}${rel} · ${u.l.length} egzersiz</small></div></div>${u.l.map(([n,w])=>`<div class="ur"><span>${n}</span><span class="uw">${kg(w)}<em>+${String(u.inc&&u.inc[n]!=null?u.inc[n]:S.inc[n]).replace('.',',')}</em></span></div>`).join('')}</div>`}
-function navUp(){const n=$('nav');if(!n.querySelector('button'))n.innerHTML='<i class="ind"></i>'+tabs.map(([k,i,l])=>`<button data-k="${k}" onclick="goT('${k}')"><span>${ICN[k]}</span>${l}</button>`).join('');n.style.setProperty('--i',tabs.findIndex(x=>x[0]===tab));n.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===tab))}
+function navUp(){const n=$('nav');if(!n.querySelector('button'))n.innerHTML='<i class="ind"></i>'+tabs.map(([k,i,l])=>`<button data-k="${k}" data-ui-action="navigate" data-ui-tab="${k}"><span>${ICN[k]}</span>${l}</button>`).join('');n.style.setProperty('--i',tabs.findIndex(x=>x[0]===tab));n.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===tab))}
 function goT(k){snd('nav');const a=tabs.map(x=>x[0]);dir=a.indexOf(k)>a.indexOf(tab)?'l':'r';tab=k;draw();scrollTo(0,0)}
 const SWV={nd:()=>!!S.nd,rn:()=>!!S.rn,ns:()=>!S.ns,nr:()=>!S.nr,nw:()=>!S.nw,al:()=>!!S.al};
 function tg(k,b){S[k]=!S[k];save();acc();b.classList.toggle('on',SWV[k]())}
@@ -245,4 +246,16 @@ for (const [name, access] of Object.entries({
   dArm: {get:()=>dArm,set:value=>{dArm=value}}
 })) Object.defineProperty(window,name,{configurable:true,enumerable:false,...access});
 Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,recoverImport,save,$,kg,key,dstr,esc,upcoming});
+registerUIActions(document,{
+ navigate:goT,
+ logSet:tap,
+ editExercise:xv,
+ viewWorkout:view=>{wtab=view;wo()},
+ finishWorkout:finish,
+ closeWorkout:closeWo,
+ discardWorkout:delWo,
+ skipRest:()=>{rEnd=0},
+ showNote:()=>{if(!S.act)return;S.act.showNote=1;wo();$('nt')?.focus()},
+ updateNote:value=>{if(!S.act)return;const before=S.act.note;S.act.note=value;if(!save())S.act.note=before}
+});
 try{const warning=getLoadWarning(localStorage);if(warning)showErr(new Error(warning));else{draw();if(S.act)wo()}}catch(err){showErr(err)}
