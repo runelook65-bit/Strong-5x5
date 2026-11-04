@@ -836,15 +836,15 @@ body .app-shell {
 
 
 /* v0.11 — ARM 5×5 StrongLifts-inspired system. Functional inspiration only:
-   black canvas, red records, dense exercise prescriptions, 5-tab floating nav.
+   black canvas, emerald records, dense exercise prescriptions, 5-tab floating nav.
    No third-party branding, imagery, or training values are reproduced. */
 :root {
   --ui-background:#050505;--ui-foreground:#fbfbfc;--ui-card:#1b1b1d;
   --ui-card-raised:#252527;--ui-secondary:#29292c;--ui-border:#353538;
-  --ui-muted:#99999e;--ui-primary:#e62838;--ui-primary-foreground:#fff;
-  --ui-ring:#ff4b5a;--ui9-bg:#050505;--ui9-card:#1b1b1d;
+  --ui-muted:#99999e;--ui-primary:#62dba6;--ui-primary-foreground:#081d14;
+  --ui-ring:#84efc3;--ui9-bg:#050505;--ui9-card:#1b1b1d;
   --ui9-card-dark:#131314;--ui9-border:#353538;--ui9-muted:#a9a9ad;
-  --ui9-accent:#e62838;--ui9-focus-ring:#ff5a69;
+  --ui9-accent:#5cd89d;--ui9-focus-ring:#9cebc2;
 }
 html,body,body .app-shell{background:#050505;color:#f8f8f8;}
 body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-bottom,0px));}
@@ -853,20 +853,20 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
   background:#202022!important;border-color:#2c2c2e;box-shadow:none!important;
 }
 .app-shell button:focus-visible,.app-shell select:focus-visible,.app-shell .v11-set-bubble:focus-visible{
-  outline:3px solid #ff6070;outline-offset:3px;
+  outline:3px solid #84efc3;outline-offset:3px;
 }
 .app-shell .v7-muted{color:#aaaab0;}
 .app-shell .v7-title{font-size:24px;letter-spacing:-.8px;font-weight:790;}
 .app-shell .v7-section-title{font-size:20px;font-weight:800;}
 .app-shell .v7-eyebrow{color:#a5a5a9;}
-.app-shell .v8-hero-status{color:#ffc1c6;background:rgba(230,40,56,.14);border-color:rgba(230,40,56,.2);}
-.app-shell .v8-status-dot{background:#e62838;box-shadow:none;}
+.app-shell .v8-hero-status{color:#b6f1d3;background:rgba(98,219,166,.14);border-color:rgba(98,219,166,.24);}
+.app-shell .v8-status-dot{background:#62dba6;box-shadow:none;}
 .app-shell .v7-cta,.app-shell .v7-cta.ui-button,.app-shell .ui-button-primary,
 .app-shell .ui9-primary-panel .v7-cta,.app-shell .v8-log-cta{
-  background:#d92c35!important;color:white!important;border:1px solid #d92c35!important;
+  background:#62dba6!important;color:#081d14!important;border:1px solid #62dba6!important;
   border-radius:999px!important;min-height:57px;font-size:16px;font-weight:800;
 }
-.app-shell .v7-cta:active,.app-shell .v7-cta.ui-button:active{background:#be2430!important;}
+.app-shell .v7-cta:active,.app-shell .v7-cta.ui-button:active{background:#4bc48d!important;}
 /* Floating 5-tab capsule with 44px minimum tap areas and iOS safe-area clearance. */
 .app-shell .v7-navigation.ui-tabbar{
   grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;max-width:550px;
@@ -881,7 +881,7 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
 .app-shell .v7-navigation .v7-nav-item .v7-nav-icon,
 .app-shell .v7-navigation .v7-nav-item svg{width:20px;height:20px;}
 .app-shell .v7-navigation .v7-nav-item.is-active{
-  color:#fa4053;background:#080809;box-shadow:none;
+  color:#62dba6;background:#080809;box-shadow:none;
 }
 /* Home: dense headline, today's session and weight prescriptions above fold. */
 .app-shell #v7Today{display:flex;flex-direction:column;gap:18px;}
@@ -920,7 +920,7 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
   font-weight:770;color:#fff;font-variant-numeric:tabular-nums;
 }
 .app-shell .v11-ex-weight{white-space:nowrap;color:#c7c7c9;}
-.app-shell .v11-ex-arrow{font-size:26px;color:#ef3449;line-height:1;}
+.app-shell .v11-ex-arrow{font-size:26px;color:#62dba6;line-height:1;}
 .app-shell .v11-workout-meta{text-align:center;color:#aaaab0;font-size:11px;margin:10px 0;}
 .app-shell #v7Today #v7StartBtn{width:100%;margin-top:8px;letter-spacing:.1px;}
 .app-shell #v7Today #v7OpenProgramBtn{margin:9px auto 0;align-self:center;color:#b6b6bc;}
@@ -946,7 +946,7 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
 .app-shell #v7Focus #v7FocusSubtitle{text-align:center;color:#aaa;font-size:11px;}
 .app-shell .v11-close-workout{
   min-width:78px;min-height:48px;border-radius:999px;background:#262628;
-  color:#f33a51;border:1px solid #3e3e41;font-size:15px;font-weight:820;
+  color:#a7eecb;border:1px solid #3e3e41;font-size:15px;font-weight:820;
 }
 .app-shell .v11-focus-tabs,.app-shell .v11-history-tabs{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:4px;gap:3px;
@@ -974,18 +974,18 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
   background:#262629;color:#7c7c82;font-size:clamp(18px,5vw,25px);font-weight:750;
   font-variant-numeric:tabular-nums;
 }
-.app-shell .v11-set-bubble.is-recorded{background:#e8072b;color:#fff;}
+.app-shell .v11-set-bubble.is-recorded{background:#62dba6;color:#081d14;}
 .app-shell .v11-overview-help{color:#88888d;font-size:12px;line-height:1.5;margin-top:6px;}
 .app-shell .v11-warmup{padding:22px;border-radius:20px;background:#202022;border:1px solid #363639;}
 .app-shell .v11-warmup h2{font-size:21px;font-weight:800;}
 .app-shell .v11-warmup p{font-size:13px;color:#b2b2b5;margin:12px 0 20px;line-height:1.6;}
-.app-shell .v11-warmup button{width:100%;min-height:48px;border-radius:999px;background:#e02839;font-weight:760;color:#fff;}
-.app-shell .v11-detail-back{font-size:13px;font-weight:750;color:#f44c60;min-height:44px;text-align:left;}
-.app-shell #v7Focus .v7-dot.is-done{background:#e8072b!important;border-color:#e8072b!important;color:#fff!important;}
+.app-shell .v11-warmup button{width:100%;min-height:48px;border-radius:999px;background:#62dba6;font-weight:760;color:#081d14;}
+.app-shell .v11-detail-back{font-size:13px;font-weight:750;color:#a7eecb;min-height:44px;text-align:left;}
+.app-shell #v7Focus .v7-dot.is-done{background:#62dba6!important;border-color:#62dba6!important;color:#081d14!important;}
 .app-shell #v7Focus .v7-stepper{background:#29292c;border:1px solid #414145;color:#fff;}
-.app-shell #v7Focus .v10-guide-button{background:#362328;color:#ff9ca8;border-color:#653641;}
+.app-shell #v7Focus .v10-guide-button{background:#1c3329;color:#a7eecb;border-color:#3b6b52;}
 .app-shell #v7Focus .v7-exercise-hero{background:#171719!important;}
-/* History: real saved timestamps determine red circle markers; no demo dates. */
+/* History: real saved timestamps determine emerald circle markers; no demo dates. */
 .app-shell #v7History .v11-history-heading{text-align:center;margin-bottom:28px;}
 .app-shell #v7History .v11-history-heading h1{font-size:28px;font-weight:850;letter-spacing:-.7px;}
 .app-shell #v7History .v11-history-heading p{color:#8b8b91;font-size:12px;margin-top:5px;}
@@ -1002,7 +1002,7 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
   display:flex;align-items:center;justify-content:center;border-radius:999px;
   color:white;font-size:clamp(14px,4vw,19px);font-weight:600;font-variant-numeric:tabular-nums;
 }
-.app-shell .v11-calendar-day.is-done{background:#e8072b;color:#fff;}
+.app-shell .v11-calendar-day.is-done{background:#62dba6;color:#081d14;}
 .app-shell .v11-calendar-day.is-selected{outline:2px solid white;outline-offset:2px;}
 .app-shell .v11-calendar-hint{color:#888890;font-size:12px;text-align:center;margin-top:26px;line-height:1.5;}
 .app-shell .v11-selected-heading{margin:23px 0 10px;font-size:18px;font-weight:800;}
@@ -1012,13 +1012,13 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
 .app-shell .v11-history-exercise,.app-shell .v11-history-note{font-size:12px;line-height:1.55;color:#d0d0d2;margin-top:11px;padding-top:8px;border-top:1px solid #39393c;}
 .app-shell .v11-history-note-help{color:#a0a0a5;font-size:12px;line-height:1.5;margin-bottom:14px;}
 .app-shell .v11-empty{color:#a4a4aa;font-size:13px;line-height:1.6;padding:18px;border:1px dashed #414145;border-radius:16px;background:#171719;}
-/* Other pages inherit the same restrained dark + red palette. */
-.app-shell .ui9-program-day.is-active,.app-shell .ui9-program-week.is-active{border-color:#d72b3c!important;}
-.app-shell .ui9-program-workout.is-active{border-color:#b82e3f;}
-.app-shell .ui9-program-badge{color:#ff8997;}
-.app-shell .ui9-progress-record-value{color:#fc6578;}
-.app-shell #v7Progress svg [fill="#61e9ac"],.app-shell #v7Progress svg [fill="#238b60"]{fill:#e62838;}
-.app-shell .v7-setting-row .v7-accent{color:#f65e6e;background:#342227;}
+/* Other pages inherit the same restrained dark + emerald palette. */
+.app-shell .ui9-program-day.is-active,.app-shell .ui9-program-week.is-active{border-color:#62dba6!important;}
+.app-shell .ui9-program-workout.is-active{border-color:#3b6b52;}
+.app-shell .ui9-program-badge{color:#a7eecb;}
+.app-shell .ui9-progress-record-value{color:#62dba6;}
+.app-shell #v7Progress svg [fill="#61e9ac"],.app-shell #v7Progress svg [fill="#238b60"]{fill:#62dba6;}
+.app-shell .v7-setting-row .v7-accent{color:#62dba6;background:#1c3329;}
 @media(max-width:359px){
  .app-shell .app-main{padding:14px 12px 40px;}
  .app-shell #v7Today .ui9-primary-panel{padding:17px 12px;}
@@ -1049,9 +1049,9 @@ body .app-shell{max-width:560px;padding-bottom:calc(112px + env(safe-area-inset-
   border-radius:999px;background:#09090a;color:#fff;font-size:13px;font-weight:800;
   padding:0 10px;white-space:nowrap;
 }
-.app-shell .v11-focus-pill.v11-danger{color:#ff5568;background:#2d2023;}
+.app-shell .v11-focus-pill.v11-danger{color:#d6d6d9;background:#2c2c2f;}
 .app-shell .v11-focus-pill.v11-count{color:#fff;background:transparent;font-variant-numeric:tabular-nums;}
-.app-shell .v11-focus-pill.v11-save{background:#df2e3d;color:#fff;}
+.app-shell .v11-focus-pill.v11-save{background:#62dba6;color:#081d14;}
 .app-shell .v11-focus-pill:disabled{opacity:.42;cursor:not-allowed;}
 @media(max-width:359px){
  .app-shell #v7Focus .v11-focus-bar{gap:4px;padding:5px;}
