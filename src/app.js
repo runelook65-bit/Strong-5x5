@@ -2,8 +2,18 @@ import {D,M,PR,INC0,W0,AC,PLC,FORM} from './domain/config.js';
 import {fresh,loadState,saveState} from './data/storage.js';
 import {upcomingWorkouts,applyStandardProgression} from './domain/workout.js';
 import {escapeHTML,dateKey,displayDate,displayWeight} from './lib/format.js';
+import {parseBackup,parseSharedProgram} from './data/validation.js';
 let S=loadState(localStorage);
-const save=()=>saveState(localStorage,S);
+let warnedSaveFailure=false;
+const save=()=>{
+ const saved=saveState(localStorage,S);
+ if(!saved&&!warnedSaveFailure){
+   warnedSaveFailure=true;
+   toast('Kayıt saklanamadı. Depolamayı kontrol edip yedeğini al.');
+ }
+ if(saved)warnedSaveFailure=false;
+ return saved;
+};
 const $=id=>document.getElementById(id);
 const kg=w=>displayWeight(w,S.u);
 const key=dateKey;
@@ -91,15 +101,35 @@ function rmC(id,j){const c=S.cw.find(x=>x.id===id);c.ex.splice(j,1);if(!c.ex.len
 function delWo(){if(!dArm){dArm=1;$('dl').textContent='Emin misin?';setTimeout(()=>{dArm=0;if($('dl'))$('dl').textContent='Sil'},2500)}else{dArm=0;S.act=null;rEnd=0;save();closeWo()}}
 function rstS(b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin? Tekrar dokun';setTimeout(()=>{delete b.dataset.a;b.textContent='Verileri Sıfırla'},3000)}else{S=fresh();save();closeSh()}}
 function expBk(){$('bk').value=JSON.stringify(S);$('bk').select()}
-function impBk(){try{const d=JSON.parse($('bk').value);if(d&&d.w&&d.h){S=d;save();draw()}else throw 0}catch(e){$('bk').value='';$('bk').placeholder='Geçersiz yedek'}}
+function impBk(){
+ const input=$('bk');
+ try{
+   const candidate=parseBackup(input.value);
+   if(!saveState(localStorage,candidate))throw Error('Depolama alanına kaydedilemedi');
+   S=candidate;
+   draw();
+   toast('Yedek doğrulandı ve geri yüklendi');
+ }catch(error){
+   input.placeholder='Geçersiz yedek: '+String(error.message||error);
+   toast('Yedek yüklenmedi; mevcut kayıtların korundu');
+ }
+}
 function closeWo(){ovOpen=0;$('ovl').innerHTML='';clearInterval(timer);draw()}
 function finish(){
  const a=S.act;
  if(a.ex.every(e=>e.sets.every(s=>s===null)))return;
+ const beforeSave=JSON.parse(JSON.stringify(S));
  S.fail=S.fail||{};const cw=a.cid&&fw(a.cid);if(cw)a.ex.forEach((e,i)=>{const c=cw.ex[i];if(c)c.w=e.w+(e.sets.every(s=>s===e.r)?c.inc:0)});else applyStandardProgression(S,a);
  let pr=0;a.ex.forEach(e=>{if(e.sets.every(s=>s===(e.r||5))&&S.h.some(h=>h.ex.some(q=>q.n===e.n))){const best=Math.max(...S.h.flatMap(h=>h.ex.filter(q=>q.n===e.n).map(q=>q.w)));if(e.w>best){e.pr=1;pr=1}}});
  S.h.push({date:a.date,type:a.type,ex:a.ex,note:a.note,dur:Math.round((Date.now()-a.date)/60000)});
- if(!a.cid)S.next=a.type==='A'?'B':'A';else{const P=AP();if(P&&P.ws.some(w=>w.id===a.cid))S.pi=((S.pi||0)+1)%P.ws.length}S.act=null;save();closeWo();toast((pr?'Yeni rekor! 🏆 ':'')+'Antrenman kaydedildi 🎉')}
+ if(!a.cid)S.next=a.type==='A'?'B':'A';else{const P=AP();if(P&&P.ws.some(w=>w.id===a.cid))S.pi=((S.pi||0)+1)%P.ws.length}S.act=null;
+ if(!save()){
+   S=beforeSave;
+   toast('Antrenman saklanamadı; açık seans korundu');
+   return;
+ }
+ closeWo();
+ toast((pr?'Yeni rekor! 🏆 ':'')+'Antrenman kaydedildi 🎉')}
 let dir='',tx0=0,ty0=0,tOk=0;
 document.addEventListener('touchstart',e=>{const t=e.touches[0];tx0=t.clientX;ty0=t.clientY;tOk=!e.target.closest('input,textarea,svg')},{passive:true});
 document.addEventListener('touchend',e=>{if(!tOk)return;const t=e.changedTouches[0],dx=t.clientX-tx0,dy=t.clientY-ty0;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.6)return;
@@ -204,11 +234,42 @@ function psave(){if(!pe.name.trim()||!pe.ws.length||!pe.ws.every(w=>w.ex.length)
 function pshare(){sh('Programı Paylaş',`<textarea id="pj" rows="6" readonly>${esc(JSON.stringify({sl5x5:1,name:pe.name,split:pe.split,ws:pe.ws.map(w=>({name:w.name,ex:w.ex}))}))}</textarea><button class="btn" onclick="pcp()">Kopyala</button>`)}
 function pcp(){const t=$('pj');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){try{document.execCommand('copy')}catch(_){}}toast('Kopyalandı')}
 function pimpo(){sh('Program İçe Aktar',`<textarea id="pj" rows="6" placeholder="Program verisi"></textarea><button class="btn" onclick="pimp()">İçe Aktar</button>`)}
-function pimp(){try{const d=JSON.parse($('pj').value);if(!d||!d.name||!Array.isArray(d.ws)||!d.ws.length)throw 0;const t=Date.now();(S.pg=S.pg||[]).push({id:'p'+t,name:esc(String(d.name)),split:String(d.split||'Özel'),ws:d.ws.map((w,i)=>({id:'w'+t+i,name:esc(String(w.name||'Antrenman')),ex:(w.ex||[]).map(e=>({n:esc(String(e.n)),s:+e.s||5,r:+e.r||5,w:+e.w||20,inc:+e.inc||2.5}))}))});save();$('sh').remove();draw()}catch(e){$('pj').value='';$('pj').placeholder='Geçersiz program verisi'}}
+function pimp(){
+ const input=$('pj');
+ try{
+   const data=parseSharedProgram(input.value);
+   const stamp=Date.now();
+   const program={id:'p'+stamp,name:esc(data.name),split:esc(data.split||'Özel'),
+     ws:data.ws.map((w,i)=>({id:'w'+stamp+i,name:esc(w.name),ex:w.ex.map(e=>({
+       n:esc(e.n),s:e.s,r:e.r,w:e.w,inc:e.inc
+     }))}))};
+   const candidate={...S,pg:[...(S.pg||[]),program]};
+   if(!saveState(localStorage,candidate))throw Error('Depolama alanına kaydedilemedi');
+   S=candidate;
+   $('sh').remove();draw();toast('Program doğrulandı ve içe aktarıldı');
+ }catch(error){
+   input.placeholder='Geçersiz program: '+String(error.message||error);
+   toast('Program yüklenmedi; mevcut kayıtların korundu');
+ }
+}
 function cu(){document.querySelectorAll('#app .cu').forEach(el=>{const m=el.textContent.match(/^(\d+)(.*)$/);if(!m||!+m[1])return;const n=+m[1],t0=performance.now(),f=t=>{const p=Math.min(1,(t-t0)/900);el.textContent=Math.round(n*(1-Math.pow(1-p,3)))+m[2];if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)})}
 new MutationObserver(cu).observe($('app'),{childList:true});
 function resetAll(){try{localStorage.removeItem('sl5x5')}catch(e){}S=fresh();save();location.reload()}
-function showErr(err){$('app').innerHTML='<div class="card"><b>Bir hata oluştu</b><p class="mu">'+esc(String(err&&err.message||err))+'</p><button class="btn" onclick="resetAll()">Verileri Sıfırla ve Yeniden Aç</button></div>'}
+function showErr(err){
+ $('app').innerHTML='<div class="card"><b>Bir hata oluştu</b><p class="mu">'+esc(String(err&&err.message||err))+'</p><p class="mu">Yerel kayıtların silinmedi. Önce yedek alabilirsin.</p><button class="btn" onclick="recoverData()">Ham veriyi görüntüle</button><button class="pill" onclick="location.reload()">Yeniden dene</button></div>';
+}
+function recoverData(){
+ const backup=localStorage.getItem('sl5x5')||'';
+ const textarea=document.createElement('textarea');
+ textarea.id='recoveryBackup';
+ textarea.rows=8;
+ textarea.readOnly=true;
+ textarea.value=backup;
+ textarea.setAttribute('aria-label','Ham yerel veri yedeği');
+ $('app').appendChild(textarea);
+ textarea.focus();
+ textarea.select();
+}
 window.addEventListener('error',e=>{if(!$('app').children.length)showErr(e.error||e.message)});
 
 // Transitional legacy inline-handler bridge. Keep the existing markup actions
@@ -224,5 +285,5 @@ for (const [name, access] of Object.entries({
   rEnd: {get:()=>rEnd,set:value=>{rEnd=value}},
   dArm: {get:()=>dArm,set:value=>{dArm=value}}
 })) Object.defineProperty(window,name,{configurable:true,enumerable:false,...access});
-Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,save,$,kg,key,dstr,esc,upcoming});
+Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,save,$,kg,key,dstr,esc,upcoming});
 try{draw();if(S.act)wo()}catch(err){showErr(err)}
