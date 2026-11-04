@@ -2,6 +2,7 @@ import {renderHome,renderCustomHome} from './features/home/view.js';
 import {renderHistory} from './features/history/view.js';
 import {renderProgress} from './features/progress/view.js';
 import {renderPrograms,renderProgramComposer} from './features/programs/view.js';
+import {FOCUSED_SPLIT,FOCUSED_SPLIT_ID,makeFocusedSplit} from './domain/focused-split.js';
 import {renderSettings} from './features/settings/view.js';
 import {renderWorkoutMarkup} from './features/workout/view.js';
 import {registerUIActions} from './features/navigation/events.js';
@@ -169,8 +170,21 @@ setInterval(chkDay,30000);setTimeout(chkDay,1500);
 let pe=null;
 const allW=()=>[...(S.cw||[]),...(S.pg||[]).flatMap(p=>p.ws)],fw=id=>allW().find(w=>w.id===id),AP=()=>(S.pg||[]).find(p=>p.id===S.ap);
 function homeP(P){return renderCustomHome(P,{S,greet,esc,weekDots,dstr,kg,upCard});}
-function prog3(){return renderPrograms({S,AP,prog2,esc});}
-function setAp(id){S.ap=id||undefined;S.pi=0;save();draw();toast(id?'Aktif program değişti':'StrongLifts 5×5 aktif')}
+function prog3(){return renderPrograms({S,AP,prog2,esc,FOCUSED_SPLIT,FOCUSED_SPLIT_ID});}
+function setAp(id){
+ if(S.act){toast('Önce açık antrenmanı tamamla veya kapat');return}
+ const previous={ap:S.ap,pi:S.pi};
+ S.ap=id||undefined;S.pi=0;
+ if(!save()){S.ap=previous.ap;S.pi=previous.pi;return}
+ draw();toast(id?'Aktif program değişti':'StrongLifts 5×5 aktif')
+}
+function activateFocusedSplit(){
+ if(S.act){toast('Önce açık antrenmanı tamamla veya kapat');return}
+ const installed=(S.pg||[]).find(p=>p.id===FOCUSED_SPLIT_ID);
+ const candidate={...S,pg:installed?(S.pg||[]):[...(S.pg||[]),makeFocusedSplit()],ap:FOCUSED_SPLIT_ID,pi:0};
+ if(!saveState(localStorage,candidate)){toast('Program kaydedilemedi; mevcut plan korundu');return}
+ S=candidate;draw();toast('4 günlük bölgesel program aktif')
+}
 function pdel(id,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin?';setTimeout(()=>{delete b.dataset.a;b.textContent='Sil'},2500)}else{S.pg=S.pg.filter(p=>p.id!==id);if(S.ap===id){S.ap=undefined;S.pi=0}save();draw()}}
 function pnew(){pe={name:'',split:'Tüm Vücut',ws:[{id:'w'+Date.now(),name:'Antrenman A',ex:['Squat','Bench Press','Barbell Row'].map(n=>({n,s:5,r:5,w:S.w[n],inc:S.inc[n]}))}]};per(1)}
 function pedit(id){pe=JSON.parse(JSON.stringify(S.pg.find(p=>p.id===id)));per(1)}
