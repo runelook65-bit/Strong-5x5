@@ -87,3 +87,8 @@ The supplied StrongLifts screenshots guide layout and visual hierarchy only. ARM
 - Program, Progress and Settings: unchanged state engine, recolored in the unified dark/red UI.
 - Compatibility: persistence key arm_5x5_app_state_v1, backup/restore and recorded set logic are unchanged.
 - QA gate: independent npm test and Vite build; device testing still needed on 320/375/390/430px, iOS Safari/VoiceOver and PWA service worker. No automatic deployment.
+
+## v0.11 Emerald accent restoration
+The high-density, near-black StrongLifts-inspired layout is retained, but the temporary crimson accent palette has been replaced with the original ARM 5×5 emerald tokens: primary #62dba6, UI accent #5cd89d, ring #84efc3, and dark foreground #081d14 on emerald buttons and recorded-set/calendar indicators.
+The change is a purely presentational theme update. A/B workouts, actual data-backed history, saved set status, localStorage schema, export/restore, and five-tab navigation are unchanged.
+Destructive reset is intentionally neutral rather than saturated red, while its confirmation flow remains intact.
