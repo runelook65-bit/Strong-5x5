@@ -27,6 +27,7 @@ export function registerUIActions(root, callbacks) {
       case 'view-workout':
         if (data.uiView === 'a' || data.uiView === 'w') callbacks.viewWorkout(data.uiView);
         break;
+      case 'activate-focused-split': callbacks.activateFocusedSplit(); break;
       case 'finish-workout': callbacks.finishWorkout(); break;
       case 'close-workout': callbacks.closeWorkout(); break;
       case 'discard-workout': callbacks.discardWorkout(); break;

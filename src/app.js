@@ -262,6 +262,7 @@ for (const [name, access] of Object.entries({
 Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,recoverImport,save,$,kg,key,dstr,esc,upcoming});
 registerUIActions(document,{
  navigate:goT,
+ activateFocusedSplit,
  logSet:tap,
  editExercise:xv,
  viewWorkout:view=>{wtab=view;wo()},
