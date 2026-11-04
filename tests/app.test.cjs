@@ -1178,7 +1178,7 @@ test('Geçmiş is isolated from original saved workout data schema',()=>{
   const original=JSON.stringify(app.getState());
   app.v7Navigate('history');
   assert.equal(JSON.stringify(app.getState()),original);
-  assert.match(document.getElementById('v11HistoryContent').children.at(-1).textContent,/kayıtlı antrenman yok/);
+  assert.match(document.getElementById('v11HistoryContent').children.find(x=>x.className==='v11-calendar-hint').textContent,/kayıtlı antrenman yok/);
 });
 
 test('v0.11 red theme, five tabs and safe-area rules are installed',()=>{
