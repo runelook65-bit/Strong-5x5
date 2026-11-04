@@ -1,0 +1,6 @@
+const ex=(n,s,r,w=0,inc=2.5)=>({n,s,r,w,inc});const make=(key,name,a,b)=>({id:'focus-'+key+'-ab',name:name+' 5×5',split:'Bölgesel A/B',ws:[{id:'focus-'+key+'-a',name:'Antrenman A',ex:a},{id:'focus-'+key+'-b',name:'Antrenman B',ex:b}]});export const FOCUSED_PROGRAMS=[
+make('chest','Göğüs',[ex('Bench Press',5,5,20),ex('Incline Dumbbell Press',3,8),ex('Cable Fly',3,12)],[ex('Incline Bench Press',5,5,20),ex('Dumbbell Bench Press',3,8),ex('Push-up',3,10,0,0)]),
+make('back','Sırt',[ex('Barbell Row',5,5,20),ex('Lat Pulldown',3,10),ex('Face Pull',3,12)],[ex('Deadlift',5,5,20,5),ex('Seated Cable Row',3,10),ex('Assisted Pull-up',3,8,0,0)]),
+make('legs','Bacak',[ex('Squat',5,5,20),ex('Romanian Deadlift',3,8,20),ex('Calf Raise',3,12)],[ex('Front Squat',5,5,20),ex('Leg Press',3,10),ex('Leg Curl',3,10)]),
+make('arms','Kol',[ex('Close-Grip Bench Press',5,5,20),ex('Biceps Curl',3,10),ex('Triceps Pushdown',3,10)],[ex('Chin-up',5,5,0,0),ex('Hammer Curl',3,10),ex('Overhead Triceps Extension',3,10)])];
+export const cloneFocused=id=>{const p=FOCUSED_PROGRAMS.find(p=>p.id===id);return p?JSON.parse(JSON.stringify(p)):null};

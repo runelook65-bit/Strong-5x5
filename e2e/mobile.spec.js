@@ -66,22 +66,4 @@ test('navigation and workout controls fit the simulated mobile viewport',async({
 });
 
 
-test('optional four-day strength plan activates, persists and keeps classic 5×5 available',async({page})=>{
-  await page.goto('/');
-  await expect(page.getByText('StrongLifts 5×5',{exact:true}).first()).toBeVisible();
-  await page.locator('#nav button[data-ui-tab="prog"]').click();
-  await page.getByRole('button',{name:'Programı Ekle ve Seç'}).click();
-  await expect(page.locator('#app')).toContainText('4 · Kol');
-  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')));
-  expect(stored.pg.filter(p=>p.id==='builtin-upper-lower-4day-v1')).toHaveLength(1);
-  expect(stored.ap).toBe('builtin-upper-lower-4day-v1');
-  await page.locator('#nav button[data-ui-tab="home"]').click();
-  await expect(page.locator('#app')).toContainText('1 · Göğüs');
-  await page.reload();
-  await expect(page.locator('#app')).toContainText('1 · Göğüs');
-  await page.locator('#nav button[data-ui-tab="prog"]').click();
-  await page.locator('.pgc').filter({hasText:'StrongLifts 5×5'}).click();
-  const reset=await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')));
-  expect(reset.ap).toBeUndefined();
-  expect(reset.pg).toHaveLength(1);
-});
+test('chest A/B selection persists and classic 5x5 remains',async({page})=>{await page.goto('/');await page.locator('#nav button[data-ui-tab="prog"]').click();await expect(page.locator('[data-ui-action="activate-focused-program"]')).toHaveCount(4);await page.locator('[data-program-id="focus-chest-ab"]').click();const s=await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')));expect(s.ap).toBe('focus-chest-ab');expect(s.pg[0].ws).toHaveLength(2);await page.reload();await expect(page.locator('#app')).toContainText('Antrenman A');await page.locator('#nav button[data-ui-tab="prog"]').click();await page.locator('.pgc').filter({hasText:'StrongLifts 5×5'}).click();expect((await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')))).ap).toBeUndefined();});
