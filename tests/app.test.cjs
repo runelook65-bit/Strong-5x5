@@ -1203,3 +1203,18 @@ test('Overview session actions are gated by real completed-set readiness',()=>{
   assert.equal(document.getElementById('v11OverviewCount').textContent,'13 / 13 set');
   assert.equal(document.getElementById('v11OverviewReset').disabled,false);
 });
+
+test('History scrolls across previous months and colors only actual past dates',()=>{
+  const {app,document}=createApp();
+  const now=new Date();
+  const archived=new Date(now.getFullYear(),now.getMonth()-1,15,12,0,0).toISOString();
+  app.getState().workoutLogs.push({timestamp:archived,title:'Antrenman B',volume:320,exercises:[]});
+  app.v7Navigate('history');
+  const content=document.getElementById('v11HistoryContent');
+  const archiveGrids=content.children.filter(child=>child.className==='v11-calendar-grid v11-archive-grid');
+  assert.equal(archiveGrids.length,2);
+  const marked=archiveGrids[0].children.filter(child=>(child.className||'').includes('is-done'));
+  assert.equal(marked.length,1);
+  const other=archiveGrids[1].children.filter(child=>(child.className||'').includes('is-done'));
+  assert.equal(other.length,0);
+});
