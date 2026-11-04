@@ -3,11 +3,20 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
+const { buildSync } = require('esbuild');
 
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const found = html.match(/<script>([\s\S]*?)<\/script>/);
-const source = found ? found[1] : '';
+// Bundle the actual ESM graph into a browser-compatible IIFE for deterministic VM tests.
+const generated=buildSync({
+  entryPoints:[path.join(root,'src','main.js')],
+  absWorkingDir:root,
+  bundle:true, format:'iife', platform:'browser', write:false, logLevel:'silent',
+  loader:{'.css':'empty'}
+});
+const source=generated.outputFiles.find(x=>x.path.endsWith('.js')).text;
+const baseCSS=fs.readFileSync(path.join(root,'src','styles','base.css'),'utf8');
+const configSource=fs.readFileSync(path.join(root,'src','domain','config.js'),'utf8');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const vite = fs.readFileSync(path.join(root, 'vite.config.mjs'), 'utf8');
 
@@ -59,15 +68,18 @@ function harness(initial = {}) {
   return {ctx,get,store,run,state};
 }
 
-test('the uploaded single-file application is the active root',()=>{
+test('Vite entrypoint replaces inline CSS and inline JS without losing the HTML shell',()=>{
   assert.match(html,/^<!DOCTYPE html>/);
   assert.match(html,/<title>StrongLifts 5×5<\/title>/);
   for(const id of ['app','nav','ovl']) assert.match(html,new RegExp('id="'+id+'"'));
+  assert.match(html,/<script type="module" src="\/src\/main\.js"><\/script>/);
+  assert.ok(!html.includes('<style>'));
+  assert.ok(!html.includes('<script>'));
   assert.ok(!html.includes('/src/ui-v09.css'));
   assert.ok(!html.includes('arm_5x5_app_state_v1'));
   assert.ok(!html.includes('v7RenderToday'));
 });
-test('uploaded script syntax is valid',()=>{ assert.doesNotThrow(()=>new vm.Script(source)); });
+test('ES modules bundle to executable browser JavaScript',()=>{ assert.doesNotThrow(()=>new vm.Script(source)); });
 test('the 5-tab interface is mounted on initial load',()=>{
   const a=harness();
   assert.match(a.get('nav').innerHTML,/Ana Sayfa/);
@@ -157,14 +169,14 @@ test('backup exports new schema without deleting old ARM storage',()=>{
   assert.equal(a.store.get('arm_5x5_app_state_v1'),old);
 });
 test('initial accent matches supplied emerald palette',()=>{
-  assert.match(html,/--red:#62DBA6/);
-  assert.match(html,/--red2:#4fc496/);
-  assert.match(html,/const AC=\{'Nane'/);
+  assert.match(baseCSS,/--red:#62DBA6/);
+  assert.match(baseCSS,/--red2:#4fc496/);
+  assert.match(configSource,/const AC=\{'Nane'/);
 });
 test('mobile safe areas, reduced motion and offline PWA wrapper remain',()=>{
   assert.match(html,/viewport-fit=cover/);
-  assert.match(html,/safe-area-inset-bottom/);
-  assert.match(html,/prefers-reduced-motion:reduce/);
+  assert.ok(['base.css','effects.css','components.css'].some(f=>fs.readFileSync(path.join(root,'src','styles',f),'utf8').includes('safe-area-inset-bottom')));
+  assert.match(fs.readFileSync(path.join(root,'src','styles','components.css'),'utf8'),/prefers-reduced-motion:reduce/);
   assert.match(vite,/VitePWA/);
   assert.match(vite,/registerType: 'autoUpdate'/);
   assert.match(vite,/cleanupOutdatedCaches: true/);
@@ -172,6 +184,8 @@ test('mobile safe areas, reduced motion and offline PWA wrapper remain',()=>{
 });
 test('package ships a single Vite app and no obsolete Tailwind or React runtime',()=>{
   assert.equal(pkg.name,'stronglifts-5x5-html-baseline');
+  assert.equal(pkg.type,'module');
+  assert.ok(pkg.devDependencies.esbuild);
   assert.equal(pkg.scripts.build,'vite build');
   assert.ok(!pkg.devDependencies.tailwindcss);
   assert.ok(!pkg.dependencies?.react);
