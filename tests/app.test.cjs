@@ -1191,3 +1191,15 @@ test('v0.11 red theme, five tabs and safe-area rules are installed',()=>{
   assert.match(html,/id="v7History"/);
   assert.match(html,/id="v11FocusOverview"/);
 });
+
+test('Overview session actions are gated by real completed-set readiness',()=>{
+  const {app,document}=createApp();
+  app.v7EnterFocus();
+  assert.equal(document.getElementById('v11OverviewSave').disabled,true);
+  assert.equal(document.getElementById('v11OverviewCount').textContent,'0 / 13 set');
+  recordAll(app);
+  app.v7RenderFocus();
+  assert.equal(document.getElementById('v11OverviewSave').disabled,false);
+  assert.equal(document.getElementById('v11OverviewCount').textContent,'13 / 13 set');
+  assert.equal(document.getElementById('v11OverviewReset').disabled,false);
+});
