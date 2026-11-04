@@ -1,13 +1,15 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// This repo now ships the user-supplied single-file HTML application.
+// Do not inject the retired ARM v0.11 CSS/JS or its data schema.
 export default defineConfig({
   base: './',
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate', // activate newer offline assets instead of leaving a waiting worker with no prompt UI
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icons/arm-5x5.svg'],
+      includeAssets: ['icons/strength-5x5.svg'],
       workbox: {
         globPatterns: ['**/*.{html,js,css,svg,png,jpg,webp,woff2}'],
         navigateFallback: 'index.html',
@@ -16,19 +18,19 @@ export default defineConfig({
         clientsClaim: true
       },
       manifest: {
-        name: 'ARM 5×5 — Kol Antrenmanı',
-        short_name: 'ARM 5×5',
-        description: '12 haftalık çevrimdışı kol antrenmanı takipçisi',
+        name: 'StrongLifts 5×5',
+        short_name: '5×5',
+        description: 'A/B antrenman, set kaydı ve ilerleme takibi',
         lang: 'tr',
         start_url: './',
         scope: './',
         display: 'standalone',
-        background_color: '#07080a',
-        theme_color: '#07080a',
+        background_color: '#000000',
+        theme_color: '#000000',
         orientation: 'portrait-primary',
         icons: [
-          { src: 'icons/arm-5x5.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'icons/arm-5x5.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
+          { src: 'icons/strength-5x5.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          { src: 'icons/strength-5x5.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
         ]
       }
     })

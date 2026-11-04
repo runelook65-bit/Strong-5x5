@@ -1,173 +1,45 @@
-# ARM 5×5 — Workout Tracker
+# StrongLifts 5×5 — HTML baseline
 
-**Geliştirme dalı:** `design/shadcn-mobile-v09` — **0.9.0-dev**, shadcn/ui ilkelerini temel alan konsolide mobil tasarım. Yalnızca **Bugün** ve **Aktif Antrenman** yeniden düzenlendi; `main` ve Vercel canlı sürümü değişmedi. Bu aşamada React/shadcn bileşen kütüphanesi kurulu değil. [Kapsam ve QA](docs/UI_V09.md).
+**Current app:** the user-supplied \`StrongLifts 5×5.html\`, copied verbatim to the repository root \`index.html\`. All subsequent application work uses **this HTML source**. It is a standalone HTML/CSS/JavaScript app, *not* the former ARM 5×5 React/shadcn pilot or the old 12-week arm tracker.
 
-**Canlı uygulama (son doğrulanan v0.7.2): https://arm-5x5.vercel.app** · Vercel production READY, manuel dağıtım. GitHub commit'leri otomatik yayınlanmıyor. Ayrıntılar için [Vercel yayın rehberi](docs/VERCEL_DEPLOY.md).
+Production URL (when deployed): https://arm-5x5.vercel.app
 
-**GitHub geliştirme sürümü: v0.8.0 (Minimal UI)** · Canlı Vercel sürümü: **v0.7.2**. 12 haftalık kol odaklı, yerel çalışan antrenman takipçisi.
+## Local use
 
-Orijinal Strength 5×5 programı korunur. İsteğe bağlı **ARM Growth** şablonu 6–15 tekrar aralıkları ve çift ilerleme (double progression) uygular. Uygulama internetsiz çalışabilecek bir PWA olarak yapılandırılmıştır. Dağıtım manuel olarak yapılmıştır; sonraki güncellemeler otomatik yayınlanmaz.
+Use Node 20.19+:
 
-## Hızlı başlangıç
-
-Gereksinimler: **Node.js 20.19+**, npm.
-
-```bash
+\`\`\`bash
 npm install
-npm run dev
-```
-
-Terminalde gösterilen yerel adresi aç. Kaynak `index.html` dosyasını doğrudan `file://` ile açmak artık desteklenen çalışma yöntemi değildir; stiller Vite ile derlenir.
-
-```bash
 npm test
 npm run build
-npm run preview
-```
+npm run dev
+\`\`\`
 
-Statik yayına hazırlanmış dosyalar `dist/` klasöründedir. **Bu depoda otomatik canlı dağıtım bulunmaz.** Manuel doğrulama için GitHub **Actions → Verify ARM 5x5 → Run workflow** kullanılabilir. Bu işlem yalnızca test eder, build çıktısını artifact olarak saklar; siteyi yayına almaz.
+Vite and vite-plugin-pwa wrap the single HTML file for deployment. The build output goes to \`dist/\`; no legacy CSS, shadcn pilot or ARM JS is imported into the app.
 
-## Antrenman deneyimi
+## Workout features from the supplied file
 
-- 12 hafta; A/B/A → B/A/B döngüsü ve 7. hafta toparlanma.
-- Seans panosu, hedef tekrar aralıkları, sıradaki hareket ve set ilerlemesi.
-- **Tek dokunuşla** önerilen seti kaydet; gerekirse tekrar ve ağırlığı düzenle.
-- **Hızlı giriş satırı:** gerçek kg / tekrar değerini doğrudan yazıp kaydet.
-- Önceki antrenman ağırlığını ve tekrarını görüntüle.
-- Dinlenme sayacı ve ±15 saniye kısayolu.
-- Kaydetmeden önce eksik set kontrolü ve gelecek yük önerisi.
-- **Son seansı geri al:** son kayda ait gerçek setleri, ağırlık artışını ve ilerleme konumunu geri yükler; eski sürümden kalan loglarda gerekli geri alma verisi yoksa bu buton çalışmaz.
-- **Growth programı:** bağımsız çalışma ağırlıkları, 6–15 tekrar aralıkları, kullanıcı tarafından bildirilen enerji/eklem durumuna göre yük artışı önerisi.
-- **Gelişim:** haftalık doğrudan biceps/triceps setleri, 12 haftalık SVG grafik, kas yükü gösterimi, gerçek kayıtlardan tahmini 1RM.
-- Kol ölçümü: soğuk ve pump ölçümleri ayrı kaydedilir; büyüme farkına yalnızca soğuk ölçüler girer.
+- Default A/B StrongLifts 5×5 routines, editable weights and increment settings.
+- Workout overview with set circles, rest timer and notes.
+- History list/calendar/notes, exercise progression graphs, warm-up guidance.
+- Custom workout/program editor, settings, accent themes, local backup import/export.
+- Data stored in browser \`localStorage\`, key \`sl5x5\`.
 
-**Antrenman notu:** 5×5 veya Growth için varsayılan ağırlıklar kişisel reçete değildir; kendi kondisyonuna ve ekipmana göre düzenle. Dirsek/bilek ağrısını zorlayarak sürdürme. Hacim grafiği yalnızca burada kaydedilmiş doğrudan setleri sayar; başka antrenmanların dolaylı yükünü bilmez.
+## IMPORTANT: data boundary
 
-## Veri güvenliği ve yedek
+The retired ARM 5×5 version stored its user records under \`arm_5x5_app_state_v1\`. This uploaded program uses an **incompatible state schema** at \`sl5x5\`.
 
-Kayıtlar varsayılan olarak cihazın `localStorage` alanındadır; hesap, reklam, analitik veya otomatik bulut senkronizasyonu bulunmaz.
+**No automatic migration or deletion of the old records is performed.** The new app starts with its own storage key; overwriting browser data or clearing site storage can destroy either key. The retired source is backed up on Git branch \`archive/arm-5x5-v011\`. Contact the developer for a reviewed export/migration path if historic ARM records must be imported.
 
-**Araçlar → Veri Yedekleme & Sıfırlama:**
-1. **JSON Yedeğini İndir:** sürümlenmiş bir `.json` dosyası indirir.
-2. **JSON'dan Geri Yükle:** dosya (≤2 MB) doğrulanır; kullanıcı onayından **sonra** yerel kayıtların yerini alır. Geçersiz dosya mevcut kayıtları değiştirmez.
-3. **Fabrika Ayarları:** tüm yerel kayıtları siler; önce yedek indir.
+## Historical source and cleanup
 
-Yedek içe aktarma eski v0.3 durum nesnelerini de kabul eder. JSON dosyaları güvenilmeyen girdi olarak değerlendirilir; seanslar, setler, ağırlıklar ve ölçümler doğrulanır. Kötü amaçlı HTML gösterimine karşı tarih ve açıklama alanları escape edilir. **Cihazı sıfırlamadan önce yedek al.**
+All retired ARM app code, styles, old tests, unused media, outdated documentation and the shadcn pilot were removed from the *current code tree*. They remain in Git history and the archive branch for rollback.
 
-## Offline kullanım
+The SVG icon is a generic inherited barbell/5×5 visual with updated accessible title, not the retired product name.
 
-- Vite + Tailwind CSS v3 yerel derlemesi; çalışma anında Tailwind CDN'ine bağımlı değildir.
-- `vite-plugin-pwa` (MIT) ile Workbox tabanlı cache ve manifest.
-- Özelleştirilmiş ARM 5×5 SVG ikon; fontlarda sistem fallback.
-- İlk kurulum ve güncelleme için internet bağlantısı gerekir; kurulmuş build sonrası temel antrenman ekranı offline çalışacak şekilde yapılandırılmıştır.
-- Service worker yalnızca uygun HTTPS (ve localhost) ortamında etkinleşir. iOS Safari/Android gerçek cihaz kabul testleri ve **bağımsız production build doğrulaması halen yapılmalıdır**.
+## Release safety
 
-## Tasarım ve lisans politikası
-
-ARM uygulama ikonu ve SVG kas yükü gösterimi bu projeye özgü olarak yazıldı. **Setlog, Ischys, openGym veya MuscleMap'in kaynak kodu/görselleri doğrudan kopyalanmadı.** Davranış ve etkileşim yaklaşımları referans alındı. Kullanılan açık kaynak paketler ve lisansları `docs/OPEN_SOURCE.md` dosyasında kaydedilmiştir. Açık kaynak depoların public olması, içeriklerinin serbestçe kopyalanabileceği anlamına gelmez.
-
-Uygulama deposuna henüz bir genel açık kaynak **LICENSE** dosyası eklenmedi; kodun tamamına MIT gibi bir lisans verme kararı ayrıca alınmalıdır.
-
-## Kalite durumu
-
-- Regresyon testleri `tests/app.test.cjs` dosyasında, Node'un test çalıştırıcısını kullanır.
-- 61 senaryo kod simülasyonunda geçti. Uygulama HTML denge ve JavaScript syntax kontrolleri yapıldı.
-- Manuel GitHub Actions workflow eklendi; workflow çalıştırıldığı doğrulanmadı.
-- Gerçek cihaz, VoiceOver, uzun süreli offline ve soğuk başlatma testleri henüz tamamlanmadı.
-
-Ayrıntılar için `docs/ROADMAP.md`, `docs/DESIGN.md` ve `docs/OPEN_SOURCE.md` dosyalarına bak.
-
-## v0.6 — Performance Logger (GitHub, henüz canlıda değil)
-
-- Beş büyük set kartı yerine beş kompakt SET / ÖNCEKİ / KG / TEKRAR / ONAY satırı.
-- Satırdaki KG ve tekrar düzenlenebilir; + tuşu boş seti kaydeder. Tamamlanmış ✓ tuşuna dokunarak detay düzenleme ve silme açılır.
-- Önceki sütun aynı program şablonunda gerçekten kaydedilmiş setlerden hesaplanır; hayali geçmiş gösterilmez.
-- Aktif egzersiz açık, diğerleri kapalı; teknik ve plaka ayarları ikincil.
-- Dinlenme sayacı artık üst üste binen sabit bant değil, Antrenman içindeki açılır panel.
-- Alt sekme çubuğu safe-area kullanır, sayısal giriş odaklandığında gizlenir.
-- Program: 12 hafta yol haritası. İlerleme: gerçek seans, toplam hacim ve soğuk kol ölçümü özetleri.
-- Türkçe ondalık virgül formatlı ağırlık girişi desteklenir.
-- 45 JavaScript regresyon senaryosu geçti. Gerçek iPhone/Android ve üretim build doğrulaması devam ediyor.
-- Önceki yerel kayıt şeması ve ağırlık artırma algoritması değiştirilmedi.
-- **v0.5.0 ve v0.6.1 sürümleri artık eski üretim sürümleridir.** Yeni sürüm ancak ayrıca yayınlanırsa canlıya çıkar.
-
-## v0.6.1 — PWA önbellek düzeltmesi
-
-- Eski `prompt` konfigürasyonu, kullanıcıya güncelleme onayı sunulmadan service worker'ı bekletebiliyordu.
-- `vite-plugin-pwa` `autoUpdate`, `skipWaiting` ve `clientsClaim` kullanıyor.
-- `vercel.json` HTML, SW ve kayıt dosyalarında uygun HTTP önbellek kontrolü uyguluyor.
-- Antrenman panosunda **Yeni arayüz · v0.6.1** etiketi, kullanıcının doğru sürümü gördüğünü anlamasını sağlar.
-- Uygulamaya yeni SW kontrolü geçerse kullanıcı kontrollü Yenile butonu gösterilir.
-- Yeni üretim deployment: `dpl_EKMiL4n2Q9qJTBR2x3k8hN8oDyHc` (**READY**). Otomatik Git deploy hâlâ kapalı.
-- Eski SW'ı tutan iPhone için farklı deployment alan adı ayrı bir tarayıcı origin'i olduğundan anında karşılaştırma yapmakta işe yarar, fakat **orijinal domain'deki localStorage kayıtları bu test alan adına otomatik taşınmaz**.
-
-## v0.7.0 — Beş ekranlı yeni arayüz (Vercel'de yayında)
-
-Önceki her şeyin aynı sayfada olduğu yoğun deneyim yerine kullanıcı tarafından seçilen görsel tasarım esas alınarak yeni ekran mimarisi uygulandı:
-
-1. **Bugün:** Sıradaki Workout A/B, Başlat/Devam Et, hafta/seans/soğuk kol gelişimi, yalnızca üç hareket ve son gerçek seans.
-2. **Aktif Antrenman:** Sekmeler gizlenir; tek egzersiz, kg/tekrar, doğrudan sayı düzenleme, Seti Tamamla, set göstergesi, timer, hareket ileri/geri ve seans özeti. Growth toparlanma girişi katlanabilir.
-3. **Program:** Gerçek A/B/A haftalık sırası, 12 hafta, 7. hafta hafifletme, mevcut şablonların hareketleri ve şablon seçimi.
-4. **İlerleme:** Gerçek seanslar, hacim, soğuk ölçümler, performans grafiği, kişisel rekorlar ve boş veri durumları.
-5. **Ayarlar:** Dinlenme, ses, kg, ayrı plaka/kol ölçümü/1RM/ağırlık araçları, JSON yedekleri.
-
-`src/v7.css` yeniden tasarımın bağımsız responsive stilini içerir. Veri motoru ve mevcut `localStorage` anahtarı korunmuştur. **61/61 kod düzeyi regresyon simülasyonu geçti**, fakat gerçek iPhone Safari QA, gerçek `npm run build` ve görsel karşılaştırma tamamlanmadı.
-
-Ayrıntılar: [v0.7 UI ve kabul kriterleri](docs/V07_UX.md). Vercel'e manuel olarak v0.7.0 üretim dağıtımı yapılmıştır; yeni GitHub kodları otomatik yayınlanmaz.
-
-### v0.7.0 üretim dağıtımı
-
-- **URL:** https://arm-5x5.vercel.app
-- **Deployment ID:** `dpl_DBPXGjteu7ZyqcmAnupThZGWEgC2`
-- **Durum:** READY, production alias bağlandı.
-- Vite build logunda `dist/index.html`, `assets/index-6ouLSsWs.css`, `sw.js` ve `manifest.webmanifest` üretimi doğrulandı.
-- 61 kod simülasyonu geçti; gerçek iPhone Safari, VoiceOver ve PWA offline acceptance testleri henüz tamamlanmadı.
-- Git bağlantısı olmadığı için yeni commitler otomatik dağıtılmıyor.
-
-## v0.7.1 — Precision Glass (GitHub; henüz canlıya alınmadı)
-
-Önceden seçilmiş beş ekranlık mockuplara daha yakın, kontrollü glassmorphism sistemi. Yeni sistem ek stylesheet `src/v7-glass.css` ile uygulandı; eski `src/v7.css` ve hesaplama kodları korundu.
-
-- **Bugün:** Atmosferik glass antrenman hero, gerçek *Hazır / Devam ediyor / Tamamlandı* durumu, öne çıkan Başlat/Devam Et eylemi, daha okunur mat KPI kartları.
-- **Aktif Antrenman:** Görseli arka planda kullanılmış egzersiz başlığı, büyük kg/tekrar kontrolü, tek seferde tek set, fotoğraf ve data arasındaki kontrast, cam dinlenme yüzeyi.
-- **Program:** 12 haftalık grid, seçili gün ve 7. hafta toparlanması; okunabilir mat kartlarla sınırlı glass hero.
-- **İlerleme:** Gerçek kayıtlara dayalı grafikler yüksek kontrastlı mat yüzeylerde.
-- **Ayarlar:** Üst kimlik kartında glass, seçeneklerde tek çizgi dilinde SVG simgeleri.
-- **Gezinme:** iOS safe-area üzerinde yüzen, kısmen saydam ve blur'lu, tek aktif sekmesi olan alt dock. Sekmeler korunur, focus'ta gizlenir.
-- **Ulaşılabilirlik ve performans:** Dokunma alanları en az 44px; reduced-motion / reduced-transparency ve blur olmayan tarayıcılar için fallback vardır. Bütün kartlara blur uygulanmaz.
-- **Davranış düzeltmesi:** Tamamlanmış seans ana ekranda hatalı olarak `Antrenmana Devam Et` yazmaz.
-- **Regresyonlar:** 66/66 JavaScript test simülasyonunda geçti; HTML/CSS yapısal kontrol temiz.
-
-**Yayın sınırı:** v0.7.1 **yalnızca GitHub'da**. https://arm-5x5.vercel.app adresinde son doğrulanmış üretim sürümü v0.7.0. Bağımsız `npm run build`, iPhone Safari görsel QA, VoiceOver ve PWA güncelleme testleri yeni sürüm için yapılmadı.
-
-## v0.7.2 — Visual Covers (GitHub; henüz canlıya alınmadı)
-
-Önceki konuşmada üretilen **5 sayfa kapağı + 3 egzersiz görseli**, yalnızca CSS referansı değil, GitHub'a commit edilen optimize edilmiş gerçek WebP dosyalarıdır.
-
-- `public/visual-assets/arm-covers-atlas.webp`: **5 kapak**, yaklaşık 21 KB, Home/Focus/Program/Progress/Settings.
-- `public/visual-assets/arm-exercises-atlas.webp`: **3 egzersiz görseli**, yaklaşık 6 KB, Barbell/Hammer Curl ve Skull Crusher.
-- `src/v7-glass.css`: ekranların doğru görsel dilimini seçen sprite kuralları, text contrast gradient ve responsive breakpoints.
-- `index.html`: beş kapak yüzeyi ve egzersiz ID'sine göre görsel eşleme; hareketler, program motoru ve kayıt verileri aynı.
-- Kaynak WebP dosyalarının Git blob SHA değerleri doğrulandı.
-- **69/69 regresyon testi**, HTML sözdizimi ve benzersiz ID kontrolü başarılı.
-
-Görseller çevrimdışı PWA statik içerik kapsamındadır. **Gerçek iPhone, VoiceOver ve bağımsız Vite üretim testi henüz yapılmadı.** [Görsel varlık eşleme ve QA rehberi](docs/V072_VISUAL_ASSETS.md).
-
-**Yayın ayrımı:** v0.7.2 yalnızca GitHub'da; kullanıcı ayrıca istemeden Vercel production güncellenmez.
-
-## v0.8.0 — Minimal UI (GitHub'da, henüz Vercel'e yayınlanmadı)
-
-iPhone ekranındaki iri görseller, fazla yüksek kartlar ve büyük yüzen gezinmenin yerine **kompakt, göreve odaklı bir ekran sistemi** eklendi.
-
-- `src/ui-system.css`: shadcn/ui tasarım ilkelerine göre oluşturulmuş token tabanlı kart, düğme, durum ve gezinme stili. **React shadcn/ui bileşenleri henüz yüklenmedi**; çünkü uygulamanın mevcut çalışma zamanı vanilla JavaScript ve önce veri motoru ayrıştırılmalı.
-- Bugün: daha kısa seans kartı, dengeli istatistikler ve küçük hareket satırları.
-- Aktif Antrenman: büyük fotoğraf yerine egzersiz kimliği ve kg/tekrar kontrollü kompakt kayıt ekranı.
-- Program: kısa hafta özeti, seçilebilir günler, 12 haftalık matris.
-- İlerleme: gereksiz dekoratif banner kaldırıldı, gerçek grafiklere odaklanıldı.
-- Ayarlar: sade satırlar, küçük simgeler ve daha kısa başlık.
-- Ana egzersiz listelerinde tutarlı yerel SVG işaretleri; görsel verileri ve antrenman motoru korunur.
-- **79/79 kod düzeyi test başarılı**. Gerçek `npm run build` ve iPhone kabul testi henüz yapılmadı.
-
-Tasarım ayrıntıları, teknik geçiş sınırı ve testler için [v0.8 UI tasarım dokümanı](docs/UI_V08.md).
-
-**Yayın ayrımı:** Bu v0.8.0 geliştirmesi otomatik olarak canlı yayına alınmaz. Kullanıcı yayın talep ederse Vercel üretim dağıtımı ayrıca doğrulanır.
+- \`npm test\` verifies JS startup, workout progression, storage isolation, settings and preserved source behavior.
+- \`npm run build\` verifies Vite/PWA packaging.
+- Test real iPhone Safari/PWA install and refresh before accepting production UX; the supplied file makes no claim of native iOS equivalence.
+- The source uses the name “StrongLifts”; independently assess brand/trademark rights before commercial distribution. Uploading the file does not establish an affiliation with the original StrongLifts product.
