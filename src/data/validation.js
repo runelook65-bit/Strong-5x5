@@ -43,7 +43,7 @@ export function parseBackup(raw){
  if(data.pg!==undefined){
    if(!arr(data.pg,0,100))fail('Kişisel program listesi geçersiz');
    data.pg.forEach(p=>{
-     if(!obj(p)||!safeId(p.id)||!safeName(p.name)||!arr(p.ws,1,30))fail('Kişisel program geçersiz');
+     if(!obj(p)||!safeId(p.id)||!safeName(p.name)||!arr(p.ws,1,30)||(p.split!==undefined&&!safeName(p.split)))fail('Kişisel program geçersiz');
      p.ws.forEach(workout);
    });
  }
