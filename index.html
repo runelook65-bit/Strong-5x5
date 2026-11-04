@@ -3047,6 +3047,34 @@
         root.appendChild(card);
       });
     }
+    function v11RenderArchiveMonth(root,logs,date){
+      const year=date.getFullYear(),month=date.getMonth();
+      const heading=document.createElement('h2');heading.className='v11-archive-heading';
+      heading.textContent=date.toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
+      root.appendChild(heading);
+      const grid=document.createElement('div');grid.className='v11-calendar-grid v11-archive-grid';
+      grid.setAttribute('role','group');grid.setAttribute('aria-label',heading.textContent);
+      ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'].forEach(weekday=>{
+        const label=document.createElement('span');label.className='v11-weekday';label.textContent=weekday.charAt(0);label.setAttribute('aria-label',weekday);grid.appendChild(label);
+      });
+      for(let i=0;i<(new Date(year,month,1).getDay()+6)%7;i++){
+        const blank=document.createElement('span');blank.className='v11-calendar-blank';grid.appendChild(blank);
+      }
+      const dates=new Map();
+      logs.forEach(log=>{const key=v11LogDate(log);dates.set(key,(dates.get(key)||0)+1);});
+      for(let day=1;day<=new Date(year,month+1,0).getDate();day++){
+        const key=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+        const count=dates.get(key)||0;
+        const cell=document.createElement('button');cell.type='button';
+        cell.className='v11-calendar-day'+(count?' is-done':'')+(v11SelectedDate===key?' is-selected':'');
+        cell.textContent=String(day);
+        cell.setAttribute('aria-label',day+' '+heading.textContent+', '+count+' kayıtlı antrenman');
+        cell.setAttribute('aria-pressed',String(v11SelectedDate===key));
+        cell.addEventListener('click',()=>{v11SelectedDate=key;v11RenderHistory();});
+        grid.appendChild(cell);
+      }
+      root.appendChild(grid);
+    }
     function v11RenderCalendar(root,logs){
       const year=v11HistoryMonth.getFullYear(),month=v11HistoryMonth.getMonth();
       const header=document.createElement('div');header.className='v11-calendar-header';
@@ -3084,6 +3112,9 @@
         hint.textContent=count?count+' tamamlanan antrenman. Kırmızı günlere dokunarak ayrıntıları aç.':'Bu ay için henüz kayıtlı antrenman yok.';
         root.appendChild(hint);
       }
+      // Scrolling history: show the previous two months without invented sessions.
+      v11RenderArchiveMonth(root,logs,new Date(year,month-1,1));
+      v11RenderArchiveMonth(root,logs,new Date(year,month-2,1));
     }
     function v11RenderHistory(){
       const logs=v11HistoryLogs();
