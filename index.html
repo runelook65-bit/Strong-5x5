@@ -2882,7 +2882,7 @@
     function v7CurrentSnapshot(){return getSessionSnapshot();}
 
     function v7Navigate(page){
-  const pages={today:"v7Today",focus:"v7Focus",program:"v7Program",progress:"v7Progress",settings:"v7Settings",tool:"v7ToolDetail"};
+  const pages={today:"v7Today",focus:"v7Focus",program:"v7Program",history:"v7History",progress:"v7Progress",settings:"v7Settings",tool:"v7ToolDetail"};
   if(!Object.prototype.hasOwnProperty.call(pages,page))return false;
   if(v7Page==='tool'&&page!=='tool'&&v7ToolNode&&v7ToolOrigin){
     v7ToolOrigin.appendChild(v7ToolNode);
@@ -2899,6 +2899,7 @@
   if(page==='focus')v7RenderFocus();
   if(page==='today')v7RenderToday();
   if(page==='program')v7RenderProgram();
+  if(page==='history')v11RenderHistory();
   if(page==='progress')v7RenderProgress();
   if(page==='settings')v7RenderSettings();
   if(typeof window.scrollTo==='function')window.scrollTo(0,0);
@@ -2918,6 +2919,9 @@ function v7RenderToday(){
   const snapshot=v7CurrentSnapshot();
   const wType=getActiveWorkoutType();
   v7SetText('v7HeroTitle',`Workout ${wType}`);
+  v7SetText('v11TodayDate',new Date().toLocaleDateString('tr-TR',{day:'numeric',month:'long',weekday:'long'}));
+  v7SetText('v11HeroWeek',String(state.currentWeek));
+  v7SetText('v11WorkoutPicker',wType+' ▾');
   v7SetText('v7HeroSubtitle',`${snapshot.exercises.length} hareket · ${snapshot.totalSets} set · Hafta ${state.currentWeek}`);
   v7SetText('v7StartLabel',snapshot.isSaved ? 'Kaydedilen Seansı Gör' : snapshot.recordedSets ? 'Antrenmana Devam Et' : 'Antrenmanı Başlat');
   v7SetText('v8HeroState', snapshot.isSaved ? 'Tamamlandı' : snapshot.recordedSets ? 'Devam ediyor' : 'Hazır');
@@ -2926,15 +2930,17 @@ function v7RenderToday(){
   const cold=(state.armMeasurements||[]).filter(m=>m.note==='Soğuk'&&Number.isFinite(m.cm));
   const delta=cold.length>=2?cold.at(-1).cm-cold[0].cm:null;
   v7SetText('v7StatArm',delta===null?'—':`${delta>=0?'+':''}${delta.toFixed(1)} cm`);
+  v7SetText('v11WorkoutMeta',snapshot.recordedSets?`${snapshot.recordedSets} / ${snapshot.totalSets} set kaydedildi`:'Çalışma ağırlıkları gösteriliyor');
   const list=v7Element('v7TodayExercises');list.innerHTML='';
   snapshot.exercises.forEach((item,i)=>{
     const row=document.createElement('button');
     row.type='button';row.className='v7-exercise-row';
-    row.innerHTML=`${v7ArtworkMarkup(item.exId,item.meta.img)}<span class="flex-1 min-w-0"><span class="v7-ex-name block">${i+1}. ${escapeHTML(item.meta.name)}</span><span class="v10-exercise-target">${v7GoalText(item)} tekrar</span><span class="v10-exercise-caption">Hareketi ve tekniğini gör</span></span><span class="v7-row-chevron" aria-hidden="true">›</span>`;
+    row.innerHTML=`<span class="v11-ex-main"><span class="v11-ex-name">${escapeHTML(item.meta.name)}</span><span class="v11-ex-secondary">${item.setValues.filter(x=>x!==null).length}/${item.sets} set</span></span><span class="v11-ex-prescription">${escapeHTML(v7GoalText(item))} <span class="v11-ex-weight">${Number(item.stats.weight).toLocaleString('tr-TR',{maximumFractionDigits:1})} kg</span></span><span class="v11-ex-arrow" aria-hidden="true">›</span>`;
     row.setAttribute('aria-label',`${item.meta.name}, ${v7GoalText(item)}. Antrenmana geç`);
     row.addEventListener('click',()=>v7EnterFocus(i));
     list.appendChild(row);
   });
+  v11RenderUpcoming();
   const last=state.workoutLogs?.at(-1);
   if(last){
     const header=escapeHTML(last.title||'Antrenman kaydedildi');
@@ -2949,6 +2955,7 @@ function v7RenderToday(){
   const defaultIndex=items.findIndex(x=>x.setValues.some(v=>v===null));
   v7FocusIndex=Number.isInteger(index)?Math.max(0,Math.min(items.length-1,index)):Math.max(0,defaultIndex);
   v7ChosenSet=null;v7DraftKey='';
+  v11FocusMode=Number.isInteger(index)?'detail':'overview';
   return v7Navigate('focus');
 }
 
@@ -2971,7 +2978,7 @@ function v7RenderToday(){
   v7FocusIndex=Math.max(0,Math.min(list.length-1,v7FocusIndex));
   const item=list[v7FocusIndex];
   const wType=getActiveWorkoutType();
-  v7SetText('v7FocusTitle',`Workout ${wType}`);
+  v7SetText('v7FocusTitle',`Antrenman ${wType}`);
   v7SetText('v7FocusSubtitle',`${v7FocusIndex+1} / ${list.length} hareket · Hafta ${state.currentWeek}`);
   v7SetText('v7ExerciseName',item.meta.name);
   v7SetText('v7ExercisePrescription',`${v7GoalText(item)} tekrar · ${item.setValues.filter(value=>value!==null).length}/${item.sets} set`);
@@ -3015,6 +3022,7 @@ function v7RenderToday(){
   const finish=v7Element('v7FinishBtn');finish.disabled=!snapshot.ready;
   finish.textContent=snapshot.ready?'✓ Seansı Bitir ve Kaydet':snapshot.isSaved?'Seans Kaydedildi':`${snapshot.missing.length} set kaldı · Seans Özeti`;
   v7UpdateRest();
+  v11RenderFocusOverview(snapshot);
 }
 
     function v7EditValue(field,delta){
@@ -3287,7 +3295,17 @@ function v7OpenExerciseInfo(){return v10OpenExerciseGuide();}
   });
   bind('v7StartBtn',()=>v7EnterFocus());
   bind('v7OpenProgramBtn',()=>v7Navigate('program'));
-  bind('v7FocusBackBtn',()=>v7Navigate('today'));
+  bind('v11WorkoutPicker',()=>v7Navigate('program'));
+  bind('v11SeeProgramBtn',()=>v7Navigate('program'));
+  bind('v11DetailBack',()=>{v11FocusMode='overview';v7RenderFocus();});
+  bind('v11StartWorkingSets',()=>{v11FocusMode='overview';v7RenderFocus();});
+  document.querySelectorAll('[data-v11focus]').forEach(btn=>btn.addEventListener('click',()=>{
+    v11FocusMode=btn.getAttribute('data-v11focus');v7RenderFocus();
+  }));
+  document.querySelectorAll('[data-v11history]').forEach(btn=>btn.addEventListener('click',()=>{
+    v11HistoryView=btn.getAttribute('data-v11history');v11RenderHistory();
+  }));
+  bind('v7FocusBackBtn',()=>{if(v11FocusMode==='detail'){v11FocusMode='overview';v7RenderFocus();}else v7Navigate('today');});
   bind('v7FocusMoreBtn',()=>{
     if(!window.confirm('Bu seansın girilen setlerini sıfırla? Bu işlem yalnızca mevcut seansı etkiler.'))return;
     if(getSessionSnapshot().isSaved){showToast('Kaydedilen seans sıfırlanamaz.');return;}
@@ -3472,6 +3490,7 @@ function v7OpenExerciseInfo(){return v10OpenExerciseGuide();}
       v7RenderProgram();
       v7RenderProgress();
       v7RenderSettings();
+      if(v7Page==='history')v11RenderHistory();
       if(v7Page==='focus')v7RenderFocus();
     }
 
