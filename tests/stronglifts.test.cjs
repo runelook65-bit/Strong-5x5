@@ -296,3 +296,28 @@ test('failed reset restores in-memory records instead of silently losing them',(
  assert.equal(a.run('S.act!==null'),true);
  assert.equal(a.store.get('sl5x5'),before);
 });
+
+test('corrupt persisted data opens a recovery screen and does not delete source bytes',()=>{
+ const raw='{unreadable user records';
+ const a=harness({sl5x5:raw});
+ assert.match(a.get('app').innerHTML,/Veri kurtarma/);
+ assert.match(a.get('app').innerHTML,/Ham veriyi görüntüle/);
+ assert.equal(a.store.get('sl5x5'),raw);
+ a.run('recoverData()');
+ assert.equal(a.store.get('sl5x5'),raw);
+ a.run('start()');
+ assert.equal(a.store.get('sl5x5'),raw);
+});
+
+test('recovery restores a valid user-supplied backup and releases the storage guard',()=>{
+ const a=harness({sl5x5:'{broken'});
+ a.get('recoveryImport').value=JSON.stringify({
+  w:{Squat:175,'Bench Press':105,'Barbell Row':90,'Overhead Press':50,Deadlift:75},
+  inc:{Squat:2.5,'Bench Press':2.5,'Barbell Row':2.5,'Overhead Press':2.5,Deadlift:5},
+  h:[],next:'B',act:null
+ });
+ a.run('recoverImport()');
+ assert.equal(a.state().next,'B');
+ assert.equal(a.state().w.Squat,175);
+ assert.match(a.get('app').innerHTML,/Bugünkü Antrenman/);
+});

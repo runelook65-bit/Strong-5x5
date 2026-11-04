@@ -140,3 +140,31 @@ test('GitHub Actions verifies every src change, not only HTML and tests',()=>{
  assert.match(yaml,/npm test/);
  assert.match(yaml,/npm run build/);
 });
+
+test('invalid startup storage is read-only until a verified explicit replacement',async()=>{
+ const {fresh,loadState,saveState,getLoadWarning}=await esm('src/data/storage.js');
+ const store=new Map([['sl5x5','{corrupt'],['arm_5x5_app_state_v1','archive']]);
+ const local={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)};
+ const model=loadState(local);
+ assert.equal(model.next,'B');
+ assert.match(getLoadWarning(local),/Mevcut kayıt bozuk/);
+ assert.equal(saveState(local,fresh()),false);
+ assert.equal(store.get('sl5x5'),'{corrupt');
+ assert.equal(store.get('arm_5x5_app_state_v1'),'archive');
+ assert.equal(saveState(local,fresh(),{replaceInvalid:true}),true);
+ assert.equal(getLoadWarning(local),null);
+ assert.equal(JSON.parse(store.get('sl5x5')).next,'B');
+});
+
+test('a valid storage object with custom plans survives validated cold startup',async()=>{
+ const {fresh,loadState,saveState}=await esm('src/data/storage.js');
+ const saved=fresh();
+ saved.pg=[{id:'p123',name:'Özel',ws:[{id:'w456',name:'Tüm Vücut',ex:[{n:'Bench Press',w:50,s:5,r:5,inc:2.5}]}]}];
+ saved.cw=[{id:'c123',name:'Kol',ex:[{n:'Curl',w:20,s:3,r:10,inc:2.5}]}];
+ const data=new Map([['sl5x5',JSON.stringify(saved)]]);
+ const store={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};
+ const loaded=loadState(store);
+ assert.equal(loaded.pg[0].ws[0].ex[0].n,'Bench Press');
+ assert.equal(loaded.cw[0].ex[0].s,3);
+ assert.equal(saveState(store,loaded),true);
+});

@@ -30,3 +30,7 @@ Original inline style blocks were extracted to `src/styles/base.css`, `effects.c
 - Starting a session, completing sets, editing weights, saving a workout, discarding a session and resetting records now roll back in-memory changes if the browser rejects their storage write.
 - Fatal app errors offer a readonly copy of local data and a retry button rather than encouraging an immediate one-click factory reset.
 - Remaining gaps: full DOM/iPhone automated smoke tests; migrating `src/app.js` template-inline handlers to delegated events; storage corruption recovery on initial load; browser notifications cannot fire while the PWA is closed without a push-capable backend.
+
+## Cold-start corruption safety
+
+The storage module tracks invalid original records per storage object and refuses to overwrite the `sl5x5` key during ordinary UI actions. The app displays a recovery screen with a raw-data export view and a validated manual JSON restore action. Only explicitly approved, valid replacement data can unlock a blocked store. This avoids silently turning an invalid but potentially recoverable old record into blank workout history.
