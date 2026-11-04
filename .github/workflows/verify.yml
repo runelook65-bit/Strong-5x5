@@ -1,6 +1,13 @@
-name: Verify ARM 5x5
+name: Verify StrongLifts HTML Baseline
 on:
-  workflow_dispatch: # manual only; never deploy on each code change
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/**'
+      - 'package.json'
+      - 'vite.config.mjs'
+      - '.github/workflows/verify.yml'
+  workflow_dispatch:
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -10,15 +17,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.19.0'
+          node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Regression tests
         run: npm test
-      - name: Production build
+      - name: Production PWA build (no deploy)
         run: npm run build
-      - name: Save inspectable dist artifact
+      - name: Save build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: arm-5x5-dist
+          name: stronglifts-html-baseline
           path: dist/
