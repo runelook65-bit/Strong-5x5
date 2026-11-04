@@ -1,8 +1,8 @@
 {
   "name": "stronglifts-5x5-html-baseline",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "User-supplied StrongLifts 5x5 HTML baseline — single-file workout tracker",
+  "description": "Modular Vite PWA developed from the user-provided StrongLifts 5x5 HTML baseline",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
@@ -14,6 +14,8 @@
   },
   "devDependencies": {
     "vite": "^6.3.5",
-    "vite-plugin-pwa": "^1.0.3"
-  }
+    "vite-plugin-pwa": "^1.0.3",
+    "esbuild": "^0.25.0"
+  },
+  "type": "module"
 }

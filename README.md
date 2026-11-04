@@ -1,45 +1,55 @@
-# StrongLifts 5×5 — HTML baseline
+# StrongLifts 5×5 — modular Vite application
 
-**Current app:** the user-supplied \`StrongLifts 5×5.html\`, copied verbatim to the repository root \`index.html\`. All subsequent application work uses **this HTML source**. It is a standalone HTML/CSS/JavaScript app, *not* the former ARM 5×5 React/shadcn pilot or the old 12-week arm tracker.
+This app is built from the user-supplied \`StrongLifts 5×5.html\` single-file baseline. The former 12-week ARM code is not active. **The Vite application is now split into real ESM source files**, while keeping the same workout engine, visual cascade and \`sl5x5\` localStorage data.
 
-Production URL (when deployed): https://arm-5x5.vercel.app
+## Run
 
-## Local use
-
-Use Node 20.19+:
+Node.js 20.19+:
 
 \`\`\`bash
 npm install
 npm test
-npm run build
 npm run dev
+npm run build
+npm run preview
 \`\`\`
 
-Vite and vite-plugin-pwa wrap the single HTML file for deployment. The build output goes to \`dist/\`; no legacy CSS, shadcn pilot or ARM JS is imported into the app.
+The Vite production output is \`dist/\`. Existing Vercel/Netlify deployment configuration is unchanged.
 
-## Workout features from the supplied file
+## Source architecture
 
-- Default A/B StrongLifts 5×5 routines, editable weights and increment settings.
-- Workout overview with set circles, rest timer and notes.
-- History list/calendar/notes, exercise progression graphs, warm-up guidance.
-- Custom workout/program editor, settings, accent themes, local backup import/export.
-- Data stored in browser \`localStorage\`, key \`sl5x5\`.
+\`\`\`text
+index.html                     HTML shell only
+src/main.js                    Vite entrypoint (imports CSS and app)
+src/app.js                     Existing screen controllers and event handlers
+src/data/storage.js            State initialization, localStorage read/write
+src/domain/config.js           Exercises, workouts, barbell plates, UI colors
+src/domain/workout.js          Upcoming schedules and 5×5 progression logic
+src/lib/format.js              Date, weight and HTML text formatting
+src/styles/base.css            Original typography, surfaces and base layout
+src/styles/effects.css         Original gradients and visual effects
+src/styles/components.css      Original mobile component and responsive rules
+tests/stronglifts.test.cjs     Browser-equivalent smoke & functional tests
+tests/architecture.test.cjs    Module contracts, data/state and parity checks
+\`\`\`
 
-## IMPORTANT: data boundary
+Stylesheet extraction preserves the *order of CSS rules from the original uploaded HTML*, avoiding visual drift.
 
-The retired ARM 5×5 version stored its user records under \`arm_5x5_app_state_v1\`. This uploaded program uses an **incompatible state schema** at \`sl5x5\`.
+### Compatibility bridge
 
-**No automatic migration or deletion of the old records is performed.** The new app starts with its own storage key; overwriting browser data or clearing site storage can destroy either key. The retired source is backed up on Git branch \`archive/arm-5x5-v011\`. Contact the developer for a reviewed export/migration path if historic ARM records must be imported.
+The uploaded UI uses inline \`onclick\`, \`oninput\` and \`onchange\` handlers embedded in template strings. ES modules do not expose their lexical variables to \`window\` automatically. \`src/app.js\` deliberately exports the original action names and writable state handles to \`window\` as a **transitional compatibility bridge**. This allows us to modularize without breaking interactive behavior. A later PR should replace inline handlers with delegated events and then remove this bridge.
 
-## Historical source and cleanup
+### Data continuity
 
-All retired ARM app code, styles, old tests, unused media, outdated documentation and the shadcn pilot were removed from the *current code tree*. They remain in Git history and the archive branch for rollback.
+- Active storage key: **\`sl5x5\`**; existing users retain their saved sessions, training plans, notes, weights and settings.
+- Historical ARM key: **\`arm_5x5_app_state_v1\`**; remains untouched and is never silently imported or deleted.
+- No server-side user database or account mechanism was added.
+- The root Vercel project and its PWA caching strategy are preserved.
 
-The SVG icon is a generic inherited barbell/5×5 visual with updated accessible title, not the retired product name.
+### Deliberate non-goals in this refactor
 
-## Release safety
+No visual redesign, framework rewrite, automatic data migration, training logic change, automatic live publishing or usage of the retired shadcn pilot. This PR is an architectural decomposition only.
 
-- \`npm test\` verifies JS startup, workout progression, storage isolation, settings and preserved source behavior.
-- \`npm run build\` verifies Vite/PWA packaging.
-- Test real iPhone Safari/PWA install and refresh before accepting production UX; the supplied file makes no claim of native iOS equivalence.
-- The source uses the name “StrongLifts”; independently assess brand/trademark rights before commercial distribution. Uploading the file does not establish an affiliation with the original StrongLifts product.
+## Legal/product note
+
+The user-provided source uses the “StrongLifts” name. This repo is not asserted to be affiliated with that brand; evaluate naming rights before public commercial distribution.
