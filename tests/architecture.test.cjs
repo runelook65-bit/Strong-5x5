@@ -168,3 +168,11 @@ test('a valid storage object with custom plans survives validated cold startup',
  assert.equal(loaded.cw[0].ex[0].s,3);
  assert.equal(saveState(store,loaded),true);
 });
+
+test('imported program metadata cannot inject HTML into the edit flow',async()=>{
+ const {parseBackup}=await esm('src/data/validation.js');
+ const {fresh}=await esm('src/data/storage.js');
+ const value=fresh();
+ value.pg=[{id:'p123',name:'Özel',split:'<img src=x>',ws:[{id:'w1',name:'Antrenman',ex:[{n:'Squat',w:40,s:5,r:5,inc:2.5}]}]}];
+ assert.throws(()=>parseBackup(JSON.stringify(value)),/Kişisel program/);
+});
