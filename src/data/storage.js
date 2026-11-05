@@ -3,7 +3,7 @@ import { parseBackup } from './validation.js';
 
 export const STORAGE_KEY='sl5x5';
 const blockedStores=new WeakMap();
-export const fresh=()=>({w:{...W0},inc:{...INC0},h:[],next:'B',act:null});
+export const fresh=()=>({lang:'en',w:{...W0},inc:{...INC0},h:[],next:'B',act:null});
 export const getLoadWarning=storage=>blockedStores.get(storage)||null;
 
 export function loadState(storage){

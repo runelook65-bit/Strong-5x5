@@ -1,4 +1,5 @@
 import {renderHome,renderCustomHome} from './features/home/view.js';
+import {languageOf,LANGUAGES,localizeTree,weekdayInitials,monthNames,exerciseInstructions} from './i18n/index.js';
 import {renderHistory} from './features/history/view.js';
 import {renderProgress} from './features/progress/view.js';
 import {renderPrograms,renderProgramComposer} from './features/programs/view.js';
@@ -29,13 +30,13 @@ let tab='home',hsub='Takvim',timer,wtab='a',rEnd=0,dArm=0,ovOpen=0;
 const tabs=[['home','⌂','Ana Sayfa'],['prog','🔥','Programlar'],['hist','▦','Geçmiş'],['stat','📈','İlerleme'],['set','⚙','Ayarlar']];
 
 const upcoming=()=>upcomingWorkouts(S);
-const dstr=displayDate;
+const dstr=date=>displayDate(date,languageOf(S.lang));
 
 function home(){return renderHome({S,AP,homeP,greet,esc,weekDots,dstr,PR,kg,upcoming,upCard});}
 
 function prog(){return '<h1>Programlar</h1>'+['A','B'].map(t=>`<div class="card"><b style="font-size:22px">Antrenman ${t}</b>${PR[t].map(n=>`<div class="row"><span>${n}</span><span class="mu">5×5 · +${String(S.inc[n]).replace('.',',')}kg</span></div>`).join('')}</div>`).join('')+'<p class="mu">A ve B antrenmanları dönüşümlü yapılır. Tüm setler 5 tekrar tamamlanırsa ağırlık artar.</p>'}
 
-function hist(){return renderHistory({S,hsub,dstr,kg,esc,key,M});}
+function hist(){return renderHistory({S,hsub,dstr,kg,esc,key,M:monthNames(S.lang),weekdayLabels:weekdayInitials(S.lang)});}
 const esc=escapeHTML;
 
 function stat(){return renderProgress({S,W0,kg});}
@@ -45,9 +46,10 @@ function sett(){
 
 function acc(){const c=AC[S.ac]||AC['Nane'],s=document.documentElement.style;s.setProperty('--red',c[0]);s.setProperty('--red2',c[1]);s.setProperty('--on',c[2]);document.documentElement.dataset.th=S.th||'auto';document.body.classList.toggle('nw',!!S.nw)}
 function toast(m){if(/kaydedildi/.test(m))snd('done');const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);try{navigator.vibrate&&navigator.vibrate([60,40,60])}catch(e){}setTimeout(()=>t.remove(),2600)}
+function localizeAll(){const lang=languageOf(S.lang);document.documentElement.lang=lang;localizeTree(document.body,lang)}
 function draw(){acc();$('app').className=dir;dir='';
  $('app').innerHTML={home,prog:prog3,hist,stat,set:sett2}[tab]();
- navUp();(0)&&tabs.map(([k,i,l])=>`<button class="${k===tab?'on':''}" onclick="tab='${k}';draw();scrollTo(0,0)"><span>${ICN[k]}</span>${l}</button>`).join('')}
+ navUp();localizeAll();(0)&&tabs.map(([k,i,l])=>`<button class="${k===tab?'on':''}" onclick="tab='${k}';draw();scrollTo(0,0)"><span>${ICN[k]}</span>${l}</button>`).join('')}
 
 function start(){try{!S.al&&navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
  if(S.act){wo();return}
@@ -56,7 +58,7 @@ function start(){try{!S.al&&navigator.wakeLock&&navigator.wakeLock.request('scre
  wo()}
 function wo(){
  const a=S.act;if(!a){$('ovl').innerHTML='';clearInterval(timer);return}
- $('ovl').innerHTML=renderWorkoutMarkup({a,ovOpen,M,wtab,S,warm,kg,plates,esc});
+ $('ovl').innerHTML=renderWorkoutMarkup({a,ovOpen,M:monthNames(S.lang),wtab,S,warm,kg,plates,esc});
  clearInterval(timer);const tick=()=>{const el=$('tm');if(el&&S.act)el.textContent=Math.floor((Date.now()-S.act.date)/60000)+'d';const r=$('rs');if(r){const l=Math.ceil((rEnd-Date.now())/1000);if(l>0){r.style.display='flex';$('rt').textContent=Math.floor(l/60)+':'+String(l%60).padStart(2,'0')}else{if(rEnd){rEnd=0;snd('rest');try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}r.style.display='none'}}};window.tk=tick;ovOpen=1;tick();timer=setInterval(tick,1000)}
 function tap(i,j){const s=S.act.ex[i].sets;const R=S.act.ex[i].r||5;const previous=s[j];s[j]=s[j]===null?R:s[j]>0?s[j]-1:null;if(!save()){s[j]=previous;return}rEnd=s[j]===null||S.nr?0:Date.now()+(s[j]===R?(S.r1||90):(S.r2||180))*1000;if(S.rn){clearTimeout(rT);if(rEnd)rT=setTimeout(()=>{if(document.hidden)notify('Dinlenme bitti','Sıradaki sete hazırsın 💪')},Math.max(0,rEnd-Date.now()))}snd(s[j]===null?'tap':s[j]===R?'ok':'fail');try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}const b=document.querySelectorAll('.sets')[i].children[j];b.textContent=s[j]===null?R:s[j];b.classList.toggle('off',s[j]===null);b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');$('pg').style.width=Math.round(S.act.ex.flatMap(e=>e.sets).filter(x=>x!==null).length/S.act.ex.flatMap(e=>e.sets).length*100)+'%';window.tk&&tk()}
 function warm(a){const r=x=>Math.max(20,Math.round(x/2.5)*2.5);return a.ex.map(e=>{const w=e.w,L=e.n==='Deadlift'?[[w*.4,5,1],[w*.6,3,1],[w*.8,2,1]]:[[20,5,2],[w*.4,5,1],[w*.6,3,1],[w*.8,2,1]];return `<div class="ex"><span>${e.n}</span><span class="mu">${kg(e.w)}</span></div><div class="card">${L.map(([x,q,n])=>`<div class="row"><span>${n}×${q}</span><span>${kg(r(x))}</span></div>`).join('')}</div>`}).join('')}
@@ -112,7 +114,7 @@ document.addEventListener('touchend',e=>{if(!tOk)return;const t=e.changedTouches
  if(ovOpen){const w=dx<0?'w':'a';if(w!==wtab){wtab=w;wo()}return}
  const ks=tabs.map(x=>x[0]),n=ks.indexOf(tab)+(dx<0?1:-1);if(n<0||n>=ks.length)return;dir=dx<0?'l':'r';tab=ks[n];draw();scrollTo(0,0)},{passive:true});
 function greet(){const h=new Date().getHours();return h<12?'Günaydın':h<18?'İyi günler':'İyi akşamlar'}
-function weekDots(){const n=new Date(),m=new Date(n);m.setDate(n.getDate()-((n.getDay()+6)%7));const dn=new Set(S.h.map(x=>key(x.date)));return 'PSÇPCCP'.split('').map((l,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);const k=key(d);return `<div class="wd${dn.has(k)?' d':''}${k===key(n)?' t':''}"><small>${l}</small><i>${d.getDate()}</i></div>`}).join('')}
+function weekDots(){const n=new Date(),m=new Date(n);m.setDate(n.getDate()-((n.getDay()+6)%7));const dn=new Set(S.h.map(x=>key(x.date)));return weekdayInitials(S.lang).map((l,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);const k=key(d);return `<div class="wd${dn.has(k)?' d':''}${k===key(n)?' t':''}"><small>${l}</small><i>${d.getDate()}</i></div>`}).join('')}
 const sv=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const ICN={home:sv('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>'),prog:sv('<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/>'),hist:sv('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'),stat:sv('<path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/>'),set:sv('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>')};
 function showH(d){const x=S.h.find(h=>h.date===d);if(!x)return;const vol=Math.round(x.ex.reduce((t,e)=>t+e.w*e.sets.reduce((p,s)=>p+(s||0),0),0)),sets=x.ex.reduce((t,e)=>t+e.sets.length,0),el=document.createElement('div');el.className='sheet';el.onclick=e=>{if(e.target===el)el.remove()};
@@ -123,13 +125,15 @@ function goT(k){snd('nav');const a=tabs.map(x=>x[0]);dir=a.indexOf(k)>a.indexOf(
 const SWV={nd:()=>!!S.nd,rn:()=>!!S.rn,ns:()=>!S.ns,nr:()=>!S.nr,nw:()=>!S.nw,al:()=>!!S.al};
 function tg(k,b){S[k]=!S[k];save();acc();b.classList.toggle('on',SWV[k]())}
 function pick(k,v,n){S[k]=v;save();acc();if(k==='vol')snd('ok');go(n)}
+function setLanguage(lang){if(!Object.hasOwn(LANGUAGES,lang))return;const before=S.lang;S.lang=lang;if(!save()){S.lang=before;return}const sheet=$('sh');if(sheet)sheet.remove();draw();localizeAll()}
 function sh(t,body){const c=`<div class="grab"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:20px">${t}</b><button class="pill" onclick="closeSh()">Tamam</button></div>${body}`;let el=$('sh');if(el){el.firstChild.innerHTML=c;return}el=document.createElement('div');el.className='sheet';el.id='sh';el.onclick=e=>{if(e.target===el)closeSh()};el.innerHTML=`<div class="sh">${c}</div>`;document.body.appendChild(el)}
 function closeSh(){const e=$('sh');if(e)e.remove();if(tab==='set')draw();if(pe&&$('pe'))per()}
 function go(n){
- const T={prof:'Profil',unit:'Birimler',rest:'Dinlenme Süreleri',w:'Ağırlıklar (kg)',inc:'Artış Miktarları (kg)',theme:'Tema',accent:'Vurgu Rengi',guide:'StrongLifts 5×5 Rehberi',data:'Veriler',reset:'Verileri Sıfırla',vol:'Ses Seviyesi',ndc:'Bildirim Zamanı'};
+ const T={prof:'Profil',unit:'Birimler',rest:'Dinlenme Süreleri',w:'Ağırlıklar (kg)',inc:'Artış Miktarları (kg)',theme:'Tema',accent:'Vurgu Rengi',guide:'StrongLifts 5×5 Rehberi',data:'Veriler',reset:'Verileri Sıfırla',vol:'Ses Seviyesi',ndc:'Bildirim Zamanı',language:'Dil'};
  const sg=(k,d,o)=>`<div class="seg">${o.map(([v,l])=>`<button class="${(S[k]||d)===v?'on':''}" onclick="pick('${k}','${v}','${n}')">${l}</button>`).join('')}</div>`;
  const num=(l,v,c,st)=>`<div class="row"><span>${l}</span><input class="w" type="number" step="${st||1}" value="${v}" onchange="${c};save()"></div>`;
  const B={
+  language:`<div class="seg" role="group" aria-label="Dil seçimi">${Object.entries(LANGUAGES).map(([code,label])=>`<button class="${languageOf(S.lang)===code?'on':''}" onclick="setLanguage('${code}')">${label}</button>`).join('')}</div>`,
  prof:`<div class="row"><span>İsim</span><input class="w" style="width:170px;text-align:right" value="${esc(S.name||'').replace(/"/g,'&quot;')}" onchange="S.name=this.value;save()"></div>`+num('Vücut ağırlığı (kg)',S.bw||'','S.bw=+this.value',0.1),
  unit:sg('u','kg',[['kg','Kilogram'],['lb','Pound']]),
  rest:num('5 tekrar sonrası (sn)',S.r1||90,'S.r1=+this.value')+num('Başarısız set sonrası (sn)',S.r2||180,'S.r2=+this.value'),
@@ -152,7 +156,7 @@ function xa(d){snd('tap');const e=S.act.ex[xi];e.w=Math.max(20,e.w+d);save();xr(
 function xr(first){const e=S.act&&S.act.ex[xi];if(!e)return;let el=$('xv');if(!el){el=document.createElement('div');el.id='xv';document.body.appendChild(el)}el.className='ov x'+(first?' in':'');
  const n=e.n,r=e.r||5,sub=kg(e.w)+(e.w>20?' ('+String((e.w-20)/2).replace('.',',')+'/taraf)':''),H=S.h.map(h=>({d:h.date,x:h.ex.find(q=>q.n===n)})).filter(o=>o.x),T=[['w','Ağırlıklar'],['f','Form'],['p','İlerleme'],['h','Geçmiş']];let b='';
  if(xt==='w'){b=`<div class="bb"><i class="b0"></i>${plArr(e.w).map(p=>`<div class="pl" onclick="xa(-${2*p})" style="background:${PLC[p][0]};color:${PLC[p][1]};height:${PLC[p][2]}px"><b>${String(p).replace('.',',')}</b></div>`).join('')}<i class="b1"></i></div><div class="pp">${[25,20,15,10,5,2.5,1.25].map(p=>`<button style="background:${PLC[p][0]};color:${PLC[p][1]}" onclick="xa(${2*p})">${String(p).replace('.',',')}</button>`).join('')}</div><p class="mu" style="text-align:center;margin:0 0 16px">Plaka eklemek için dokun · çıkarmak için çizimdeki plakaya dokun</p><div class="xg"><div><small>Set×Tekrar</small><b>${e.sets.length}×${r}</b></div><div><small>Egzersiz Ağırlığı</small><b><button class="stp" onclick="xa(-2.5)">−</button> ${kg(e.w)} <button class="stp" onclick="xa(2.5)">+</button></b></div></div><div class="xg"><div style="grid-column:1/3"><small>İlerleme</small><b>Ağırlık</b></div><div><small>Artışlar</small>${S.inc[n]!==undefined?`<input class="w" type="number" step="0.5" value="${S.inc[n]}" style="width:90px;text-align:center" onchange="S.inc['${n}']=+this.value;save()">`:'<b>—</b>'}</div><div><small>Sıklık</small><b>1</b></div><div><small>Deload</small><b>10%</b></div><div><small>Sıklık</small><b>3</b></div></div><div class="xg"><div><small>Bar Ağırlığı</small><b>20kg</b></div><div><small>Plakalar</small><b style="font-size:14px">25 · 20 · 15 · 10 · 5 · 2,5 · 1,25</b></div></div>`}
- else if(xt==='f'){const F=FORM[n];b=F?`<div style="margin-top:20px">${F.map((s,i)=>`<p class="fs">${i+1}. ${s}</p>`).join('')}</div><a class="btn" style="display:block;text-align:center;text-decoration:none" href="https://www.youtube.com/results?search_query=${encodeURIComponent(n+' form')}" target="_blank" rel="noopener">Videoyu Ara</a>`:'<p class="mu" style="margin-top:24px">Bu egzersiz için form açıklaması yok.</p>'}
+ else if(xt==='f'){const F=exerciseInstructions(n,S.lang,FORM[n]);b=F?`<div style="margin-top:20px">${F.map((s,i)=>`<p class="fs">${i+1}. ${s}</p>`).join('')}</div><a class="btn" style="display:block;text-align:center;text-decoration:none" href="https://www.youtube.com/results?search_query=${encodeURIComponent(n+' form')}" target="_blank" rel="noopener">Videoyu Ara</a>`:'<p class="mu" style="margin-top:24px">Bu egzersiz için form açıklaması yok.</p>'}
  else if(xt==='p'){const pts=[...H.map(o=>o.x.w),e.w],mn=Math.min(...pts),mx=Math.max(...pts),q=mx-mn||1,p=pts.map((v,i)=>`${i/(pts.length-1)*300},${54-(v-mn)/q*48}`).join(' ');b=`<div class="card" style="margin-top:20px">${pts.length>1?`<svg class="ch" viewBox="0 0 300 60" preserveAspectRatio="none"><polygon points="${p} 300,60 0,60" style="fill:var(--red);opacity:.14"/><polyline points="${p}" fill="none" style="stroke:var(--red)" stroke-width="3" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`:'<p class="mu">Grafik için en az iki kayıt gerekir.</p>'}<div class="mu" style="margin-top:8px">En iyi ${kg(mx)} · Tahmini 1TM ${kg(Math.round(e.w*7/6/2.5)*2.5)}</div></div>`}
  else{b=H.length?`<div class="card" style="margin-top:20px">${[...H].reverse().map(o=>`<div class="row"><span>${dstr(new Date(o.d))}</span><span class="mu">${kg(o.x.w)} · ${o.x.sets.filter(s=>s===(o.x.r||5)).length}/${o.x.sets.length}</span></div>`).join('')}</div>`:'<p class="mu" style="margin-top:24px">Henüz kayıt yok.</p>'}
  el.innerHTML=`<div><div class="top"><button class="pill" onclick="$('xv').remove()">‹</button><div><b style="font-size:17px">${n}</b><div class="mu">${sub}</div></div><span></span></div><div class="seg" style="margin-top:14px">${T.map(([k,l])=>`<button class="${k===xt?'on':''}" onclick="xs('${k}')">${l}</button>`).join('')}</div>${b}</div>`}
@@ -239,6 +243,8 @@ function recoverImport(){
  }catch(error){toast('Kurtarma başarısız; önceki kayıt korundu')}
 }
 window.addEventListener('error',e=>{if(!$('app').children.length)showErr(e.error||e.message)});
+// Localize dynamically created sheets, toasts and screens without modifying user data.
+new MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes||[])localizeTree(node,languageOf(S.lang))}).observe(document.body,{childList:true,subtree:true});
 
 // Transitional legacy inline-handler bridge. Keep the existing markup actions
 // functional while templates are migrated to delegated DOM events in later PRs.
@@ -253,7 +259,7 @@ for (const [name, access] of Object.entries({
   rEnd: {get:()=>rEnd,set:value=>{rEnd=value}},
   dArm: {get:()=>dArm,set:value=>{dArm=value}}
 })) Object.defineProperty(window,name,{configurable:true,enumerable:false,...access});
-Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,recoverImport,save,$,kg,key,dstr,esc,upcoming});
+Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,setLanguage,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,recoverImport,save,$,kg,key,dstr,esc,upcoming});
 registerUIActions(document,{
  navigate:goT,
  activateFocusedProgram,
@@ -267,4 +273,4 @@ registerUIActions(document,{
  showNote:()=>{if(!S.act)return;S.act.showNote=1;wo();$('nt')?.focus()},
  updateNote:value=>{if(!S.act)return;const before=S.act.note;S.act.note=value;if(!save())S.act.note=before}
 });
-try{const warning=getLoadWarning(localStorage);if(warning)showErr(new Error(warning));else{draw();if(S.act)wo()}}catch(err){showErr(err)}
+try{const warning=getLoadWarning(localStorage);if(warning)showErr(new Error(warning));else{tab='home';draw()}}catch(err){showErr(err)}

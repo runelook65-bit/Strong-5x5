@@ -2,6 +2,12 @@
 
 This app is built from the user-supplied `StrongLifts 5×5.html` single-file baseline. The former 12-week ARM code is not active. **The Vite application is now split into real ESM source files**, while keeping the same workout engine, visual cascade and `sl5x5` localStorage data.
 
+## Languages and startup
+
+The UI defaults to **English**, with **Español** and **Türkçe** available under Settings → Language. The selection is stored in `sl5x5.lang`; existing records without a language setting also start in English. Opening or refreshing the application always shows Home. If a workout is still active, choose **Resume Workout** to continue without losing logged sets.
+
+Translations affect on-screen presentation, date labels, accessibility labels and exercise technique instructions, not workout IDs or historical records. The PWA manifest uses English as its installation language.
+
 ## Run
 
 Node.js 20.19+:
