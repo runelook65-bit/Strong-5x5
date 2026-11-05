@@ -13,7 +13,7 @@ test('feature views have independent modules and thin adapters',()=>{
  for(const [oldName,newName] of [['home','renderHome'],['hist','renderHistory'],['stat','renderProgress'],['prog3','renderPrograms'],['sett2','renderSettings']]){
   assert.ok(app.includes('function '+oldName+'(){return '+newName+'('),oldName);
  }
- assert.match(app,/renderWorkoutMarkup\(\{a,ovOpen,M(?::monthNames\(S\.lang\))?,wtab,S,warm,kg,plates,esc\}\)/);
+ assert.ok(app.includes('renderWorkoutMarkup({a,ovOpen,M:monthNames(S.lang),wtab,S,warm,kg,plates,esc})'));
 });
 
 test('home view reads state without mutating it',async()=>{
