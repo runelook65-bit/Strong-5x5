@@ -34,6 +34,7 @@ const read=(raw,limit)=>{
 export function parseBackup(raw){
  const data=read(raw,BACKUP_LIMIT);
  if(!obj(data))fail('Yedek nesnesi geçersiz');
+ if(data.lang!==undefined&&!['en','es','tr'].includes(data.lang))fail('Desteklenmeyen dil ayarı');
  for(const key of Object.keys(data))if(['__proto__','prototype','constructor'].includes(key))fail('Desteklenmeyen alan');
  map(data.w,0,2000);map(data.inc,0,100);
  if(!arr(data.h,0,3000)||!['A','B'].includes(data.next))fail('Yedek program durumu geçersiz');
