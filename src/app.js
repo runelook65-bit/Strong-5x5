@@ -58,7 +58,7 @@ function start(){try{!S.al&&navigator.wakeLock&&navigator.wakeLock.request('scre
  wo()}
 function wo(){
  const a=S.act;if(!a){$('ovl').innerHTML='';clearInterval(timer);return}
- $('ovl').innerHTML=renderWorkoutMarkup({a,ovOpen,M,wtab,S,warm,kg,plates,esc});
+ $('ovl').innerHTML=renderWorkoutMarkup({a,ovOpen,M:monthNames(S.lang),wtab,S,warm,kg,plates,esc});
  clearInterval(timer);const tick=()=>{const el=$('tm');if(el&&S.act)el.textContent=Math.floor((Date.now()-S.act.date)/60000)+'d';const r=$('rs');if(r){const l=Math.ceil((rEnd-Date.now())/1000);if(l>0){r.style.display='flex';$('rt').textContent=Math.floor(l/60)+':'+String(l%60).padStart(2,'0')}else{if(rEnd){rEnd=0;snd('rest');try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}r.style.display='none'}}};window.tk=tick;ovOpen=1;tick();timer=setInterval(tick,1000)}
 function tap(i,j){const s=S.act.ex[i].sets;const R=S.act.ex[i].r||5;const previous=s[j];s[j]=s[j]===null?R:s[j]>0?s[j]-1:null;if(!save()){s[j]=previous;return}rEnd=s[j]===null||S.nr?0:Date.now()+(s[j]===R?(S.r1||90):(S.r2||180))*1000;if(S.rn){clearTimeout(rT);if(rEnd)rT=setTimeout(()=>{if(document.hidden)notify('Dinlenme bitti','Sıradaki sete hazırsın 💪')},Math.max(0,rEnd-Date.now()))}snd(s[j]===null?'tap':s[j]===R?'ok':'fail');try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}const b=document.querySelectorAll('.sets')[i].children[j];b.textContent=s[j]===null?R:s[j];b.classList.toggle('off',s[j]===null);b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');$('pg').style.width=Math.round(S.act.ex.flatMap(e=>e.sets).filter(x=>x!==null).length/S.act.ex.flatMap(e=>e.sets).length*100)+'%';window.tk&&tk()}
 function warm(a){const r=x=>Math.max(20,Math.round(x/2.5)*2.5);return a.ex.map(e=>{const w=e.w,L=e.n==='Deadlift'?[[w*.4,5,1],[w*.6,3,1],[w*.8,2,1]]:[[20,5,2],[w*.4,5,1],[w*.6,3,1],[w*.8,2,1]];return `<div class="ex"><span>${e.n}</span><span class="mu">${kg(e.w)}</span></div><div class="card">${L.map(([x,q,n])=>`<div class="row"><span>${n}×${q}</span><span>${kg(r(x))}</span></div>`).join('')}</div>`}).join('')}
@@ -125,7 +125,7 @@ function goT(k){snd('nav');const a=tabs.map(x=>x[0]);dir=a.indexOf(k)>a.indexOf(
 const SWV={nd:()=>!!S.nd,rn:()=>!!S.rn,ns:()=>!S.ns,nr:()=>!S.nr,nw:()=>!S.nw,al:()=>!!S.al};
 function tg(k,b){S[k]=!S[k];save();acc();b.classList.toggle('on',SWV[k]())}
 function pick(k,v,n){S[k]=v;save();acc();if(k==='vol')snd('ok');go(n)}
-function setLanguage(lang){if(!Object.hasOwn(LANGUAGES,lang))return;const before=S.lang;S.lang=lang;if(!save()){S.lang=before;return}draw();go('language');localizeAll()}
+function setLanguage(lang){if(!Object.hasOwn(LANGUAGES,lang))return;const before=S.lang;S.lang=lang;if(!save()){S.lang=before;return}const sheet=$('sh');if(sheet)sheet.remove();draw();localizeAll()}
 function sh(t,body){const c=`<div class="grab"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:20px">${t}</b><button class="pill" onclick="closeSh()">Tamam</button></div>${body}`;let el=$('sh');if(el){el.firstChild.innerHTML=c;return}el=document.createElement('div');el.className='sheet';el.id='sh';el.onclick=e=>{if(e.target===el)closeSh()};el.innerHTML=`<div class="sh">${c}</div>`;document.body.appendChild(el)}
 function closeSh(){const e=$('sh');if(e)e.remove();if(tab==='set')draw();if(pe&&$('pe'))per()}
 function go(n){
