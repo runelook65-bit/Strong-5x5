@@ -20,8 +20,8 @@ export default defineConfig({
       manifest: {
         name: 'StrongLifts 5×5',
         short_name: '5×5',
-        description: 'A/B antrenman, set kaydı ve ilerleme takibi',
-        lang: 'tr',
+        description: 'Track A/B workouts, log sets and monitor progress',
+        lang: 'en',
         start_url: './',
         scope: './',
         display: 'standalone',
