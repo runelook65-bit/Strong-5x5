@@ -23,7 +23,7 @@ test('the first recorded set is persisted and survives a page refresh',async({pa
   await page.getByRole('button',{name:'Start Workout'}).click();
   const first=page.locator('[data-ui-action="log-set"]').first();
   await expect(first).toBeVisible();
-  await expect(first).toHaveAttribute('aria-label',/1\. set:/);
+  await expect(first).toHaveAttribute('aria-label',/Set 1:/);
   await first.click();
   await expect.poll(()=>page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')).act.ex[0].sets[0])).toBe(5);
   await page.reload();
