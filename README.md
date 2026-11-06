@@ -1,6 +1,10 @@
-# StrongLifts 5×5 — modular Vite application
+# StrongFits — modular Vite application
 
 This app is built from the user-supplied `StrongLifts 5×5.html` single-file baseline. The former 12-week ARM code is not active. **The Vite application is now split into real ESM source files**, while keeping the same workout engine, visual cascade and `sl5x5` localStorage data.
+
+## Brand identity
+
+User-visible app name, Home heading, browser title and PWA installation name are **StrongFits**. The default StrongFits 5×5 training plan is still the same A/B workout. GitHub repository name, live Vercel URL, historical source filename, icon asset path and existing localStorage keys (`sl5x5`, `sl5x5_food`) deliberately remain unchanged so existing installations and records continue to work.
 
 ## Languages and startup
 
@@ -58,7 +62,7 @@ No visual redesign, framework rewrite, automatic data migration, training logic 
 
 ## Legal/product note
 
-The user-provided source uses the “StrongLifts” name. This repo is not asserted to be affiliated with that brand; evaluate naming rights before public commercial distribution.
+The original user-provided baseline uses the third-party “StrongLifts” name; the app is now presented as **StrongFits**. This is an independent project and does not claim affiliation with StrongLifts. Research trademark and store-listing availability before commercial launch.
 
 ## Nutrition (merged from feat/beslenme-kalori)
 

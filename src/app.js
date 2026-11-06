@@ -132,7 +132,7 @@ function setLanguage(lang){if(!Object.hasOwn(LANGUAGES,lang))return;const before
 function sh(t,body){const c=`<div class="grab"></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="font-size:20px">${t}</b><button class="pill" onclick="closeSh()">Tamam</button></div>${body}`;let el=$('sh');if(el){el.firstChild.innerHTML=c;return}el=document.createElement('div');el.className='sheet';el.id='sh';el.onclick=e=>{if(e.target===el)closeSh()};el.innerHTML=`<div class="sh">${c}</div>`;document.body.appendChild(el)}
 function closeSh(){const e=$('sh');if(e)e.remove();if(tab==='set')draw();if(pe&&$('pe'))per()}
 function go(n){
- const T={prof:'Profil',unit:'Birimler',rest:'Dinlenme Süreleri',w:'Ağırlıklar (kg)',inc:'Artış Miktarları (kg)',theme:'Tema',accent:'Vurgu Rengi',guide:'StrongLifts 5×5 Rehberi',data:'Veriler',reset:'Verileri Sıfırla',vol:'Ses Seviyesi',ndc:'Bildirim Zamanı',language:'Dil'};
+ const T={prof:'Profil',unit:'Birimler',rest:'Dinlenme Süreleri',w:'Ağırlıklar (kg)',inc:'Artış Miktarları (kg)',theme:'Tema',accent:'Vurgu Rengi',guide:'StrongFits 5×5 Rehberi',data:'Veriler',reset:'Verileri Sıfırla',vol:'Ses Seviyesi',ndc:'Bildirim Zamanı',language:'Dil'};
  const sg=(k,d,o)=>`<div class="seg">${o.map(([v,l])=>`<button class="${(S[k]||d)===v?'on':''}" onclick="pick('${k}','${v}','${n}')">${l}</button>`).join('')}</div>`;
  const num=(l,v,c,st)=>`<div class="row"><span>${l}</span><input class="w" type="number" step="${st||1}" value="${v}" onchange="${c};save()"></div>`;
  const B={
@@ -183,7 +183,7 @@ function setAp(id){
  const previous={ap:S.ap,pi:S.pi};
  S.ap=id||undefined;S.pi=0;
  if(!save()){S.ap=previous.ap;S.pi=previous.pi;return}
- draw();toast(id?'Aktif program değişti':'StrongLifts 5×5 aktif')
+ draw();toast(id?'Aktif program değişti':'StrongFits 5×5 aktif')
 }
 function activateFocusedProgram(id){if(S.act){toast('Önce mevcut antrenmanı tamamla');return}const p=cloneFocused(id);if(!p)return;const candidate={...S,pg:(S.pg||[]).some(x=>x.id===id)?S.pg:[...(S.pg||[]),p],ap:id,pi:0};if(!saveState(localStorage,candidate)){toast('Program kaydedilemedi');return}S=candidate;draw();toast(p.name+' aktif')}
 function pdel(id,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin?';setTimeout(()=>{delete b.dataset.a;b.textContent='Sil'},2500)}else{S.pg=S.pg.filter(p=>p.id!==id);if(S.ap===id){S.ap=undefined;S.pi=0}save();draw()}}

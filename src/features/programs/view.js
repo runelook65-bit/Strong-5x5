@@ -10,7 +10,7 @@ export function renderProgramComposer({S,draft,esc,kg,PR}){
 export function renderPrograms({S,AP,prog2,esc,FOCUSED_PROGRAMS}){
  const a=AP()?S.ap:'';
  let h=`<div style="display:flex;justify-content:space-between;align-items:center"><h1 style="margin:8px 0 16px">Programlar</h1><button class="pill r" onclick="pnew()">Yarat</button></div>`;
- h+=`<div class="card pgc${!a?' on':''}" onclick="setAp('')"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">StrongLifts 5×5</b><span class="rad"></span></div><div class="mu" style="font-size:14px;margin-top:6px">A: Squat, Bench Press, Barbell Row<br>B: Squat, Overhead Press, Deadlift</div></div>`;
+ h+=`<div class="card pgc${!a?' on':''}" onclick="setAp('')"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">StrongFits 5×5</b><span class="rad"></span></div><div class="mu" style="font-size:14px;margin-top:6px">A: Squat, Bench Press, Barbell Row<br>B: Squat, Overhead Press, Deadlift</div></div>`;
  h+='<h2>Bölgesel A/B Programları</h2>';
  for(const p of FOCUSED_PROGRAMS){if((S.pg||[]).some(x=>x.id===p.id))continue;h+=`<div class="card pgc"><b style="font-size:18px">${esc(p.name)}</b><div class="mu" style="font-size:14px;margin-top:8px">A: ${p.ws[0].ex.map(e=>esc(e.n)).join(', ')}<br>B: ${p.ws[1].ex.map(e=>esc(e.n)).join(', ')}</div><p class="mu">A/B dönüşümlü · Ana hareket 5×5 · Yardımcılar 3×8–12</p><button class="btn" data-ui-action="activate-focused-program" data-program-id="${p.id}">Programı Seç</button></div>`;}
 

@@ -9,7 +9,7 @@ export function renderSettings({S,SWV,esc}){
  grp('Tercihler',[row('Dil',LANGUAGES[languageOf(S.lang)],'language'),row('Birimler',S.u==='lb'?'Pound':'Kilogram','unit'),sw('Sesler','ns'),row('Ses Seviyesi',{'0.08':'Düşük','0.22':'Orta','0.4':'Yüksek'}[S.vol||'0.22'],'vol'),sw('Dinlenme Sayacı','nr'),row('Dinlenme Süreleri',(S.r1||90)+' / '+(S.r2||180)+' sn','rest'),sw('Isınma','nw'),sw('Ekranı Otomatik Kilitle','al'),row('Ağırlıklar','','w'),row('Artış Miktarları','','inc')])+
  grp('Bildirimler',[sw('Antrenman Günü Bildirimi','nd'),row('Bildirim Saati ve Günler',S.nt||'18:00','ndc'),sw('Set Süresi Bitiş Bildirimi','rn')])+
  grp('Görünüm',[row('Tema',{auto:'Otomatik (Sistem)',dark:'Koyu',light:'Açık'}[S.th||'auto'],'theme'),row('Vurgu Rengi',S.ac||'Nane','accent')])+
- grp('Destek',[row('StrongLifts 5×5 Rehberi','','guide')])+
+ grp('Destek',[row('StrongFits 5×5 Rehberi','','guide')])+
  grp('Veriler ve Erişim',[row('Verileri Dışa / İçe Aktar','','data'),`<div class="srow" style="color:#ff453a" onclick="go('reset')"><span>Verileri Sıfırla</span></div>`])+
- '<p class="mu" style="text-align:center;margin:28px 0 0;font-size:13px">StrongLifts 5×5 · web sürümü</p>'}
+ '<p class="mu" style="text-align:center;margin:28px 0 0;font-size:13px">StrongFits · web sürümü</p>'}
 

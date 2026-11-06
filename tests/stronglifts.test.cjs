@@ -70,7 +70,7 @@ function harness(initial = {}) {
 
 test('Vite entrypoint replaces inline CSS and inline JS without losing the HTML shell',()=>{
   assert.match(html,/^<!DOCTYPE html>/);
-  assert.match(html,/<title>StrongLifts 5×5<\/title>/);
+  assert.match(html,/<title>StrongFits<\/title>/);
   for(const id of ['app','nav','ovl']) assert.match(html,new RegExp('id="'+id+'"'));
   assert.match(html,/<script type="module" src="\/src\/main\.js"><\/script>/);
   assert.ok(!html.includes('<style>'));
@@ -180,10 +180,10 @@ test('mobile safe areas, reduced motion and offline PWA wrapper remain',()=>{
   assert.match(vite,/VitePWA/);
   assert.match(vite,/registerType: 'autoUpdate'/);
   assert.match(vite,/cleanupOutdatedCaches: true/);
-  assert.match(vite,/StrongLifts 5×5/);
+  assert.match(vite,/StrongFits/);
 });
 test('package ships a single Vite app and no obsolete Tailwind or React runtime',()=>{
-  assert.equal(pkg.name,'stronglifts-5x5-html-baseline');
+  assert.equal(pkg.name,'strongfits-5x5');
   assert.equal(pkg.type,'module');
   assert.ok(pkg.devDependencies.esbuild);
   assert.equal(pkg.scripts.build,'vite build');

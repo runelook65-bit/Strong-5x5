@@ -68,7 +68,7 @@ test('navigation and workout controls fit the simulated mobile viewport',async({
 });
 
 
-test('chest A/B selection persists and classic 5x5 remains',async({page})=>{await page.goto('/');await page.locator('#nav button[data-ui-tab="prog"]').click();await expect(page.locator('[data-ui-action="activate-focused-program"]')).toHaveCount(4);await page.locator('[data-program-id="focus-chest-ab"]').click();const s=await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')));expect(s.ap).toBe('focus-chest-ab');expect(s.pg[0].ws).toHaveLength(2);await page.reload();await expect(page.locator('#app')).toContainText('Workout A');await page.locator('#nav button[data-ui-tab="prog"]').click();await page.locator('.pgc').filter({hasText:'StrongLifts 5×5'}).click();expect((await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')))).ap).toBeUndefined();});
+test('chest A/B selection persists and classic 5x5 remains',async({page})=>{await page.goto('/');await page.locator('#nav button[data-ui-tab="prog"]').click();await expect(page.locator('[data-ui-action="activate-focused-program"]')).toHaveCount(4);await page.locator('[data-program-id="focus-chest-ab"]').click();const s=await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')));expect(s.ap).toBe('focus-chest-ab');expect(s.pg[0].ws).toHaveLength(2);await page.reload();await expect(page.locator('#app')).toContainText('Workout A');await page.locator('#nav button[data-ui-tab="prog"]').click();await page.locator('.pgc').filter({hasText:'StrongFits 5×5'}).click();expect((await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5')))).ap).toBeUndefined();});
 
 
 test('English opens Home by default, including with an unfinished workout',async({page})=>{
@@ -129,4 +129,19 @@ test('nutrition tab logs a manual meal and preserves workout state on refresh',a
   await page.reload();
   await page.locator('#nav button[data-ui-tab="food"]').click();
   await expect(page.locator('#app')).toContainText('Banana');
+});
+
+test('StrongFits brand appears on Home and in installed-app metadata',async({page})=>{
+  await page.goto('/');
+  await expect(page).toHaveTitle('StrongFits');
+  await expect(page.locator('#app h1').first()).toHaveText('StrongFits');
+  const manifestUrl=await page.locator('link[rel="manifest"]').getAttribute('href');
+  expect(manifestUrl).toBeTruthy();
+  const manifest=await (await page.request.get(new URL(manifestUrl,page.url()).toString())).json();
+  expect(manifest.name).toBe('StrongFits');
+  expect(manifest.short_name).toBe('StrongFits');
+  await page.locator('#nav button[data-ui-tab="set"]').click();
+  await expect(page.locator('#app')).toContainText('StrongFits');
+  await page.locator('#nav button[data-ui-tab="prog"]').click();
+  await expect(page.locator('#app')).toContainText('StrongFits 5×5');
 });
