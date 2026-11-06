@@ -1,8 +1,9 @@
 // Vercel serverless function: estimates calories and macros from a meal photo.
-// Requires the ANTHROPIC_API_KEY environment variable on the Vercel project.
-// Optional: ANTHROPIC_MODEL (default below), ALLOWED_ORIGINS (comma-separated).
+// Requires the OPENROUTER_API_KEY secret on Vercel.
+// Free vision model only: never silently fall back to a paid provider.
+// Optional: OPENROUTER_MODEL (must end in :free), ALLOWED_ORIGINS.
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+const MODEL = process.env.OPENROUTER_MODEL || 'google/gemma-4-26b-a4b-it:free';
 const MAX_IMAGE_CHARS = 3_000_000; // ~2.2 MB of JPEG after base64
 const TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
@@ -42,7 +43,7 @@ const SYSTEM = `Sen deneyimli bir diyetisyensin. Kullanıcı bir yemek fotoğraf
 - Pişirme yağını, sosları ve içecekleri hesaba kat; emin değilsen gerçekçi ortalama değer kullan ve note alanında belirt.
 - Kullanıcı bir düzeltme notu verdiyse onu kesin bilgi kabul et.
 - Fotoğrafta yiyecek yoksa is_food=false ve boş items döndür.
-- Sayıları tam sayıya yuvarla. Yalnızca report_meal aracını kullan.`;
+- Sayıları tam sayıya yuvarla. Yalnızca geçerli bir JSON nesnesi üret; Markdown, açıklama veya kod bloğu üretme.`;
 
 function originAllowed(req) {
   const origin = req.headers.origin;
@@ -77,8 +78,10 @@ async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   if (!originAllowed(req)) return res.status(403).json({ error: 'origin' });
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return res.status(503).json({ error: 'not_configured' });
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key || (!MODEL.endsWith(':free') && MODEL !== 'openrouter/free')) {
+    return res.status(503).json({ error: 'not_configured' });
+  }
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = null; } }
@@ -90,35 +93,51 @@ async function handler(req, res) {
   }
 
   const content = [
-    { type: 'image', source: { type: 'base64', media_type: type, data: image } },
-    { type: 'text', text: hint ? `Kullanıcının düzeltmesi: ${hint}` : 'Bu öğünü analiz et.' }
+    { type: 'text', text: hint ? `Kullanıcı düzeltmesi: ${hint}. Bu öğünü analiz et.` : 'Bu öğünü analiz et.' },
+    { type: 'image_url', image_url: { url: `data:${type};base64,${image}` } }
   ];
 
   let r;
   try {
-    r = await fetch('https://api.anthropic.com/v1/messages', {
+    r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      headers: {
+        'content-type': 'application/json',
+        'authorization': `Bearer ${key}`
+      },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 1500,
-        system: SYSTEM,
-        tools: [TOOL],
-        tool_choice: { type: 'tool', name: 'report_meal' },
-        messages: [{ role: 'user', content }]
+        temperature: 0.1,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: SYSTEM + '\\nJSON schema: ' + JSON.stringify(TOOL.input_schema) },
+          { role: 'user', content }
+        ]
       })
     });
-  } catch (e) {
+  } catch (_error) {
     return res.status(502).json({ error: 'upstream' });
   }
   if (!r.ok) {
     const status = r.status === 429 ? 429 : 502;
     return res.status(status).json({ error: status === 429 ? 'busy' : 'upstream' });
   }
-  const data = await r.json();
-  const use = (data.content || []).find(c => c.type === 'tool_use' && c.name === 'report_meal');
-  if (!use) return res.status(502).json({ error: 'parse' });
-  return res.status(200).json(clean(use.input || {}));
+  const data = await r.json().catch(() => null);
+  const message = data?.choices?.[0]?.message;
+  // OpenRouter usually returns JSON text. Support function-call output as well.
+  const toolArgs = message?.tool_calls?.find(c => c.function?.name === 'report_meal')?.function?.arguments;
+  const raw = toolArgs || (typeof message?.content === 'string'
+    ? message.content
+    : Array.isArray(message?.content) ? message.content.find(c => c.type === 'text')?.text : '');
+  if (typeof raw !== 'string' || raw.length > 12000) return res.status(502).json({ error: 'parse' });
+  let parsed;
+  try { parsed = JSON.parse(raw.replace(/^\x60\x60\x60(?:json)?\\s*|\\s*\x60\x60\x60$/g, '').trim()); }
+  catch (_error) { return res.status(502).json({ error: 'parse' }); }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return res.status(502).json({ error: 'parse' });
+  }
+  return res.status(200).json(clean(parsed));
 }
 
 export default handler;
