@@ -1,6 +1,6 @@
 // Presentational renderer; application state and actions remain in the controller.
 export function renderHome({S,AP,homeP,greet,esc,weekDots,dstr,PR,kg,upcoming,upCard}){const P0=AP();if(P0)return homeP(P0);
- let h=`<div class="mu" style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:600">${greet()}${S.name?', '+esc(S.name):''}</div><h1 style="margin-top:4px">StrongLifts 5×5</h1><div class="week">${weekDots()}</div>
+ let h=`<div class="mu" style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:600">${greet()}${S.name?', '+esc(S.name):''}</div><h1 style="margin-top:4px">StrongFits</h1><div class="week">${weekDots()}</div>
  <div class="card hero"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:30px;font-weight:700">Bugünkü Antrenman</div><div class="mu" style="font-size:19px;margin-top:6px">${dstr(new Date())}</div></div>
  <button class="badge" style="border:0;color:var(--tx);font-size:18px" onclick="S.next=S.next==='A'?'B':'A';save();draw()">${S.next} ⇄</button></div>
  <div style="margin-top:16px;background:var(--card2);border-radius:20px;padding:6px 16px">${PR[S.next].map(n=>`<div class="row"><span>${n}</span><span>${n==='Deadlift'?'':'5×5 '}${n==='Deadlift'?'5×':''}${kg(S.w[n])}</span></div>`).join('')}</div>

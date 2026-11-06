@@ -1,8 +1,8 @@
 {
-  "name": "stronglifts-5x5-html-baseline",
+  "name": "strongfits-5x5",
   "version": "1.1.0",
   "private": true,
-  "description": "Modular Vite PWA developed from the user-provided StrongLifts 5x5 HTML baseline",
+  "description": "StrongFits strength training and nutrition tracker",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
