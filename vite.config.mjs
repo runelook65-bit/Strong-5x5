@@ -18,10 +18,10 @@ export default defineConfig({
         clientsClaim: true
       },
       manifest: {
-        name: 'StrongLifts 5×5',
-        short_name: '5×5',
-        description: 'A/B antrenman, set kaydı ve ilerleme takibi',
-        lang: 'tr',
+        name: 'StrongFits',
+        short_name: 'StrongFits',
+        description: 'Strength workouts, nutrition, calorie and macro tracking',
+        lang: 'en',
         start_url: './',
         scope: './',
         display: 'standalone',
