@@ -11,7 +11,7 @@ export function registerUIActions(root, callbacks) {
     const data = control.dataset;
     switch (data.uiAction) {
       case 'navigate':
-        if (['home', 'prog', 'hist', 'stat', 'set'].includes(data.uiTab)) callbacks.navigate(data.uiTab);
+        if (['home', 'food', 'prog', 'hist', 'stat', 'set'].includes(data.uiTab)) callbacks.navigate(data.uiTab);
         break;
       case 'log-set': {
         const exercise = nonnegativeIndex(data.uiExercise);

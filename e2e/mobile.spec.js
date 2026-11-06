@@ -106,3 +106,27 @@ test('Spanish choice persists and translates navigation, settings and workout Ho
   await expect(page.getByText("Today's Workout")).toBeVisible();
   expect(await page.locator('html').getAttribute('lang')).toBe('en');
 });
+
+
+test('nutrition tab logs a manual meal and preserves workout state on refresh',async({page})=>{
+  await page.goto('/');
+  const workoutBefore=await page.evaluate(()=>localStorage.getItem('sl5x5'));
+  await page.locator('#nav button[data-ui-tab="food"]').click();
+  await expect(page.getByRole('heading',{name:'Nutrition'})).toBeVisible();
+  await expect(page.locator('#app')).toContainText('2,200');
+  await page.getByRole('button',{name:'Add manually'}).click();
+  await page.locator('#mn').fill('Banana');
+  await page.locator('#mk').fill('105');
+  await page.locator('#mp').fill('1');
+  await page.locator('#mc').fill('27');
+  await page.locator('#mf').fill('0');
+  await page.getByRole('button',{name:'Save',exact:true}).click();
+  await expect(page.locator('#app')).toContainText('Banana');
+  const food=await page.evaluate(()=>JSON.parse(localStorage.getItem('sl5x5_food')));
+  expect(Object.values(food.d).flat()).toHaveLength(1);
+  expect(Object.values(food.d).flat()[0].items[0].kcal).toBe(105);
+  expect(await page.evaluate(()=>localStorage.getItem('sl5x5'))).toBe(workoutBefore);
+  await page.reload();
+  await page.locator('#nav button[data-ui-tab="food"]').click();
+  await expect(page.locator('#app')).toContainText('Banana');
+});

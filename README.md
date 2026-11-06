@@ -59,3 +59,9 @@ No visual redesign, framework rewrite, automatic data migration, training logic 
 ## Legal/product note
 
 The user-provided source uses the “StrongLifts” name. This repo is not asserted to be affiliated with that brand; evaluate naming rights before public commercial distribution.
+
+## Nutrition (merged from feat/beslenme-kalori)
+
+The Food/Nutrition tab supports manual meal entry, daily calorie/macro goals, photo capture and optional AI-assisted analysis. Records use `sl5x5_food`, independently of training data in `sl5x5`. Existing workout history and language settings are preserved. Photo estimates are approximations and not medical-grade nutrition measurements.
+
+AI photo analysis requires the server-side Vercel environment variable `ANTHROPIC_API_KEY` (optional `ANTHROPIC_MODEL`). **Do not put API keys in the browser or commit them.** Without configuration, manual food entry remains available. The public serverless endpoint is not account-authenticated; restrict its usage before making the AI feature available to a broad audience, and set an API spend cap.
