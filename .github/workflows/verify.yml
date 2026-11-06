@@ -4,6 +4,7 @@ on:
     paths:
       - 'index.html'
       - 'src/**'
+      - 'api/**'
       - 'tests/**'
       - 'e2e/**'
       - 'playwright.config.js'

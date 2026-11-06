@@ -95,3 +95,50 @@ html,body { overflow-x:clip; }
 .ov,.ov.x{z-index:1100}
 .sheet{z-index:1200}
 .toast{z-index:1300}
+
+/* Nutrition module, ported from legacy branch. */
+/* beslenme */
+nav button{font-size:10.5px;letter-spacing:-.2px;white-space:nowrap}
+.fdn{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}
+.fdn button{width:38px;height:38px;border-radius:50%;border:0;background:var(--card);color:var(--tx);font-size:20px;font-weight:700}
+.fdn button:disabled{opacity:.3}.fdn b{font-size:16px}
+.fring{display:flex;align-items:center;gap:18px}
+.fring svg{width:128px;height:128px;flex:none;transform:rotate(-90deg)}
+.fring circle{fill:none;stroke-width:11;stroke-linecap:round}
+.fring .bg{stroke:var(--card2)}.fring .fg{stroke:var(--red);transition:stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 6px color-mix(in srgb,var(--red) 55%,transparent))}
+.fring .ov2{stroke:#ff453a}
+.fbig{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1}
+.fmac{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.fmac>div{background:var(--card2);border-radius:16px;padding:10px 12px}
+.fmac small{display:block;color:var(--mu);font-size:12px;font-weight:600}.fmac b{font-size:16px}
+.fmac .prog{margin-top:6px}
+.fmac .p i{background:#ff6b6b;box-shadow:none}.fmac .c i{background:#ffb340;box-shadow:none}.fmac .f i{background:#5ac8fa;box-shadow:none}
+.fact{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin:4px 0 8px}
+.fact .btn{margin:0;display:flex;align-items:center;justify-content:center;gap:8px}
+.fact .pill{padding:0 18px}
+.fm{display:flex;gap:12px;align-items:center;padding:12px;margin-bottom:10px;cursor:pointer}
+.fm img,.fm .ph{width:56px;height:56px;border-radius:14px;object-fit:cover;flex:none;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:24px}
+.fm .t{flex:1;min-width:0}.fm .t b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm .t small{color:var(--mu);font-size:13px}.fm .k{font-weight:800;font-size:17px;white-space:nowrap}
+.fm .k small{display:block;text-align:right;color:var(--mu);font-size:11px;font-weight:600}
+.fdots{display:flex;gap:10px;margin-top:4px;font-size:12px;color:var(--mu)}
+.fdots i{font-style:normal}.fdots i::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+.fdots .p::before{background:#ff6b6b}.fdots .c::before{background:#ffb340}.fdots .f::before{background:#5ac8fa}
+.fimg{position:relative;border-radius:20px;overflow:hidden;margin-bottom:14px;background:var(--card2);aspect-ratio:4/3}
+.fimg img{width:100%;height:100%;object-fit:cover;display:block}
+.fimg.scan::after{content:"";position:absolute;left:0;right:0;height:38%;top:-38%;background:linear-gradient(transparent,color-mix(in srgb,var(--red) 55%,transparent),transparent);animation:fscan 1.6s ease-in-out infinite}
+.fimg.scan::before{content:"";position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:1}
+@keyframes fscan{to{top:100%}}
+.fload{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;margin:6px 0 4px}
+.fload i{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--card2);border-top-color:var(--red);animation:fspin .8s linear infinite}@keyframes fspin{to{transform:rotate(360deg)}}
+.fsum{display:flex;align-items:baseline;justify-content:space-between;margin:4px 0 12px}
+.fsum .fbig{font-size:38px}
+.fcf{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--card2);color:var(--mu)}
+.fit{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid color-mix(in srgb,var(--tx) 7%,transparent);font-size:15px}
+.fit span:first-child{flex:1;min-width:0}.fit small{color:var(--mu)}
+.fsrv{display:flex;align-items:center;justify-content:space-between;background:var(--card2);border-radius:16px;padding:8px 12px;margin:12px 0}
+.fsrv b{font-size:17px}.fsrv .stp{background:var(--card)}
+.fnote{font-size:13px;color:var(--mu);line-height:1.45;margin:10px 0 0}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.fgrid label{font-size:12px;color:var(--mu);font-weight:600}
+

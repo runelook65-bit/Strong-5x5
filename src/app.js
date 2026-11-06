@@ -5,6 +5,7 @@ import {renderProgress} from './features/progress/view.js';
 import {renderPrograms,renderProgramComposer} from './features/programs/view.js';
 import {FOCUSED_PROGRAMS,cloneFocused} from './domain/focused-programs.js';
 import {renderSettings} from './features/settings/view.js';
+import {createFoodFeature} from './features/food/controller.js';
 import {renderWorkoutMarkup} from './features/workout/view.js';
 import {registerUIActions} from './features/navigation/events.js';
 import {D,M,PR,INC0,W0,AC,PLC,FORM} from './domain/config.js';
@@ -27,8 +28,10 @@ const $=id=>document.getElementById(id);
 const kg=w=>displayWeight(w,S.u);
 const key=dateKey;
 let tab='home',hsub='Takvim',timer,wtab='a',rEnd=0,dArm=0,ovOpen=0;
-const tabs=[['home','⌂','Ana Sayfa'],['prog','🔥','Programlar'],['hist','▦','Geçmiş'],['stat','📈','İlerleme'],['set','⚙','Ayarlar']];
+const tabs=[['home','⌂','Ana Sayfa'],['food','🍎','Beslenme'],['prog','🔥','Programlar'],['hist','▦','Geçmiş'],['stat','📈','İlerleme'],['set','⚙','Ayarlar']];
 
+let foodFeature;
+function food(){return foodFeature.food();}
 const upcoming=()=>upcomingWorkouts(S);
 const dstr=date=>displayDate(date,languageOf(S.lang));
 
@@ -48,7 +51,7 @@ function acc(){const c=AC[S.ac]||AC['Nane'],s=document.documentElement.style;s.s
 function toast(m){if(/kaydedildi/.test(m))snd('done');const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);try{navigator.vibrate&&navigator.vibrate([60,40,60])}catch(e){}setTimeout(()=>t.remove(),2600)}
 function localizeAll(){const lang=languageOf(S.lang);document.documentElement.lang=lang;localizeTree(document.body,lang)}
 function draw(){acc();$('app').className=dir;dir='';
- $('app').innerHTML={home,prog:prog3,hist,stat,set:sett2}[tab]();
+ $('app').innerHTML={home,food,prog:prog3,hist,stat,set:sett2}[tab]();
  navUp();localizeAll();(0)&&tabs.map(([k,i,l])=>`<button class="${k===tab?'on':''}" onclick="tab='${k}';draw();scrollTo(0,0)"><span>${ICN[k]}</span>${l}</button>`).join('')}
 
 function start(){try{!S.al&&navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
@@ -116,7 +119,7 @@ document.addEventListener('touchend',e=>{if(!tOk)return;const t=e.changedTouches
 function greet(){const h=new Date().getHours();return h<12?'Günaydın':h<18?'İyi günler':'İyi akşamlar'}
 function weekDots(){const n=new Date(),m=new Date(n);m.setDate(n.getDate()-((n.getDay()+6)%7));const dn=new Set(S.h.map(x=>key(x.date)));return weekdayInitials(S.lang).map((l,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);const k=key(d);return `<div class="wd${dn.has(k)?' d':''}${k===key(n)?' t':''}"><small>${l}</small><i>${d.getDate()}</i></div>`}).join('')}
 const sv=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-const ICN={home:sv('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>'),prog:sv('<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/>'),hist:sv('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'),stat:sv('<path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/>'),set:sv('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>')};
+const ICN={home:sv('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>'),food:sv('<path d="M12 7c-1.5-2-5-2.2-6.5.3C4 9.8 5 15 7 18c1.2 1.8 2.6 2.6 5 1.6 2.4 1 3.8.2 5-1.6 2-3 3-8.2 1.5-10.7C17 5 13.5 5.2 12 7z"/><path d="M12 7c0-2 1-3.5 2.5-4"/>'),prog:sv('<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/>'),hist:sv('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'),stat:sv('<path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/>'),set:sv('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>')};
 function showH(d){const x=S.h.find(h=>h.date===d);if(!x)return;const vol=Math.round(x.ex.reduce((t,e)=>t+e.w*e.sets.reduce((p,s)=>p+(s||0),0),0)),sets=x.ex.reduce((t,e)=>t+e.sets.length,0),el=document.createElement('div');el.className='sheet';el.onclick=e=>{if(e.target===el)el.remove()};
 el.innerHTML=`<div class="sh"><div class="grab"></div><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:20px">${dstr(new Date(x.date))}</b><span class="badge">${x.type}</span></div><div class="stt"><div><b>${x.dur}</b><small>dakika</small></div><div><b>${kg(vol)}</b><small>hacim</small></div><div><b>${sets}</b><small>set</small></div></div>${x.ex.map(e=>`<div class="row"><span>${e.n}${e.pr?' 🏆':''}</span><span class="mu">${kg(e.w)}</span></div><div class="dots">${e.sets.map(s=>`<i class="${s===(e.r||5)?'f':''}">${s===null?'–':s}</i>`).join('')}</div>`).join('')}${x.note?`<p class="mu" style="margin-top:12px">${esc(x.note)}</p>`:''}<button class="btn" onclick="this.closest('.sheet').remove()">Kapat</button></div>`;document.body.appendChild(el)}
 function upCard(u){const days=Math.round((u.d-new Date())/864e5),rel=days<=1?'Yarın':days+' gün sonra';return `<div class="uc"><div class="ut"><div class="ul">${u.t}</div><div><b>${dstr(u.d)}</b><small>${u.n?u.n+' · ':''}${rel} · ${u.l.length} egzersiz</small></div></div>${u.l.map(([n,w])=>`<div class="ur"><span>${n}</span><span class="uw">${kg(w)}<em>+${String(u.inc&&u.inc[n]!=null?u.inc[n]:S.inc[n]).replace('.',',')}</em></span></div>`).join('')}</div>`}
@@ -273,4 +276,5 @@ registerUIActions(document,{
  showNote:()=>{if(!S.act)return;S.act.showNote=1;wo();$('nt')?.focus()},
  updateNote:value=>{if(!S.act)return;const before=S.act.note;S.act.note=value;if(!save())S.act.note=before}
 });
+foodFeature=createFoodFeature({getState:()=>S,draw,sh,toast,snd,esc,key,sv,D,M,$,languageOf,monthNames});
 try{const warning=getLoadWarning(localStorage);if(warning)showErr(new Error(warning));else{tab='home';draw()}}catch(err){showErr(err)}
