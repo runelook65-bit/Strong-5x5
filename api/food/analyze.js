@@ -111,7 +111,7 @@ async function handler(req, res) {
         temperature: 0.1,
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: SYSTEM + '\\nJSON schema: ' + JSON.stringify(TOOL.input_schema) },
+          { role: 'system', content: SYSTEM + '\nJSON schema: ' + JSON.stringify(TOOL.input_schema) },
           { role: 'user', content }
         ]
       })
@@ -132,7 +132,7 @@ async function handler(req, res) {
     : Array.isArray(message?.content) ? message.content.find(c => c.type === 'text')?.text : '');
   if (typeof raw !== 'string' || raw.length > 12000) return res.status(502).json({ error: 'parse' });
   let parsed;
-  try { parsed = JSON.parse(raw.replace(/^\x60\x60\x60(?:json)?\\s*|\\s*\x60\x60\x60$/g, '').trim()); }
+  try { parsed = JSON.parse(raw.replace(/^\x60\x60\x60(?:json)?\s*|\s*\x60\x60\x60$/g, '').trim()); }
   catch (_error) { return res.status(502).json({ error: 'parse' }); }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return res.status(502).json({ error: 'parse' });
