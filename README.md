@@ -43,3 +43,12 @@ The SVG icon is a generic inherited barbell/5×5 visual with updated accessible 
 - \`npm run build\` verifies Vite/PWA packaging.
 - Test real iPhone Safari/PWA install and refresh before accepting production UX; the supplied file makes no claim of native iOS equivalence.
 - The source uses the name “StrongLifts”; independently assess brand/trademark rights before commercial distribution. Uploading the file does not establish an affiliation with the original StrongLifts product.
+
+## Beslenme (fotoğrafla kalori takibi)
+
+The **Beslenme** tab photographs a meal, sends a downscaled JPEG to `api/food/analyze.js` (a Vercel serverless function) and shows estimated calories, protein, carbs and fat per item. Users can change portions, remove items, send a correction note for a re-analysis, add meals by hand and set daily goals.
+
+- Nutrition data lives in its own `localStorage` key, `sl5x5_food`; the workout state in `sl5x5` is not changed.
+- Required Vercel environment variable: `ANTHROPIC_API_KEY`. Optional: `ANTHROPIC_MODEL` (default `claude-sonnet-5-5`) and `ALLOWED_ORIGINS` (comma-separated extra origins).
+- Without the key the endpoint returns `503 not_configured` and the app offers manual entry.
+- The endpoint only accepts same-origin POSTs; set a monthly spend limit on the Anthropic account as well.
