@@ -3,7 +3,7 @@ import { parseBackup } from './validation.js';
 
 export const STORAGE_KEY='sl5x5';
 const blockedStores=new WeakMap();
-export const fresh=()=>({lang:'en',w:{...W0},inc:{...INC0},h:[],next:'B',act:null});
+export const fresh=()=>({lang:'en',w:{...W0},inc:{...INC0},h:[],next:'B',act:null,setupDone:false,days:[1,3,5]});
 export const getLoadWarning=storage=>blockedStores.get(storage)||null;
 
 export function loadState(storage){
@@ -22,7 +22,10 @@ export function loadState(storage){
     return fresh();
   }
   blockedStores.delete(storage);
+  const isExistingProfile=!Object.prototype.hasOwnProperty.call(state,'setupDone');
   state=Object.assign(fresh(),state);
+  if(isExistingProfile)state.setupDone=true; // Legacy profiles keep their existing weights and UI.
+  if(!Array.isArray(state.days)||!state.days.some(d=>Number.isInteger(d)&&d>=0&&d<=6))state.days=[1,3,5];
   state.w=Object.assign({},W0,state.w);
   state.inc=Object.assign({},INC0,state.inc);
   return state;
