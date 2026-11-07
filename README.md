@@ -69,3 +69,13 @@ The original user-provided baseline uses the third-party “StrongLifts” name;
 The Food/Nutrition tab supports manual meal entry, daily calorie/macro goals, photo capture and optional AI-assisted analysis. Records use `sl5x5_food`, independently of training data in `sl5x5`. Existing workout history and language settings are preserved. Photo estimates are approximations and not medical-grade nutrition measurements.
 
 AI photo analysis requires the server-side Vercel environment variable `OPENROUTER_API_KEY` (optional `OPENROUTER_MODEL`, restricted to free variants). The default is `google/gemma-4-26b-a4b-it:free`. **Do not put API keys in the browser or commit them.** Without configuration, manual food entry remains available. OpenRouter's free quota is limited. The serverless endpoint is unauthenticated, and Origin checks are not effective protection against scripted abuse; add an authenticated per-user quota/rate limiter before offering public production photo analysis. Adding or updating Vercel secrets requires a fresh deployment.
+
+## Workout safety and icon update (November 2026)
+
+- New installs use conservative default working weights; a first-use settings sheet allows personalized weights and training weekdays. Existing users' stored weights are preserved.
+- The default Deadlift workout logs one working set of five; all other standard lifts log five sets of five.
+- Unattempted or interrupted sets do not accrue deload failure counters or automatic progression.
+- Progress charts and estimated one-rep maximums reflect performed sets, never the next target weight.
+- Upcoming workouts are projected using configured weekdays (Monday/Wednesday/Friday by default).
+- The installed fork-and-dumbbell PWA SVG icon replaces the legacy barbell symbol.
+- A Vercel WAF rule limits POST /api/food/analyze requests to five per IP each 60 seconds. This is not account authentication; add per-account identity and quotas before commercial launch.
