@@ -10,7 +10,8 @@ const read=name=>fs.readFileSync(path.join(root,name),'utf8');
 test('feature views have independent modules and thin adapters',()=>{
  const app=read('src/app.js');
  for(const name of ['home','history','programs','progress','settings','workout']) assert.ok(app.includes('./features/'+name+'/view.js'),name);
- for(const [oldName,newName] of [['home','renderHome'],['hist','renderHistory'],['stat','renderProgress'],['prog3','renderPrograms'],['sett2','renderSettings']]){
+ assert.ok(app.includes('function home(){')&&app.includes('renderHome({S,AP,homeP'), 'home');
+ for(const [oldName,newName] of [['hist','renderHistory'],['stat','renderProgress'],['prog3','renderPrograms'],['sett2','renderSettings']]){
   assert.ok(app.includes('function '+oldName+'(){return '+newName+'('),oldName);
  }
  assert.ok(app.includes('renderWorkoutMarkup({a,ovOpen,M:monthNames(S.lang),wtab,S,warm,kg,plates,esc})'));

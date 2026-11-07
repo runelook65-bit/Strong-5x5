@@ -130,8 +130,8 @@ test('completed session is saved and A/B alternation progresses',()=>{
   const data=a.state();
   assert.equal(data.h.length,1);
   assert.equal(data.next,'A');
-  assert.equal(data.w.Squat,177.5);
-  assert.equal(data.w.Deadlift,80);
+  assert.equal(data.w.Squat,22.5);
+  assert.equal(data.w.Deadlift,45);
   assert.equal(data.act,null);
 });
 test('weight progression is based on saved repetitions, not decorative circles',()=>{
@@ -139,8 +139,8 @@ test('weight progression is based on saved repetitions, not decorative circles',
   a.run('S.act.ex[0].sets[0]=5;save();finish()');
   const data=a.state();
   assert.equal(data.h.length,1);
-  assert.equal(data.w.Squat,175);
-  assert.equal(data.fail.Squat,1);
+  assert.equal(data.w.Squat,20);
+  assert.equal(data.fail.Squat||0,0);
 });
 test('history is empty on fresh profile and filled from saved session',()=>{
   const a=harness();

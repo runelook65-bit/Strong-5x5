@@ -35,9 +35,9 @@ function food(){return foodFeature.food();}
 const upcoming=()=>upcomingWorkouts(S);
 const dstr=date=>displayDate(date,languageOf(S.lang));
 
-function home(){return renderHome({S,AP,homeP,greet,esc,weekDots,dstr,PR,kg,upcoming,upCard});}
+function home(){const setup=!S.setupDone?'<div class="card"><b>Başlangıç ağırlıklarını belirle</b><p class="mu">İlk antrenmandan önce hafif varsayılan ağırlıkları kendi seviyene göre düzenle.</p><button class="pill r" onclick="showSetup()">Ağırlıkları Ayarla</button></div>':'';return setup+renderHome({S,AP,homeP,greet,esc,weekDots,dstr,PR,kg,upcoming,upCard});}
 
-function prog(){return '<h1>Programlar</h1>'+['A','B'].map(t=>`<div class="card"><b style="font-size:22px">Antrenman ${t}</b>${PR[t].map(n=>`<div class="row"><span>${n}</span><span class="mu">5×5 · +${String(S.inc[n]).replace('.',',')}kg</span></div>`).join('')}</div>`).join('')+'<p class="mu">A ve B antrenmanları dönüşümlü yapılır. Tüm setler 5 tekrar tamamlanırsa ağırlık artar.</p>'}
+function prog(){return '<h1>Programlar</h1>'+['A','B'].map(t=>`<div class="card"><b style="font-size:22px">Antrenman ${t}</b>${PR[t].map(n=>`<div class="row"><span>${n}</span><span class="mu">${n==='Deadlift'?'1×5':'5×5'} · +${String(S.inc[n]).replace('.',',')}kg</span></div>`).join('')}</div>`).join('')+'<p class="mu">A ve B antrenmanları dönüşümlü yapılır. Tüm setler 5 tekrar tamamlanırsa ağırlık artar.</p>'}
 
 function hist(){return renderHistory({S,hsub,dstr,kg,esc,key,M:monthNames(S.lang),weekdayLabels:weekdayInitials(S.lang)});}
 const esc=escapeHTML;
@@ -54,10 +54,36 @@ function draw(){acc();$('app').className=dir;dir='';
  $('app').innerHTML={home,food,prog:prog3,hist,stat,set:sett2}[tab]();
  navUp();localizeAll();(0)&&tabs.map(([k,i,l])=>`<button class="${k===tab?'on':''}" onclick="tab='${k}';draw();scrollTo(0,0)"><span>${ICN[k]}</span>${l}</button>`).join('')}
 
+function showSetup(){
+ if($('setupScreen'))return;
+ const panel=document.createElement('div');panel.className='sheet';panel.id='setupScreen';
+ panel.innerHTML='<div class="sh"><div class="grab"></div><h2>Başlangıç ağırlıkları</h2><p class="mu">Beş tekrar güvenle yapabildiğin ağırlıkları seç. Boş bar ile başlamak mümkündür.</p>'+
+ Object.keys(W0).map((n,i)=>'<label class="row">'+n+'<input class="w" id="setupWeight'+i+'" type="number" min="20" max="500" step="0.5" value="'+S.w[n]+'" aria-label="'+n+' ağırlığı"></label>').join('')+
+ '<p class="mu">Antrenman günlerini seç</p><div style="display:flex;flex-wrap:wrap;gap:8px">'+
+ [1,2,3,4,5,6,0].map(d=>'<label style="padding:5px"><input id="setupDay'+d+'" type="checkbox" style="width:auto" '+((S.days||[1,3,5]).includes(d)?'checked':'')+'> '+['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'][d]+'</label>').join('')+
+ '</div><button class="btn" onclick="saveSetup()">Kaydet</button><button class="pill" onclick="document.getElementById(\'setupScreen\').remove()">Kapat</button></div>';
+ document.body.appendChild(panel);localizeAll();
+}
+function saveSetup(){
+ const weights={...S.w};
+ for(const [i,n] of Object.keys(W0).entries()){
+  const v=Number($('setupWeight'+i)?.value);
+  if(!Number.isFinite(v)||v<20||v>500||Math.abs(v*2-Math.round(v*2))>1e-8){toast('Geçerli bir ağırlık gir.');return}
+  weights[n]=v;
+ }
+ const days=[0,1,2,3,4,5,6].filter(d=>$('setupDay'+d)?.checked);
+ if(!days.length){toast('En az bir antrenman günü seç.');return}
+ const old={w:S.w,days:S.days,setupDone:S.setupDone};
+ S.w=weights;S.days=days;S.setupDone=true;
+ if(!save()){Object.assign(S,old);return}
+ $('setupScreen')?.remove();draw();toast('Başlangıç ayarları kaydedildi');
+}
+
 function start(){try{!S.al&&navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
  if(S.act){wo();return}
- S.act={type:S.next,date:Date.now(),ex:PR[S.next].map(n=>({n,w:S.w[n],sets:[null,null,null,null,null]})),note:''};
- if(!save()){S.act=null;return}
+ const wasSetupDone=S.setupDone;S.setupDone=true;
+  S.act={type:S.next,date:Date.now(),ex:PR[S.next].map(n=>({n,w:S.w[n],sets:Array(n==='Deadlift'?1:5).fill(null)})),note:''};
+ if(!save()){S.act=null;S.setupDone=wasSetupDone;return}
  wo()}
 function wo(){
  const a=S.act;if(!a){$('ovl').innerHTML='';clearInterval(timer);return}
@@ -99,7 +125,7 @@ function finish(){
  const a=S.act;
  if(a.ex.every(e=>e.sets.every(s=>s===null)))return;
  const beforeSave=JSON.parse(JSON.stringify(S));
- S.fail=S.fail||{};const cw=a.cid&&fw(a.cid);if(cw)a.ex.forEach((e,i)=>{const c=cw.ex[i];if(c)c.w=e.w+(e.sets.every(s=>s===e.r)?c.inc:0)});else applyStandardProgression(S,a);
+ S.fail=S.fail||{};const cw=a.cid&&fw(a.cid);if(cw)a.ex.forEach((e,i)=>{const c=cw.ex[i];if(c&&e.sets.some(s=>s!==null))c.w=e.w+(e.sets.every(s=>s===e.r)?c.inc:0)});else applyStandardProgression(S,a);
  let pr=0;a.ex.forEach(e=>{if(e.sets.every(s=>s===(e.r||5))&&S.h.some(h=>h.ex.some(q=>q.n===e.n))){const best=Math.max(...S.h.flatMap(h=>h.ex.filter(q=>q.n===e.n).map(q=>q.w)));if(e.w>best){e.pr=1;pr=1}}});
  S.h.push({date:a.date,type:a.type,ex:a.ex,note:a.note,dur:Math.round((Date.now()-a.date)/60000)});
  if(!a.cid)S.next=a.type==='A'?'B':'A';else{const P=AP();if(P&&P.ws.some(w=>w.id===a.cid))S.pi=((S.pi||0)+1)%P.ws.length}S.act=null;
@@ -262,7 +288,7 @@ for (const [name, access] of Object.entries({
   rEnd: {get:()=>rEnd,set:value=>{rEnd=value}},
   dArm: {get:()=>dArm,set:value=>{dArm=value}}
 })) Object.defineProperty(window,name,{configurable:true,enumerable:false,...access});
-Object.assign(window,{home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,setLanguage,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,recoverImport,save,$,kg,key,dstr,esc,upcoming});
+Object.assign(window,{showSetup,saveSetup,home,prog,hist,stat,sett,acc,toast,draw,start,wo,tap,warm,plates,adj,delH,addX,rmX,prog2,addD,saveC,delC,startC,adjC,rmC,delWo,rstS,expBk,impBk,closeWo,finish,greet,weekDots,showH,upCard,navUp,goT,tg,pick,sh,closeSh,go,sett2,plArr,xv,xs,xa,xr,addCx,saveCx,snd,notify,askNotif,tgN,tgd,chkDay,homeP,prog3,setAp,setLanguage,pdel,pnew,pedit,pok,per,psplit,padd,pwo,pxa,pxr,pwd,psave,pshare,pcp,pimpo,pimp,cu,resetAll,showErr,recoverData,recoverImport,save,$,kg,key,dstr,esc,upcoming});
 registerUIActions(document,{
  navigate:goT,
  activateFocusedProgram,
