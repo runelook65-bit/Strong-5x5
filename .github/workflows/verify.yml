@@ -28,9 +28,9 @@ jobs:
         run: npm test
       - name: Production PWA build (no deploy)
         run: npm run build
-      - name: Install Chromium for mobile viewport tests
-        run: npx playwright install --with-deps chromium
-      - name: Browser interaction smoke tests
+      - name: Install Chromium and WebKit for mobile viewport tests
+        run: npx playwright install --with-deps chromium webkit
+      - name: Mobile Chromium and WebKit interaction smoke tests
         run: npm run test:e2e
       - name: Save browser test diagnostics on failure
         if: failure()
