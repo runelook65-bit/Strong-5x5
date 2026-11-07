@@ -141,3 +141,32 @@ test('unauthenticated and quota-exceeded requests never reach OpenRouter',async(
   for(const key of keys){if(old[key]===undefined)delete process.env[key];else process.env[key]=old[key]}
  }
 });
+
+
+test('strict origin verification blocks localhost spoofing and insecure production origins',async()=>{
+ const {originAllowed}=await analysisModule;
+ const previous={NODE_ENV:process.env.NODE_ENV,ALLOWED_ORIGINS:process.env.ALLOWED_ORIGINS};
+ try{
+  process.env.NODE_ENV='production';
+  delete process.env.ALLOWED_ORIGINS;
+  const req=(origin,host='arm-5x5.vercel.app')=>({headers:{origin,host}});
+  assert.equal(originAllowed(req('https://arm-5x5.vercel.app')),true);
+  assert.equal(originAllowed(req('https://other.vercel.app')),false);
+  assert.equal(originAllowed(req('http://arm-5x5.vercel.app')),false);
+  assert.equal(originAllowed(req('http://localhost:3000')),false);
+  assert.equal(originAllowed(req('https://localhost:3000')),false);
+  assert.equal(originAllowed(req('not-an-origin')),false);
+  assert.equal(originAllowed(req('https://arm-5x5.vercel.app/evil')),false);
+  assert.equal(originAllowed({headers:{host:'arm-5x5.vercel.app'}}),false);
+  process.env.ALLOWED_ORIGINS='https://staging.example.com';
+  assert.equal(originAllowed(req('https://staging.example.com')),true);
+  assert.equal(originAllowed(req('http://staging.example.com')),false);
+  process.env.NODE_ENV='development';
+  assert.equal(originAllowed(req('http://localhost:4173','localhost:4173')),true);
+  assert.equal(originAllowed(req('http://localhost:4173')),false);
+ } finally{
+  for(const [key,value] of Object.entries(previous)){
+   if(value===undefined)delete process.env[key];else process.env[key]=value;
+  }
+ }
+});
