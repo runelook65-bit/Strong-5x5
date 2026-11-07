@@ -1,19 +1,23 @@
 {
-  "name": "stronglifts-5x5-html-baseline",
-  "version": "1.0.0",
+  "name": "strongfits-5x5",
+  "version": "1.1.0",
   "private": true,
-  "description": "User-supplied StrongLifts 5x5 HTML baseline — single-file workout tracker",
+  "description": "StrongFits strength training and nutrition tracker",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/*.test.cjs"
+    "test": "node --test tests/*.test.cjs",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=20.19.0"
   },
   "devDependencies": {
     "vite": "^6.3.5",
-    "vite-plugin-pwa": "^1.0.3"
-  }
+    "vite-plugin-pwa": "^1.0.3",
+    "esbuild": "^0.25.0",
+    "@playwright/test": "1.64.1"
+  },
+  "type": "module"
 }

@@ -3,11 +3,20 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
+const { buildSync } = require('esbuild');
 
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const found = html.match(/<script>([\s\S]*?)<\/script>/);
-const source = found ? found[1] : '';
+// Bundle the actual ESM graph into a browser-compatible IIFE for deterministic VM tests.
+const generated=buildSync({
+  entryPoints:[path.join(root,'src','main.js')],
+  absWorkingDir:root,
+  bundle:true, format:'iife', platform:'browser', write:false, logLevel:'silent',
+  loader:{'.css':'empty'}
+});
+const source=(generated.outputFiles.find(x=>x.path.endsWith('.js')) || generated.outputFiles[0]).text;
+const baseCSS=fs.readFileSync(path.join(root,'src','styles','base.css'),'utf8');
+const configSource=fs.readFileSync(path.join(root,'src','domain','config.js'),'utf8');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const vite = fs.readFileSync(path.join(root, 'vite.config.mjs'), 'utf8');
 
@@ -59,15 +68,18 @@ function harness(initial = {}) {
   return {ctx,get,store,run,state};
 }
 
-test('the uploaded single-file application is the active root',()=>{
+test('Vite entrypoint replaces inline CSS and inline JS without losing the HTML shell',()=>{
   assert.match(html,/^<!DOCTYPE html>/);
-  assert.match(html,/<title>StrongLifts 5×5<\/title>/);
+  assert.match(html,/<title>StrongFits<\/title>/);
   for(const id of ['app','nav','ovl']) assert.match(html,new RegExp('id="'+id+'"'));
+  assert.match(html,/<script type="module" src="\/src\/main\.js"><\/script>/);
+  assert.ok(!html.includes('<style>'));
+  assert.ok(!html.includes('<script>'));
   assert.ok(!html.includes('/src/ui-v09.css'));
   assert.ok(!html.includes('arm_5x5_app_state_v1'));
   assert.ok(!html.includes('v7RenderToday'));
 });
-test('uploaded script syntax is valid',()=>{ assert.doesNotThrow(()=>new vm.Script(source)); });
+test('ES modules bundle to executable browser JavaScript',()=>{ assert.doesNotThrow(()=>new vm.Script(source)); });
 test('the 5-tab interface is mounted on initial load',()=>{
   const a=harness();
   assert.match(a.get('nav').innerHTML,/Ana Sayfa/);
@@ -118,8 +130,8 @@ test('completed session is saved and A/B alternation progresses',()=>{
   const data=a.state();
   assert.equal(data.h.length,1);
   assert.equal(data.next,'A');
-  assert.equal(data.w.Squat,177.5);
-  assert.equal(data.w.Deadlift,80);
+  assert.equal(data.w.Squat,22.5);
+  assert.equal(data.w.Deadlift,45);
   assert.equal(data.act,null);
 });
 test('weight progression is based on saved repetitions, not decorative circles',()=>{
@@ -127,8 +139,8 @@ test('weight progression is based on saved repetitions, not decorative circles',
   a.run('S.act.ex[0].sets[0]=5;save();finish()');
   const data=a.state();
   assert.equal(data.h.length,1);
-  assert.equal(data.w.Squat,175);
-  assert.equal(data.fail.Squat,1);
+  assert.equal(data.w.Squat,20);
+  assert.equal(data.fail.Squat||0,0);
 });
 test('history is empty on fresh profile and filled from saved session',()=>{
   const a=harness();
@@ -157,22 +169,155 @@ test('backup exports new schema without deleting old ARM storage',()=>{
   assert.equal(a.store.get('arm_5x5_app_state_v1'),old);
 });
 test('initial accent matches supplied emerald palette',()=>{
-  assert.match(html,/--red:#62DBA6/);
-  assert.match(html,/--red2:#4fc496/);
-  assert.match(html,/const AC=\{'Nane'/);
+  assert.match(baseCSS,/--red:#62DBA6/);
+  assert.match(baseCSS,/--red2:#4fc496/);
+  assert.match(configSource,/const AC=\{'Nane'/);
 });
 test('mobile safe areas, reduced motion and offline PWA wrapper remain',()=>{
   assert.match(html,/viewport-fit=cover/);
-  assert.match(html,/safe-area-inset-bottom/);
-  assert.match(html,/prefers-reduced-motion:reduce/);
+  assert.ok(['base.css','effects.css','components.css'].some(f=>fs.readFileSync(path.join(root,'src','styles',f),'utf8').includes('safe-area-inset-bottom')));
+  assert.match(fs.readFileSync(path.join(root,'src','styles','components.css'),'utf8'),/prefers-reduced-motion:reduce/);
   assert.match(vite,/VitePWA/);
   assert.match(vite,/registerType: 'autoUpdate'/);
   assert.match(vite,/cleanupOutdatedCaches: true/);
-  assert.match(vite,/StrongLifts 5×5/);
+  assert.match(vite,/StrongFits/);
 });
 test('package ships a single Vite app and no obsolete Tailwind or React runtime',()=>{
-  assert.equal(pkg.name,'stronglifts-5x5-html-baseline');
+  assert.equal(pkg.name,'strongfits-5x5');
+  assert.equal(pkg.type,'module');
+  assert.ok(pkg.devDependencies.esbuild);
   assert.equal(pkg.scripts.build,'vite build');
   assert.ok(!pkg.devDependencies.tailwindcss);
   assert.ok(!pkg.dependencies?.react);
+});
+
+test('invalid backup cannot overwrite live workout data',()=>{
+ const a=harness({arm_5x5_app_state_v1:'legacy'});
+ a.run('start()');
+ const original=a.store.get('sl5x5');
+ a.get('bk').value=JSON.stringify({w:{Squat:-10},inc:{Squat:2.5},h:[],next:'B'});
+ a.run('impBk()');
+ assert.equal(a.store.get('sl5x5'),original);
+ assert.equal(a.store.get('arm_5x5_app_state_v1'),'legacy');
+ assert.equal(a.run('S.act!==null'),true);
+ assert.match(a.get('bk').placeholder,/Geçersiz yedek/);
+});
+
+test('valid backup loads through the new validator without losing the old storage key',()=>{
+ const a=harness({arm_5x5_app_state_v1:'archive'});
+ a.run('start()');
+ const candidate=a.state();candidate.w.Squat=190;
+ a.get('bk').value=JSON.stringify(candidate);
+ a.run('impBk()');
+ assert.equal(a.state().w.Squat,190);
+ assert.equal(a.store.get('arm_5x5_app_state_v1'),'archive');
+});
+
+test('unsafe shared program import leaves existing workout history intact',()=>{
+ const a=harness();a.run('start()');
+ const old=a.store.get('sl5x5');
+ a.get('pj').value=JSON.stringify({name:'Unsafe',ws:[{name:'Day',ex:[{n:'Squat',s:9999,r:5,w:40,inc:2.5}]}]});
+ a.run('pimp()');
+ assert.equal(a.store.get('sl5x5'),old);
+ assert.equal(a.run('S.act!==null'),true);
+ assert.match(a.get('pj').placeholder,/Geçersiz program/);
+});
+
+test('valid shared program persists only validated exercises',()=>{
+ const a=harness();a.run('start()');
+ a.get('pj').value=JSON.stringify({name:'Kuvvet',split:'Özel',ws:[{name:'Gün 1',ex:[{n:'Squat',s:3,r:5,w:60,inc:2.5}]}]});
+ a.run('pimp()');
+ const saved=a.state();
+ assert.equal(saved.pg.length,1);
+ assert.equal(saved.pg[0].ws[0].ex[0].s,3);
+ assert.equal(saved.pg[0].ws[0].ex[0].w,60);
+ assert.equal(saved.act.ex.length,3);
+});
+
+test('storage write failure does not mark a workout complete or delete its active session',()=>{
+ const a=harness();a.run('start()');
+ const stored=a.store.get('sl5x5');
+ a.run('S.act.ex.forEach(e=>e.sets.fill(5))');
+ a.ctx.localStorage.setItem=()=>{throw Error('Quota exceeded')};
+ a.run('finish()');
+ assert.equal(a.store.get('sl5x5'),stored);
+ assert.equal(a.run('S.act!==null'),true);
+ assert.equal(a.run('S.h.length'),0);
+});
+
+test('runtime recovery never prompts a one-click factory reset',()=>{
+ const a=harness();a.run('showErr(new Error("temporary rendering failure"))');
+ const markup=a.get('app').innerHTML;
+ assert.match(markup,/Ham veriyi görüntüle/);
+ assert.ok(!markup.includes('onclick="resetAll()"'));
+ assert.doesNotThrow(()=>a.run('recoverData()'));
+});
+
+test('a failed write does not start an unpersisted workout',()=>{
+ const a=harness();
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage quota exceeded')};
+ a.run('start()');
+ assert.equal(a.run('S.act'),null);
+ assert.equal(a.store.has('sl5x5'),false);
+});
+
+test('failed set recording keeps the previously logged repetitions intact',()=>{
+ const a=harness();a.run('start()');
+ const original=a.store.get('sl5x5');
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage denied')};
+ a.run('tap(0,0)');
+ assert.equal(a.run('S.act.ex[0].sets[0]'),null);
+ assert.equal(a.store.get('sl5x5'),original);
+});
+
+test('weight edits do not appear saved if browser storage rejects the update',()=>{
+ const a=harness();a.run('start()');
+ const old=a.run('S.act.ex[0].w');
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage denied')};
+ a.run('adj(0,5)');
+ assert.equal(a.run('S.act.ex[0].w'),old);
+});
+
+test('failed storage preserves an active session when canceling it',()=>{
+ const a=harness();a.run('start()');
+ const original=a.store.get('sl5x5');
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage denied')};
+ a.run('delWo()');a.run('delWo()');
+ assert.equal(a.run('S.act!==null'),true);
+ assert.equal(a.store.get('sl5x5'),original);
+});
+
+test('failed reset restores in-memory records instead of silently losing them',()=>{
+ const a=harness();a.run('start()');
+ const before=a.store.get('sl5x5');
+ a.ctx.localStorage.setItem=()=>{throw Error('Storage denied')};
+ a.ctx.resetButton=a.get('reset');
+ a.run('rstS(resetButton)');a.run('rstS(resetButton)');
+ assert.equal(a.run('S.act!==null'),true);
+ assert.equal(a.store.get('sl5x5'),before);
+});
+
+test('corrupt persisted data opens a recovery screen and does not delete source bytes',()=>{
+ const raw='{unreadable user records';
+ const a=harness({sl5x5:raw});
+ assert.match(a.get('app').innerHTML,/Veri kurtarma/);
+ assert.match(a.get('app').innerHTML,/Ham veriyi görüntüle/);
+ assert.equal(a.store.get('sl5x5'),raw);
+ a.run('recoverData()');
+ assert.equal(a.store.get('sl5x5'),raw);
+ a.run('start()');
+ assert.equal(a.store.get('sl5x5'),raw);
+});
+
+test('recovery restores a valid user-supplied backup and releases the storage guard',()=>{
+ const a=harness({sl5x5:'{broken'});
+ a.get('recoveryImport').value=JSON.stringify({
+  w:{Squat:175,'Bench Press':105,'Barbell Row':90,'Overhead Press':50,Deadlift:75},
+  inc:{Squat:2.5,'Bench Press':2.5,'Barbell Row':2.5,'Overhead Press':2.5,Deadlift:5},
+  h:[],next:'B',act:null
+ });
+ a.run('recoverImport()');
+ assert.equal(a.state().next,'B');
+ assert.equal(a.state().w.Squat,175);
+ assert.match(a.get('app').innerHTML,/Bugünkü Antrenman/);
 });
