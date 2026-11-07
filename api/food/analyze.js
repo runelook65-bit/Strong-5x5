@@ -1,3 +1,4 @@
+import {securityConfigured,verifyGoogleIdToken,consumeDailyQuota,AnalysisSecurityError} from './security.js';
 // Vercel serverless function: estimates calories and macros from a meal photo.
 // Requires the OPENROUTER_API_KEY secret on Vercel.
 // Free vision model only: never silently fall back to a paid provider.
@@ -74,12 +75,17 @@ function clean(input) {
   };
 }
 
-async function handler(req, res) {
+export function createFoodAnalyzeHandler({
+  authenticate=verifyGoogleIdToken,
+  charge=consumeDailyQuota
+}={}) {
+return async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   if (!originAllowed(req)) return res.status(403).json({ error: 'origin' });
   const key = process.env.OPENROUTER_API_KEY;
-  if (!key || (!MODEL.endsWith(':free') && MODEL !== 'openrouter/free')) {
+  if (!key || !securityConfigured() ||
+      (!MODEL.endsWith(':free') && MODEL !== 'openrouter/free')) {
     return res.status(503).json({ error: 'not_configured' });
   }
 
@@ -91,6 +97,22 @@ async function handler(req, res) {
   if (!image || image.length > MAX_IMAGE_CHARS || !/^[A-Za-z0-9+/=]+$/.test(image)) {
     return res.status(400).json({ error: 'image' });
   }
+
+  // Reject unauthenticated traffic before consuming third-party AI quota.
+  const authorization=String(req.headers?.authorization||'');
+  const bearer=/^Bearer ([A-Za-z0-9._-]{40,8192})$/.exec(authorization);
+  if(!bearer)return res.status(401).json({error:'auth'});
+  let account,quota;
+  try{
+    account=await authenticate(bearer[1],process.env.GOOGLE_CLIENT_ID);
+    quota=await charge(account.sub);
+  }catch(error){
+    if(error instanceof AnalysisSecurityError)
+      return res.status(error.status).json({error:error.code});
+    return res.status(503).json({error:'auth_service'});
+  }
+  if(!quota?.allowed)return res.status(429).json({error:'quota'});
+  res.setHeader('X-StrongFits-Quota-Remaining',String(quota.remaining));
 
   const content = [
     { type: 'text', text: hint ? `Kullanıcı düzeltmesi: ${hint}. Bu öğünü analiz et.` : 'Bu öğünü analiz et.' },
@@ -140,5 +162,7 @@ async function handler(req, res) {
   return res.status(200).json(clean(parsed));
 }
 
-export default handler;
+}
+
+export default createFoodAnalyzeHandler();
 export {clean, originAllowed};
