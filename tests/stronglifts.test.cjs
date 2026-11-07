@@ -176,3 +176,37 @@ test('package ships a single Vite app and no obsolete Tailwind or React runtime'
   assert.ok(!pkg.devDependencies.tailwindcss);
   assert.ok(!pkg.dependencies?.react);
 });
+
+test('programs tab lists exercise-focused catalog programs, not only 5x5',()=>{
+  const a=harness();
+  a.run('goT("prog")');
+  const out=a.get('app').innerHTML;
+  for(const n of ['Kol Antrenman','Göğüs Antrenman','Sırt Antrenman','Omuz Antrenman','Bacak Antrenman','Tüm Vücut'])assert.match(out,new RegExp(n));
+  assert.match(out,/StrongLifts 5×5/);
+});
+test('catalog programs have a 4-week plan with rest days and valid exercises',()=>{
+  const a=harness();
+  assert.equal(a.run('CAT.every(p=>cdays(p).length===28)'),true);
+  assert.equal(a.run('CAT.every(p=>cdays(p).some(d=>d.rest)&&cdays(p).filter(d=>!d.rest).every(d=>d.ex.length>=3&&d.ex.every(e=>e.s>0&&e.r>0&&e.w>=20&&e.inc>0)))'),true);
+});
+test('catalog day runs through the normal workout flow and records progress',()=>{
+  const a=harness();
+  a.run('startC("c:kol:0")');
+  assert.equal(a.state().act.cid,'c:kol:0');
+  assert.equal(a.state().act.ex.length,4);
+  a.run('S.act.ex.forEach(e=>e.sets.fill(e.r));finish()');
+  const d=a.state();
+  assert.equal(d.pp.kol.done[0],1);
+  assert.equal(d.cwt['kol|Barbell Curl'],22.5);
+  assert.equal(d.h.length,1);
+  assert.equal(d.next,'B');
+  assert.equal(a.run('catW("kol",0).ex[0].w'),22.5);
+  assert.equal(a.run('cpc(CAT[0]).dn'),1);
+});
+test('unfinished catalog day does not advance weights and rest days cannot start',()=>{
+  const a=harness();
+  a.run('startC("c:kol:0");S.act.ex[0].sets[0]=10;finish()');
+  assert.equal(a.state().cwt['kol|Barbell Curl'],20);
+  assert.equal(a.run('catW("kol",3)'),null);
+  a.run('pdo("kol");pdreset({dataset:{},textContent:""});');
+});

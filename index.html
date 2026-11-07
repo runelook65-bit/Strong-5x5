@@ -175,6 +175,17 @@ h1{letter-spacing:-.5px;background:linear-gradient(90deg,var(--tx),color-mix(in 
 .toast{position:fixed;top:calc(16px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:var(--red2);color:#fff;padding:14px 22px;border-radius:26px;font-weight:700;z-index:20;animation:tn .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.35)}@keyframes tn{from{opacity:0;margin-top:-20px}to{opacity:1;margin-top:0}}nav button{transition:background .2s,color .2s}
 .stp{border:0;background:var(--card2);color:var(--tx);border-radius:50%;width:30px;height:30px;font-size:18px;font-weight:700;vertical-align:middle}
 .rest{position:fixed;left:16px;right:16px;max-width:488px;margin:auto;bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--red2);color:#fff;border-radius:26px;padding:12px 20px;display:none;justify-content:space-between;align-items:center;font-size:20px;font-weight:700}
+.cg{display:grid;gap:12px}
+.pc{position:relative;overflow:hidden;border-radius:24px;padding:18px;min-height:140px;color:#fff;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(135deg,hsl(var(--h) 55% 30%),hsl(var(--h) 60% 12%));border:1px solid rgba(255,255,255,.1);transition:transform .12s}
+.pc:active{transform:scale(.985)}.pc .pi{position:absolute;right:16px;top:10px;font-size:62px;line-height:1;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45))}
+.pc b{font-size:21px;letter-spacing:.02em;text-transform:uppercase}.pc small{display:block;opacity:.85;font-size:14px;margin:3px 0 8px;max-width:72%}
+.pc .lv{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;opacity:.95}.bolt{display:inline-flex;gap:2px}.bolt svg{width:14px;height:14px;fill:#fff}.bolt svg.o{opacity:.3}
+.pc .pb{height:5px;border-radius:3px;background:rgba(255,255,255,.22);margin-top:10px;overflow:hidden}.pc .pb i{display:block;height:100%;background:var(--red);border-radius:3px}
+.pc .pm{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-top:8px;opacity:.95}
+.pdr{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:18px;background:var(--card);margin-bottom:8px;cursor:pointer;transition:transform .12s}.pdr:active{transform:scale(.985)}
+.pdr>span:first-child{flex:1}.pdr b{font-size:19px}.pdr small{display:block;color:var(--mu);font-size:13px;margin-top:2px}
+.pdr.cur{background:var(--red);color:var(--on)}.pdr.cur small{color:inherit;opacity:.75}
+.pdr.off{opacity:.55;cursor:default}.pdr .pdi{font-size:22px}.rg{width:46px;height:46px;flex:none}.rg .a{stroke:var(--red)}.pdr.cur .rg .a{stroke:var(--on)}
 </style></head><body><div id="app"></div><nav id="nav"></nav><div id="ovl"></div>
 <script>
 const D=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'],
@@ -281,18 +292,18 @@ function delWo(){if(!dArm){dArm=1;$('dl').textContent='Emin misin?';setTimeout((
 function rstS(b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin? Tekrar dokun';setTimeout(()=>{delete b.dataset.a;b.textContent='Verileri Sıfırla'},3000)}else{S=fresh();save();closeSh()}}
 function expBk(){$('bk').value=JSON.stringify(S);$('bk').select()}
 function impBk(){try{const d=JSON.parse($('bk').value);if(d&&d.w&&d.h){S=d;save();draw()}else throw 0}catch(e){$('bk').value='';$('bk').placeholder='Geçersiz yedek'}}
-function closeWo(){ovOpen=0;$('ovl').innerHTML='';clearInterval(timer);draw()}
+function closeWo(){ovOpen=0;$('ovl').innerHTML='';clearInterval(timer);draw();if(pdId)pdr()}
 function finish(){
  const a=S.act;
  if(a.ex.every(e=>e.sets.every(s=>s===null)))return;
  S.fail=S.fail||{};const cw=a.cid&&fw(a.cid);if(cw)a.ex.forEach((e,i)=>{const c=cw.ex[i];if(c)c.w=e.w+(e.sets.every(s=>s===e.r)?c.inc:0)});else a.ex.forEach(e=>{if(e.x)return;S.w[e.n]=e.w;if(e.sets.every(s=>s===5)){S.w[e.n]+=S.inc[e.n];S.fail[e.n]=0}else{S.fail[e.n]=(S.fail[e.n]||0)+1;if(S.fail[e.n]>=3){S.w[e.n]=Math.max(20,Math.round(S.w[e.n]*.9/2.5)*2.5);S.fail[e.n]=0}}});
  let pr=0;a.ex.forEach(e=>{if(e.sets.every(s=>s===(e.r||5))&&S.h.some(h=>h.ex.some(q=>q.n===e.n))){const best=Math.max(...S.h.flatMap(h=>h.ex.filter(q=>q.n===e.n).map(q=>q.w)));if(e.w>best){e.pr=1;pr=1}}});
  S.h.push({date:a.date,type:a.type,ex:a.ex,note:a.note,dur:Math.round((Date.now()-a.date)/60000)});
- if(!a.cid)S.next=a.type==='A'?'B':'A';else{const P=AP();if(P&&P.ws.some(w=>w.id===a.cid))S.pi=((S.pi||0)+1)%P.ws.length}S.act=null;save();closeWo();toast((pr?'Yeni rekor! 🏆 ':'')+'Antrenman kaydedildi 🎉')}
+ if(!a.cid)S.next=a.type==='A'?'B':'A';else{const P=AP();if(P&&P.ws.some(w=>w.id===a.cid))S.pi=((S.pi||0)+1)%P.ws.length}const m=/^c:([^:]+):(\d+)$/.exec(a.cid||'');if(m){const q=S.pp=S.pp||{},r=q[m[1]]=q[m[1]]||{done:{}};r.done[m[2]]=1;r.start=r.start||a.date;if(cw){S.cwt=S.cwt||{};cw.ex.forEach(c=>{S.cwt[m[1]+'|'+c.n]=c.w})}}S.act=null;save();closeWo();toast((pr?'Yeni rekor! 🏆 ':'')+'Antrenman kaydedildi 🎉')}
 let dir='',tx0=0,ty0=0,tOk=0;
 document.addEventListener('touchstart',e=>{const t=e.touches[0];tx0=t.clientX;ty0=t.clientY;tOk=!e.target.closest('input,textarea,svg')},{passive:true});
 document.addEventListener('touchend',e=>{if(!tOk)return;const t=e.changedTouches[0],dx=t.clientX-tx0,dy=t.clientY-ty0;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.6)return;
- if($('xv')||$('sh')||$('pe'))return;
+ if($('xv')||$('sh')||$('pe')||pdId)return;
  if(ovOpen){const w=dx<0?'w':'a';if(w!==wtab){wtab=w;wo()}return}
  const ks=tabs.map(x=>x[0]),n=ks.indexOf(tab)+(dx<0?1:-1);if(n<0||n>=ks.length)return;dir=dx<0?'l':'r';tab=ks[n];draw();scrollTo(0,0)},{passive:true});
 function greet(){const h=new Date().getHours();return h<12?'Günaydın':h<18?'İyi günler':'İyi akşamlar'}
@@ -365,19 +376,80 @@ function tgd(d,b){const a=S.nds||[1,3,5];S.nds=a.includes(d)?a.filter(x=>x!==d):
 function chkDay(){if(!S.nd)return;const n=new Date(),k=key(n);if(!(S.nds||[1,3,5]).includes(n.getDay())||S.ndl===k)return;const [h,m]=(S.nt||'18:00').split(':');if(n.getHours()*60+n.getMinutes()<+h*60+ +m)return;if(S.h.some(x=>key(x.date)===k))return;S.ndl=k;save();notify('Antrenman günü 🏋️','Bugün '+S.next+' antrenmanı var');toast('Bugün antrenman günü: '+S.next)}
 setInterval(chkDay,30000);setTimeout(chkDay,1500);
 let pe=null;
-const allW=()=>[...(S.cw||[]),...(S.pg||[]).flatMap(p=>p.ws)],fw=id=>allW().find(w=>w.id===id),AP=()=>(S.pg||[]).find(p=>p.id===S.ap);
+const allW=()=>[...(S.cw||[]),...(S.pg||[]).flatMap(p=>p.ws)],fw=id=>{const m=/^c:([^:]+):(\d+)$/.exec(id||'');return m?catW(m[1],+m[2]):allW().find(w=>w.id===id)},AP=()=>(S.pg||[]).find(p=>p.id===S.ap);
 function homeP(P){const n=P.ws.length,i=(S.pi||0)%n,w=P.ws[i];
  let h=`<div class="mu" style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;font-weight:600">${greet()}${S.name?', '+esc(S.name):''}</div><h1 style="margin-top:4px">${P.name}</h1><div class="week">${weekDots()}</div><div class="card hero"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:30px;font-weight:700">Bugünkü Antrenman</div><div class="mu" style="font-size:19px;margin-top:6px">${dstr(new Date())}</div></div>${n>1?`<button class="badge" style="border:0;color:var(--tx);font-size:18px" onclick="S.pi=${(i+1)%n};save();draw()">${i+1}/${n} ⇄</button>`:''}</div><div class="mu" style="margin-top:14px">${w.name}</div><div style="margin-top:8px;background:var(--card2);border-radius:20px;padding:6px 16px">${w.ex.map(e=>`<div class="row"><span>${e.n}</span><span>${e.s}×${e.r} ${kg(e.w)}</span></div>`).join('')}</div><button class="btn" onclick="startC('${w.id}')">${S.act?'Antrenmana Devam Et':'Antrenmanı Başlat'}</button></div>`;
  h+=`<div class="card" style="display:flex;justify-content:space-around;text-align:center;margin-top:14px"><div><b class="cu" style="font-size:26px">${S.h.length}</b><div class="mu">Toplam</div></div><div><b class="cu" style="font-size:26px">${S.h.filter(x=>Date.now()-x.date<6048e5).length}</b><div class="mu">Bu hafta</div></div></div><h2>Yaklaşan Antrenmanlar</h2>`;
  for(let k=1;k<=4;k++){const x=P.ws[(i+k)%n],d=new Date();d.setDate(d.getDate()+2*k);h+=upCard({d,t:String((i+k)%n+1),n:x.name,l:x.ex.map(e=>[e.n,e.w]),inc:Object.fromEntries(x.ex.map(e=>[e.n,e.inc]))})}
  return h}
+const LVL=['Başlangıç','Orta','İleri'];
+const bolts=n=>`<span class="bolt">${[1,2,3].map(i=>`<svg class="${i>n?'o':''}" viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>`).join('')}</span>`;
+const X=(n,s,r,w,inc)=>({n,s,r,w,inc});
+/* Egzersiz odaklı program kataloğu. days: antrenman şablonları, wk: haftalık düzen (-1 = dinlenme), 4 hafta tekrar eder. */
+const CAT=[
+ {id:'kol',name:'Kol Antrenman',sub:'Kısa sürede kollara şekil verin',lvl:2,ic:'💪',h:215,wk:[0,1,2,-1,0,1,-1],days:[
+  ['Biceps & Triceps',[X('Barbell Curl',4,10,20,2.5),X('Skull Crusher',4,10,20,2.5),X('Cable Curl',3,12,20,2.5),X('Triceps Pushdown',3,12,25,2.5)]],
+  ['Ön Kol & Çekiç',[X('Preacher Curl',3,10,20,2.5),X('Overhead Triceps Extension',3,12,20,2.5),X('Cable Hammer Curl',3,12,20,2.5),X('Reverse Curl',3,12,20,2.5)]],
+  ['Güç Günü',[X('Close-Grip Bench Press',4,6,40,2.5),X('EZ Bar Curl',4,8,25,2.5),X('Machine Dips',3,10,30,2.5),X('Triceps Pushdown',3,10,25,2.5)]]]},
+ {id:'gogus',name:'Göğüs Antrenman',sub:'Dolgun ve güçlü bir göğüs',lvl:1,ic:'🏋️',h:355,wk:[0,1,-1,2,-1,0,-1],days:[
+  ['Düz Göğüs',[X('Bench Press',5,5,40,2.5),X('Incline Bench Press',3,8,30,2.5),X('Cable Fly',3,12,20,2.5),X('Machine Chest Press',3,10,30,2.5)]],
+  ['Üst Göğüs',[X('Incline Bench Press',4,8,30,2.5),X('Decline Bench Press',3,10,30,2.5),X('Pec Deck',3,12,25,2.5),X('Cable Crossover',3,12,20,2.5)]],
+  ['Güç & Hacim',[X('Bench Press',4,6,40,2.5),X('Machine Chest Press',4,10,30,2.5),X('Cable Fly',3,15,20,2.5),X('Machine Dips',3,10,30,2.5)]]]},
+ {id:'sirt',name:'Sırt Antrenman',sub:'Geniş ve kalın bir sırt',lvl:2,ic:'🧗',h:150,wk:[0,1,-1,2,-1,0,-1],days:[
+  ['Çekiş',[X('Barbell Row',4,8,40,2.5),X('Lat Pulldown',4,10,40,2.5),X('Seated Cable Row',3,12,35,2.5),X('Face Pull',3,15,20,2.5)]],
+  ['Kalınlık',[X('Deadlift',3,5,60,5),X('T-Bar Row',3,10,30,2.5),X('Straight-Arm Pulldown',3,12,20,2.5),X('Machine Row',3,12,35,2.5)]],
+  ['Genişlik',[X('Lat Pulldown',4,10,40,2.5),X('Close-Grip Pulldown',3,10,40,2.5),X('Seated Cable Row',3,12,35,2.5),X('Barbell Shrug',3,12,40,2.5)]]]},
+ {id:'omuz',name:'Omuz Antrenman',sub:'Yuvarlak ve güçlü omuzlar',lvl:1,ic:'🙆',h:32,wk:[0,1,-1,2,-1,0,-1],days:[
+  ['Press',[X('Overhead Press',5,5,30,2.5),X('Machine Shoulder Press',3,10,30,2.5),X('Machine Lateral Raise',3,12,20,2.5),X('Face Pull',3,15,20,2.5)]],
+  ['Yan & Arka Omuz',[X('Machine Lateral Raise',4,15,20,2.5),X('Reverse Pec Deck',3,12,20,2.5),X('Cable Front Raise',3,12,20,2.5),X('Barbell Shrug',3,12,40,2.5)]],
+  ['Güç Günü',[X('Overhead Press',4,6,30,2.5),X('Upright Row',3,10,25,2.5),X('Face Pull',3,15,20,2.5),X('Machine Shoulder Press',3,10,30,2.5)]]]},
+ {id:'bacak',name:'Bacak Antrenman',sub:'Güçlü bacak ve kalça',lvl:3,ic:'🦵',h:275,wk:[0,1,-1,2,-1,0,-1],days:[
+  ['Squat Günü',[X('Squat',5,5,40,2.5),X('Romanian Deadlift',3,8,40,2.5),X('Leg Press',3,12,80,5),X('Leg Curl',3,12,30,2.5)]],
+  ['Kalça & Arka Bacak',[X('Hip Thrust',4,10,40,5),X('Romanian Deadlift',3,10,40,2.5),X('Leg Extension',3,12,30,2.5),X('Standing Calf Raise',4,15,40,5)]],
+  ['Hacim Günü',[X('Front Squat',4,8,30,2.5),X('Leg Press',4,12,80,5),X('Leg Curl',3,12,30,2.5),X('Seated Calf Raise',4,15,30,2.5)]]]},
+ {id:'tum',name:'Tüm Vücut',sub:'Haftada 3 gün, her kası çalıştır',lvl:1,ic:'🔥',h:190,wk:[0,-1,1,-1,2,-1,-1],days:[
+  ['Gün A',[X('Squat',3,8,40,2.5),X('Bench Press',3,8,40,2.5),X('Barbell Row',3,8,40,2.5)]],
+  ['Gün B',[X('Deadlift',3,5,60,5),X('Overhead Press',3,8,30,2.5),X('Lat Pulldown',3,10,40,2.5)]],
+  ['Gün C',[X('Leg Press',3,12,80,5),X('Incline Bench Press',3,10,30,2.5),X('Seated Cable Row',3,10,35,2.5),X('Barbell Curl',2,12,20,2.5)]]]}
+];
+const cdays=p=>{const o=[];for(let w=0;w<4;w++)p.wk.forEach((k,j)=>{const i=w*7+j;o.push(k<0?{i,rest:1}:{i,k,n:p.days[k][0],ex:p.days[k][1]})});return o};
+const ppOf=pid=>(S.pp&&S.pp[pid])||{done:{}};
+const cpc=p=>{const W=cdays(p).filter(d=>!d.rest),st=ppOf(p.id),dn=W.filter(d=>st.done[d.i]).length;return {dn,n:W.length,pc:W.length?Math.round(dn/W.length*1000)/10:0}};
+const fpc=n=>String(n).replace('.',',');
+function catW(pid,di){const p=CAT.find(x=>x.id===pid),d=p&&cdays(p)[di];if(!d||d.rest)return null;
+ return {id:'c:'+pid+':'+di,name:p.name+' · '+(di+1)+'. gün',ex:d.ex.map(e=>({...e,w:(S.cwt&&S.cwt[pid+'|'+e.n])??e.w}))}}
 function prog3(){
  const a=AP()?S.ap:'';
- let h=`<div style="display:flex;justify-content:space-between;align-items:center"><h1 style="margin:8px 0 16px">Programlar</h1><button class="pill r" onclick="pnew()">Yarat</button></div>`;
+ let h=`<div style="display:flex;justify-content:space-between;align-items:center"><h1 style="margin:8px 0 16px">Programlar</h1><button class="pill r" onclick="pnew()">Yarat</button></div>
+ <div class="cg">${CAT.map(p=>{const c=cpc(p),on=c.dn>0||(S.act&&String(S.act.cid).startsWith('c:'+p.id+':'));
+  return `<div class="pc" style="--h:${p.h}" onclick="pdo('${p.id}')"><span class="pi">${p.ic}</span><b>${p.name}</b><small>${p.sub}</small><span class="lv">${bolts(p.lvl)}${LVL[p.lvl-1]}</span>${on?`<div class="pb"><i style="width:${c.pc}%"></i></div><div class="pm"><span>${c.n-c.dn} antrenman kaldı</span><span>%${fpc(c.pc)}</span></div>`:`<div class="pm"><span>${c.n} antrenman · 4 hafta</span></div>`}</div>`}).join('')}</div>
+ <h2>Güç ve Kişisel Programlar</h2>`;
  h+=`<div class="card pgc${!a?' on':''}" onclick="setAp('')"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">StrongLifts 5×5</b><span class="rad"></span></div><div class="mu" style="font-size:14px;margin-top:6px">A: Squat, Bench Press, Barbell Row<br>B: Squat, Overhead Press, Deadlift</div></div>`;
  (S.pg||[]).forEach(p=>{h+=`<div class="card pgc${a===p.id?' on':''}" onclick="setAp('${p.id}')"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">${p.name}</b><span class="rad"></span></div><div class="mu" style="font-size:14px;margin-top:6px">${p.ws.map(w=>w.name+': '+w.ex.map(e=>e.n).join(', ')).join('<br>')}</div><div style="display:flex;gap:8px;margin-top:12px"><button class="pill" onclick="event.stopPropagation();pedit('${p.id}')">Düzenle</button><button class="pill r" onclick="event.stopPropagation();pdel('${p.id}',this)">Sil</button></div></div>`});
  h+=`<button class="pill" onclick="pimpo()">Program İçe Aktar</button>`;
  const q=prog2();return h+q.slice(q.indexOf('<h2>'))}
+let pdId=null;
+function pdo(id){pdId=id;pdr(1)}
+function pdx(){const e=$('pd');if(e)e.remove();pdId=null;draw()}
+const ring=(p,c)=>`<svg class="rg" viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="currentColor" stroke-opacity=".2" stroke-width="3"/><circle class="a" style="display:${p?'':'none'}" cx="23" cy="23" r="19" fill="none" stroke-width="3" stroke-linecap="round" stroke-dasharray="${(119.4*p/100).toFixed(1)} 119.4" transform="rotate(-90 23 23)"/><text x="23" y="27" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor">${p}%</text></svg>`;
+function pdr(first){
+ const p=CAT.find(x=>x.id===pdId);if(!p){const e=$('pd');if(e)e.remove();return}
+ let el=$('pd');if(!el){el=document.createElement('div');el.id='pd';document.body.appendChild(el)}
+ el.className='ov'+(first?' in':'');el.style.zIndex=9;
+ const D=cdays(p),st=ppOf(p.id),c=cpc(p),cur=D.find(d=>!d.rest&&!st.done[d.i]);
+ const fr=a=>{const s=a.ex.flatMap(e=>e.sets);return s.length?Math.round(s.filter(x=>x!==null).length/s.length*100):0};
+ const rows=D.map(d=>{
+  const hd=d.i%7===0?`<div class="sl">${d.i/7+1}. Hafta</div>`:'';
+  if(d.rest)return hd+`<div class="pdr off"><span><b>${d.i+1} . gün</b><small>Dinlenme günü</small></span><span class="pdi">☕</span></div>`;
+  const id='c:'+p.id+':'+d.i,act=S.act&&S.act.cid===id,done=st.done[d.i],isCur=cur&&cur.i===d.i;
+  const right=done?`<svg class="rg" viewBox="0 0 46 46"><circle cx="23" cy="23" r="21" fill="var(--red)"/><path d="M14 24l6 6 12-13" fill="none" stroke="var(--on)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`:ring(act?fr(S.act):0);
+  return hd+`<div class="pdr${isCur?' cur':''}" onclick="pday('${p.id}',${d.i})"><span><b>${d.i+1} . gün</b><small>${d.n} · ${d.ex.length} egzersiz</small></span>${right}</div>`}).join('');
+ el.innerHTML=`<div><div class="top"><button class="pill r" style="justify-self:start" onclick="pdx()">‹ Geri</button><b style="font-size:17px;text-align:center">Program</b><span></span></div>
+ <div class="pc" style="--h:${p.h};margin-top:18px;cursor:default"><span class="pi">${p.ic}</span><b>${p.name}</b><small>${p.sub}</small><span class="lv">${bolts(p.lvl)}${LVL[p.lvl-1]}</span><div class="pb"><i style="width:${c.pc}%"></i></div><div class="pm"><span>${c.n-c.dn} antrenman kaldı</span><span>%${fpc(c.pc)}</span></div></div>
+ ${rows}${c.dn?`<button class="pill r" style="margin-top:18px" onclick="pdreset(this)">İlerlemeyi Sıfırla</button>`:''}</div>`}
+function pday(pid,di){const w=catW(pid,di);if(!w)return;const p=CAT.find(x=>x.id===pid);
+ sh((di+1)+'. gün · '+cdays(p)[di].n,w.ex.map(e=>`<div class="row"><span>${e.n}</span><span class="mu">${e.s}×${e.r} · ${kg(e.w)}</span></div>`).join('')+`<button class="btn" onclick="closeSh();startC('${w.id}')">${S.act&&S.act.cid===w.id?'Antrenmana Devam Et':'Antrenmanı Başlat'}</button>`)}
+function pdreset(b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin? Tekrar dokun';setTimeout(()=>{delete b.dataset.a;b.textContent='İlerlemeyi Sıfırla'},3000)}else{if(S.pp)delete S.pp[pdId];save();pdr();draw()}}
 function setAp(id){S.ap=id||undefined;S.pi=0;save();draw();toast(id?'Aktif program değişti':'StrongLifts 5×5 aktif')}
 function pdel(id,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin?';setTimeout(()=>{delete b.dataset.a;b.textContent='Sil'},2500)}else{S.pg=S.pg.filter(p=>p.id!==id);if(S.ap===id){S.ap=undefined;S.pi=0}save();draw()}}
 function pnew(){pe={name:'',split:'Tüm Vücut',ws:[{id:'w'+Date.now(),name:'Antrenman A',ex:['Squat','Bench Press','Barbell Row'].map(n=>({n,s:5,r:5,w:S.w[n],inc:S.inc[n]}))}]};per(1)}
