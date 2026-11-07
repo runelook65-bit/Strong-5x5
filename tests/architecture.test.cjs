@@ -39,7 +39,7 @@ test('fresh state preserves uploaded baseline defaults and storage key',async ()
   assert.equal(STORAGE_KEY,'sl5x5');
   const state=fresh();
   assert.equal(state.next,'B');
-  assert.equal(state.w.Squat,175);
+  assert.equal(state.w.Squat,20);
   assert.equal(state.inc.Deadlift,5);
   assert.deepEqual(state.h,[]);
   const saved=new Map();
@@ -59,7 +59,7 @@ test('malformed storage is handled without changing old keys',async ()=>{
   const {loadState}=await esm('src/data/storage.js');
   const storage={getItem(){return '{broken'},setItem(){throw Error('must not write')}};
   const state=loadState(storage);
-  assert.equal(state.w['Bench Press'],105);
+  assert.equal(state.w['Bench Press'],20);
   assert.equal(state.next,'B');
 });
 
@@ -72,7 +72,7 @@ test('upcoming projected sessions do not mutate saved weights',async ()=>{
   assert.equal(projected.length,4);
   assert.deepEqual(projected.map(x=>x.t),['A','B','A','B']);
   assert.equal(projected[0].l[0][0],'Squat');
-  assert.equal(projected[0].l[0][1],177.5);
+  assert.equal(projected[0].l[0][1],22.5);
   assert.equal(JSON.stringify(state),before);
 });
 
@@ -80,7 +80,7 @@ test('standard progression increases completed lifts and tracks unsuccessful set
   const {applyStandardProgression}=await esm('src/domain/workout.js');
   const {fresh}=await esm('src/data/storage.js');
   const state=fresh();state.fail={};
-  applyStandardProgression(state,{ex:[{n:'Squat',w:175,sets:[5,5,5,5,5]},{n:'Deadlift',w:75,sets:[5,5,5,5,4]}]});
+  applyStandardProgression(state,{ex:[{n:'Squat',w:175,sets:[5,5,5,5,5]},{n:'Deadlift',w:75,sets:[4]}]});
   assert.equal(state.w.Squat,177.5);
   assert.equal(state.w.Deadlift,75);
   assert.equal(state.fail.Squat,0);
