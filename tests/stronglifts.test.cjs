@@ -210,3 +210,13 @@ test('unfinished catalog day does not advance weights and rest days cannot start
   assert.equal(a.run('catW("kol",3)'),null);
   a.run('pdo("kol");pdreset({dataset:{},textContent:""});');
 });
+
+test('home shows the next day of an in-progress catalog program only after it is started',()=>{
+  const a=harness();
+  assert.ok(!a.get('app').innerHTML.includes('Devam Eden Program'));
+  a.run('startC("c:sirt:0");S.act.ex.forEach(e=>e.sets.fill(e.r));finish();goT("home")');
+  const out=a.get('app').innerHTML;
+  assert.match(out,/Devam Eden Program/);
+  assert.match(out,/Sırt Antrenman/);
+  assert.match(out,/Sıradaki: 2\. gün/);
+});

@@ -253,7 +253,7 @@ const AC={'Nane':['#62DBA6','#4fc496','#06231a'],'Mavi':['#0a84ff','#0a6fe0','#f
 function acc(){const c=AC[S.ac]||AC['Nane'],s=document.documentElement.style;s.setProperty('--red',c[0]);s.setProperty('--red2',c[1]);s.setProperty('--on',c[2]);document.documentElement.dataset.th=S.th||'auto';document.body.classList.toggle('nw',!!S.nw)}
 function toast(m){if(/kaydedildi/.test(m))snd('done');const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);try{navigator.vibrate&&navigator.vibrate([60,40,60])}catch(e){}setTimeout(()=>t.remove(),2600)}
 function draw(){acc();$('app').className=dir;dir='';
- $('app').innerHTML={home,prog:prog3,hist,stat,set:sett2}[tab]();
+ $('app').innerHTML={home:homeX,prog:prog3,hist,stat,set:sett2}[tab]();
  navUp();(0)&&tabs.map(([k,i,l])=>`<button class="${k===tab?'on':''}" onclick="tab='${k}';draw();scrollTo(0,0)"><span>${ICN[k]}</span>${l}</button>`).join('')}
 
 function start(){try{!S.al&&navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
@@ -299,7 +299,7 @@ function finish(){
  S.fail=S.fail||{};const cw=a.cid&&fw(a.cid);if(cw)a.ex.forEach((e,i)=>{const c=cw.ex[i];if(c)c.w=e.w+(e.sets.every(s=>s===e.r)?c.inc:0)});else a.ex.forEach(e=>{if(e.x)return;S.w[e.n]=e.w;if(e.sets.every(s=>s===5)){S.w[e.n]+=S.inc[e.n];S.fail[e.n]=0}else{S.fail[e.n]=(S.fail[e.n]||0)+1;if(S.fail[e.n]>=3){S.w[e.n]=Math.max(20,Math.round(S.w[e.n]*.9/2.5)*2.5);S.fail[e.n]=0}}});
  let pr=0;a.ex.forEach(e=>{if(e.sets.every(s=>s===(e.r||5))&&S.h.some(h=>h.ex.some(q=>q.n===e.n))){const best=Math.max(...S.h.flatMap(h=>h.ex.filter(q=>q.n===e.n).map(q=>q.w)));if(e.w>best){e.pr=1;pr=1}}});
  S.h.push({date:a.date,type:a.type,ex:a.ex,note:a.note,dur:Math.round((Date.now()-a.date)/60000)});
- if(!a.cid)S.next=a.type==='A'?'B':'A';else{const P=AP();if(P&&P.ws.some(w=>w.id===a.cid))S.pi=((S.pi||0)+1)%P.ws.length}const m=/^c:([^:]+):(\d+)$/.exec(a.cid||'');if(m){const q=S.pp=S.pp||{},r=q[m[1]]=q[m[1]]||{done:{}};r.done[m[2]]=1;r.start=r.start||a.date;if(cw){S.cwt=S.cwt||{};cw.ex.forEach(c=>{S.cwt[m[1]+'|'+c.n]=c.w})}}S.act=null;save();closeWo();toast((pr?'Yeni rekor! 🏆 ':'')+'Antrenman kaydedildi 🎉')}
+ if(!a.cid)S.next=a.type==='A'?'B':'A';else{const P=AP();if(P&&P.ws.some(w=>w.id===a.cid))S.pi=((S.pi||0)+1)%P.ws.length}const m=/^c:([^:]+):(\d+)$/.exec(a.cid||'');if(m){const q=S.pp=S.pp||{},r=q[m[1]]=q[m[1]]||{done:{}};r.done[m[2]]=1;r.start=r.start||a.date;r.last=Date.now();if(cw){S.cwt=S.cwt||{};cw.ex.forEach(c=>{S.cwt[m[1]+'|'+c.n]=c.w})}}S.act=null;save();closeWo();toast((pr?'Yeni rekor! 🏆 ':'')+'Antrenman kaydedildi 🎉')}
 let dir='',tx0=0,ty0=0,tOk=0;
 document.addEventListener('touchstart',e=>{const t=e.touches[0];tx0=t.clientX;ty0=t.clientY;tOk=!e.target.closest('input,textarea,svg')},{passive:true});
 document.addEventListener('touchend',e=>{if(!tOk)return;const t=e.changedTouches[0],dx=t.clientX-tx0,dy=t.clientY-ty0;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.6)return;
@@ -428,6 +428,11 @@ function prog3(){
  (S.pg||[]).forEach(p=>{h+=`<div class="card pgc${a===p.id?' on':''}" onclick="setAp('${p.id}')"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">${p.name}</b><span class="rad"></span></div><div class="mu" style="font-size:14px;margin-top:6px">${p.ws.map(w=>w.name+': '+w.ex.map(e=>e.n).join(', ')).join('<br>')}</div><div style="display:flex;gap:8px;margin-top:12px"><button class="pill" onclick="event.stopPropagation();pedit('${p.id}')">Düzenle</button><button class="pill r" onclick="event.stopPropagation();pdel('${p.id}',this)">Sil</button></div></div>`});
  h+=`<button class="pill" onclick="pimpo()">Program İçe Aktar</button>`;
  const q=prog2();return h+q.slice(q.indexOf('<h2>'))}
+function nextProg(){let b=null;CAT.forEach(p=>{const st=ppOf(p.id),c=cpc(p);if(st.last&&c.dn<c.n&&(!b||st.last>ppOf(b.id).last))b=p});return b}
+function homeX(){const h=home(),p=nextProg();if(!p)return h;
+ const st=ppOf(p.id),c=cpc(p),d=cdays(p).find(x=>!x.rest&&!st.done[x.i]),id='c:'+p.id+':'+d.i,run=S.act&&S.act.cid===id;
+ const card=`<h2>Devam Eden Program</h2><div class="pc" style="--h:${p.h};min-height:0" onclick="pdo('${p.id}')"><span class="pi" style="font-size:44px;top:14px">${p.ic}</span><b>${p.name}</b><small>Sıradaki: ${d.i+1}. gün · ${d.n}</small><div class="pb"><i style="width:${c.pc}%"></i></div><div class="pm"><span>${c.n-c.dn} antrenman kaldı</span><span>%${fpc(c.pc)}</span></div><button class="btn" style="margin-top:12px" onclick="event.stopPropagation();startC('${id}')">${run?'Antrenmana Devam Et':'Antrenmanı Başlat'}</button></div>`;
+ return h.replace('<h2>Yaklaşan Antrenmanlar</h2>',card+'<h2>Yaklaşan Antrenmanlar</h2>')}
 let pdId=null;
 function pdo(id){pdId=id;pdr(1)}
 function pdx(){const e=$('pd');if(e)e.remove();pdId=null;draw()}
