@@ -1,4 +1,6 @@
 import {test,expect} from '@playwright/test';
+// Playwright routing cannot reliably intercept requests controlled by a PWA Service Worker.
+test.use({serviceWorkers:'block'});
 
 const PNG=Buffer.from(
  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/mqUAAAAASUVORK5CYII=','base64'
@@ -79,7 +81,7 @@ test('Google browser identity is sent only to analysis API and never stored',asy
  // A rejected credential must be cleared; the retry MUST ask for Google sign-in again.
  await expect(page.getByText('Sign in to analyze food')).toBeVisible();
  await page.getByRole('button',{name:'Test Google sign-in'}).click();
- await expect(page.locator('#sh')).toContainText('Test Apple');
+ await expect(page.locator('#fnm')).toHaveValue('Test Apple');
  expect(apiCalls).toBe(2);
  expect(bearerSeen).toBe('Bearer '+fakeCredential);
  expect(await page.evaluate(()=>localStorage.getItem('sl5x5'))).toBe(workouts);
