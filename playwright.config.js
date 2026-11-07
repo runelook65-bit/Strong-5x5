@@ -2,7 +2,7 @@ import {defineConfig} from '@playwright/test';
 
 export default defineConfig({
   testDir:'./e2e',
-  timeout:15000,
+  timeout:30000,
   retries:0,
   reporter:process.env.CI?'github':'list',
   use:{
@@ -12,7 +12,8 @@ export default defineConfig({
   },
   projects:[
     {name:'mobile-390',use:{browserName:'chromium',viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true}},
-    {name:'mobile-320',use:{browserName:'chromium',viewport:{width:320,height:740},deviceScaleFactor:2,isMobile:true,hasTouch:true}}
+    {name:'mobile-320',use:{browserName:'chromium',viewport:{width:320,height:740},deviceScaleFactor:2,isMobile:true,hasTouch:true}},
+    {name:'ios-webkit-390',use:{browserName:'webkit',viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true}}
   ],
   webServer:{
     command:'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
