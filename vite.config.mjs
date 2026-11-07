@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['icons/strength-5x5.svg'],
+      includeAssets: ['icons/strength-5x5.svg', 'icons/strongfits-180.png'],
       workbox: {
         globPatterns: ['**/*.{html,js,css,svg,png,jpg,webp,woff2}'],
         navigateFallback: 'index.html',
@@ -29,6 +29,7 @@ export default defineConfig({
         theme_color: '#000000',
         orientation: 'portrait-primary',
         icons: [
+          { src: 'icons/strongfits-180.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
           { src: 'icons/strength-5x5.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: 'icons/strength-5x5.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
         ]
