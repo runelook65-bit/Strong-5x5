@@ -1,13 +1,13 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {generateKeyPairSync,sign}=require('node:crypto');
+const {generateKeyPairSync,sign,randomUUID}=require('node:crypto');
 const security=import('../api/food/security.js');
 const configModule=import('../api/food/config.js');
 const analysisModule=import('../api/food/analyze.js');
 
 function fixture(){
  const {publicKey,privateKey}=generateKeyPairSync('rsa',{modulusLength:2048});
- const jwk={...publicKey.export({format:'jwk'}),use:'sig',alg:'RS256',kid:'strongfits-test-2026'};
+ const jwk={...publicKey.export({format:'jwk'}),use:'sig',alg:'RS256',kid:'strongfits-test-'+randomUUID()};
  const now=Date.now(),aud='test-client.apps.googleusercontent.com';
  const signToken=(claims={})=>{
   const header={alg:'RS256',typ:'JWT',kid:jwk.kid};
