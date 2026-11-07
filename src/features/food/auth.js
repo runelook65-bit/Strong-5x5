@@ -49,6 +49,10 @@ export function createFoodPhotoAuth({showSheet,manualFallback}){
    google.accounts.id.initialize({
     client_id:clientId,
     callback:response=>{
+     // A sign-in response can arrive after the user has dismissed the sheet
+     // or started a new meal. Never continue an abandoned photo analysis.
+     if(!target.isConnected || document.getElementById('strongfitsGoogleSignin')!==target)
+       return;
      const credential=typeof response?.credential==='string'?response.credential:'';
      const exp=tokenExpiry(credential);
      if(!credential||exp<Date.now()+60000)return;
