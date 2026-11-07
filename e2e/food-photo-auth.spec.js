@@ -57,6 +57,9 @@ test('Google browser identity is sent only to analysis API and never stored',asy
  await page.route('**/api/food/analyze',route=>{
   apiCalls++;
   bearerSeen=route.request().headers().authorization||'';
+  if(apiCalls===1)return route.fulfill({
+   status:401,contentType:'application/json',body:JSON.stringify({error:'auth'})
+  });
   return route.fulfill({
    status:200,contentType:'application/json',
    body:JSON.stringify({
@@ -71,8 +74,13 @@ test('Google browser identity is sent only to analysis API and never stored',asy
  await uploadMeal(page);
  await expect(page.getByText('Sign in to analyze food')).toBeVisible();
  await page.getByRole('button',{name:'Test Google sign-in'}).click();
+ await expect(page.locator('#sh button[onclick="fana()"]')).toBeVisible();
+ await page.locator('#sh button[onclick="fana()"]').click();
+ // A rejected credential must be cleared; the retry MUST ask for Google sign-in again.
+ await expect(page.getByText('Sign in to analyze food')).toBeVisible();
+ await page.getByRole('button',{name:'Test Google sign-in'}).click();
  await expect(page.locator('#sh')).toContainText('Test Apple');
- expect(apiCalls).toBe(1);
+ expect(apiCalls).toBe(2);
  expect(bearerSeen).toBe('Bearer '+fakeCredential);
  expect(await page.evaluate(()=>localStorage.getItem('sl5x5'))).toBe(workouts);
  expect(await page.evaluate(()=>localStorage.getItem('strongfits_token'))).toBeNull();
