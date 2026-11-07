@@ -47,14 +47,24 @@ const SYSTEM = `Sen deneyimli bir diyetisyensin. Kullanıcı bir yemek fotoğraf
 - Sayıları tam sayıya yuvarla. Yalnızca geçerli bir JSON nesnesi üret; Markdown, açıklama veya kod bloğu üretme.`;
 
 function originAllowed(req) {
-  const origin = req.headers.origin;
-  if (!origin) return false; // reject non-browser requests that omit the Origin header
-  const list = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-  if (list.includes(origin)) return true;
+  const origin = req.headers?.origin;
+  const host = req.headers?.host;
+  if (typeof origin !== 'string' || typeof host !== 'string') return false;
   try {
-    const host = new URL(origin).host;
-    return host === req.headers.host || /^localhost(:\d+)?$/.test(host);
-  } catch (e) {
+    const parsed = new URL(origin);
+    if (parsed.origin !== origin || parsed.username || parsed.password ||
+        parsed.pathname !== '/' || parsed.search || parsed.hash) return false;
+    // Production requests are HTTPS only. Local HTTP is permitted only when
+    // the request host itself is localhost; arbitrary localhost origins must
+    // never be whitelisted for a production hostname.
+    if (parsed.protocol === 'https:' && parsed.host === host) return true;
+    if (process.env.NODE_ENV !== 'production' &&
+        parsed.protocol === 'http:' && /^localhost(?::\d+)?$/.test(host) &&
+        parsed.host === host) return true;
+    const explicit = (process.env.ALLOWED_ORIGINS || '')
+      .split(',').map(value => value.trim()).filter(Boolean);
+    return parsed.protocol === 'https:' && explicit.includes(origin);
+  } catch {
     return false;
   }
 }
