@@ -92,3 +92,75 @@ test('Google browser identity is sent only to analysis API and never stored',asy
  expect(JSON.stringify(food)).not.toContain(fakeCredential);
  expect(await page.evaluate(()=>localStorage.getItem('sl5x5'))).toBe(workouts);
 });
+
+
+const signedCredential=()=>{
+ const payload=Buffer.from(JSON.stringify({exp:Math.floor(Date.now()/1000)+3600})).toString('base64url');
+ return 'abc.'+payload+'.mock-signature';
+};
+async function mockGoogleAuth(page,credential=signedCredential()){
+ await page.addInitScript(value=>{
+  window.google={accounts:{id:{
+   initialize({callback}){window.__strongfitsMockCallback=callback;},
+   renderButton(target){
+    const button=document.createElement('button');
+    button.type='button';button.textContent='Mock Google sign-in';
+    button.addEventListener('click',()=>window.__strongfitsMockCallback({credential:value}));
+    target.append(button);
+   }
+  }}};
+ },credential);
+ await page.route('**/api/food/config',route=>route.fulfill({
+  status:200,contentType:'application/json',
+  body:JSON.stringify({enabled:true,clientId:'test-client.apps.googleusercontent.com',dailyLimit:12})
+ }));
+ return credential;
+}
+
+test('a Google callback after dismissing the photo sheet never uploads the photo',async({page})=>{
+ const credential=await mockGoogleAuth(page);
+ let analyzeCalls=0;
+ await page.route('**/api/food/analyze',route=>{
+  analyzeCalls++;
+  return route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({error:'auth'})});
+ });
+ await page.goto('/');
+ await uploadMeal(page);
+ await expect(page.getByText('Sign in to analyze food')).toBeVisible();
+ await page.locator('#sh button[onclick="closeSh()"]').click();
+ await expect(page.locator('#sh')).toHaveCount(0);
+ await page.evaluate(value=>window.__strongfitsMockCallback({credential:value}),credential);
+ await page.waitForTimeout(100);
+ expect(analyzeCalls).toBe(0);
+ await expect(page.locator('#sh')).toHaveCount(0);
+});
+
+test('a late photo-analysis response cannot reopen a dismissed overlay',async({page})=>{
+ await mockGoogleAuth(page);
+ let started,release;
+ const began=new Promise(resolve=>{started=resolve});
+ const gate=new Promise(resolve=>{release=resolve});
+ await page.route('**/api/food/analyze',async route=>{
+  started();
+  await gate;
+  await route.fulfill({
+   status:200,contentType:'application/json',
+   body:JSON.stringify({
+    is_food:true,name:'Delayed Meal',confidence:'orta',
+    items:[{name:'Soup',grams:200,kcal:160,protein:10,carbs:15,fat:5}]
+   })
+  }).catch(()=>{});
+ });
+ await page.goto('/');
+ const before=await page.evaluate(()=>localStorage.getItem('sl5x5_food'));
+ await uploadMeal(page);
+ await page.getByRole('button',{name:'Mock Google sign-in'}).click();
+ await began;
+ await expect(page.locator('#sh .fload')).toBeVisible();
+ await page.locator('#sh button[onclick="closeSh()"]').click();
+ release();
+ await expect(page.locator('#sh')).toHaveCount(0);
+ await page.waitForTimeout(250);
+ await expect(page.locator('#sh')).toHaveCount(0);
+ expect(await page.evaluate(()=>localStorage.getItem('sl5x5_food'))).toBe(before);
+});
