@@ -1,6 +1,6 @@
 // Presentational renderer; application state and actions remain in the controller.
 export function renderProgramComposer({S,draft,esc,kg,PR}){
- const e0=n=>`<div class="row"><span>${n}</span><span class="mu">5×5 · +${String(S.inc[n]).replace('.',',')}kg</span></div>`;
+ const e0=n=>`<div class="row"><span>${n}</span><span class="mu">${n==='Deadlift'?'1×5':'5×5'} · +${String(S.inc[n]).replace('.',',')}kg</span></div>`;
  let h='<h1>Programlar</h1>'+['A','B'].map(t=>`<div class="card"><b style="font-size:22px">Antrenman ${t}</b>${PR[t].map(e0).join('')}</div>`).join('')+'<h2>Kişisel Antrenmanlarım</h2>';
  const C=S.cw||[];
  h+=C.length?C.map(c=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:22px">${c.name}</b><button class="pill r" style="padding:8px 14px;font-size:14px" onclick="delC('${c.id}',this)">Sil</button></div>${c.ex.map((e,j)=>`<div class="row"><span>${e.n}</span><span class="mu">${e.s}×${e.r} · <button class="stp" onclick="adjC('${c.id}',${j},-${e.inc||2.5})">−</button> ${kg(e.w)} <button class="stp" onclick="adjC('${c.id}',${j},${e.inc||2.5})">+</button> <button class="stp" onclick="rmC('${c.id}',${j})">✕</button></span></div>`).join('')}<button class="pill" style="margin-top:12px" onclick="addCx('${c.id}')">+ Egzersiz Ekle</button><button class="btn" style="padding:14px;font-size:18px" onclick="startC('${c.id}')">Başlat</button></div>`).join(''):'<p class="mu">Henüz kişisel antrenman yok.</p>';
