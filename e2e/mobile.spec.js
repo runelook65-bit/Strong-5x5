@@ -145,3 +145,13 @@ test('StrongFits brand appears on Home and in installed-app metadata',async({pag
   await page.locator('#nav button[data-ui-tab="prog"]').click();
   await expect(page.locator('#app')).toContainText('StrongFits 5×5');
 });
+
+
+test('home opens directly on workout without starter weight setup banner',async({page})=>{
+  await page.goto('/');
+  await expect(page.getByText("Today's Workout")).toBeVisible();
+  await expect(page.locator('#app')).not.toContainText('Başlangıç ağırlıklarını belirle');
+  await expect(page.locator('#app button[onclick="showSetup()"]')).toHaveCount(0);
+  await page.locator('#nav button[data-ui-tab="set"]').click();
+  await expect(page.locator('#app .srow[onclick="go(\'w\')"]')).toHaveCount(1);
+});
