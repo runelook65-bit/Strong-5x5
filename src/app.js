@@ -35,7 +35,7 @@ function food(){return foodFeature.food();}
 const upcoming=()=>upcomingWorkouts(S);
 const dstr=date=>displayDate(date,languageOf(S.lang));
 
-function home(){const setup=!S.setupDone?'<div class="card"><b>Başlangıç ağırlıklarını belirle</b><p class="mu">İlk antrenmandan önce hafif varsayılan ağırlıkları kendi seviyene göre düzenle.</p><button class="pill r" onclick="showSetup()">Ağırlıkları Ayarla</button></div>':'';return setup+renderHome({S,AP,homeP,greet,esc,weekDots,dstr,PR,kg,upcoming,upCard});}
+function home(){return renderHome({S,AP,homeP,greet,esc,weekDots,dstr,PR,kg,upcoming,upCard});}
 
 function prog(){return '<h1>Programlar</h1>'+['A','B'].map(t=>`<div class="card"><b style="font-size:22px">Antrenman ${t}</b>${PR[t].map(n=>`<div class="row"><span>${n}</span><span class="mu">${n==='Deadlift'?'1×5':'5×5'} · +${String(S.inc[n]).replace('.',',')}kg</span></div>`).join('')}</div>`).join('')+'<p class="mu">A ve B antrenmanları dönüşümlü yapılır. Tüm setler 5 tekrar tamamlanırsa ağırlık artar.</p>'}
 
