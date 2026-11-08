@@ -168,3 +168,13 @@ test('iOS install metadata, accessible workout controls and safe-area fit',async
  }));
  expect(bounds.scroll).toBeLessThanOrEqual(bounds.viewport+3);
 });
+
+
+test('home opens directly on workout without starter weight setup banner',async({page})=>{
+  await page.goto('/');
+  await expect(page.getByText("Today's Workout")).toBeVisible();
+  await expect(page.locator('#app')).not.toContainText('Başlangıç ağırlıklarını belirle');
+  await expect(page.locator('#app button[onclick="showSetup()"]')).toHaveCount(0);
+  await page.locator('#nav button[data-ui-tab="set"]').click();
+  await expect(page.locator('#app .srow[onclick="go(\'w\')"]')).toHaveCount(1);
+});
