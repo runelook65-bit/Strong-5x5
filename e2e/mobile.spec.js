@@ -145,3 +145,36 @@ test('StrongFits brand appears on Home and in installed-app metadata',async({pag
   await page.locator('#nav button[data-ui-tab="prog"]').click();
   await expect(page.locator('#app')).toContainText('StrongFits 5×5');
 });
+
+
+test('iOS install metadata, accessible workout controls and safe-area fit',async({page})=>{
+ await page.goto('/');
+ await expect(page.locator('html')).toHaveAttribute('lang','en');
+ const icon=page.locator('link[rel="apple-touch-icon"]');
+ await expect(icon).toHaveAttribute('href',/strongfits-180\.png/);
+ const iconURL=new URL(await icon.getAttribute('href'),page.url()).toString();
+ const response=await page.request.get(iconURL);
+ expect(response.ok()).toBeTruthy();
+ expect(response.headers()['content-type']).toContain('image/png');
+ const nav=page.locator('#nav');
+ await expect(nav).toBeVisible();
+ await page.getByRole('button',{name:'Start Workout'}).click();
+ const logSet=page.locator('[data-ui-action="log-set"]').first();
+ await expect(logSet).toBeVisible();
+ await expect(logSet).toHaveAttribute('aria-label',/Set 1:/);
+ const bounds=await page.evaluate(()=>({
+  scroll:document.documentElement.scrollWidth,
+  viewport:document.documentElement.clientWidth
+ }));
+ expect(bounds.scroll).toBeLessThanOrEqual(bounds.viewport+3);
+});
+
+
+test('home opens directly on workout without starter weight setup banner',async({page})=>{
+  await page.goto('/');
+  await expect(page.getByText("Today's Workout")).toBeVisible();
+  await expect(page.locator('#app')).not.toContainText('Başlangıç ağırlıklarını belirle');
+  await expect(page.locator('#app button[onclick="showSetup()"]')).toHaveCount(0);
+  await page.locator('#nav button[data-ui-tab="set"]').click();
+  await expect(page.locator('#app .srow[onclick="go(\'w\')"]')).toHaveCount(1);
+});
