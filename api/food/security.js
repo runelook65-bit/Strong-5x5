@@ -104,6 +104,7 @@ export async function consumeDailyQuota(userId,{
   const allowed=Number(data.result[0])===1,count=Number(data.result[1]),globalCount=Number(data.result[2]);
   if(!Number.isInteger(count)||count<0||!Number.isInteger(globalCount)||globalCount<0)
     throw new AnalysisSecurityError('quota_service',503);
-  return {allowed,remaining:Math.max(0,dailyLimit-count),limit:dailyLimit,
+  return {allowed,reason:allowed?null:count>=dailyLimit?'user':'global',
+    remaining:Math.max(0,dailyLimit-count),limit:dailyLimit,
     globalRemaining:Math.max(0,globalLimit-globalCount),globalLimit};
 }
