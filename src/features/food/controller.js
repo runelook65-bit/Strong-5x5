@@ -1,4 +1,4 @@
-import { mealTotals, rescaleFoodItem } from './portion.js';
+import { mealTotals, rescaleFoodItem, correctFoodItem, calorieConsistency } from './portion.js';
 // Integrated nutrition tracker from feat/beslenme-kalori.
 // Nutrition records remain in sl5x5_food, independently of workout data.
 export function createFoodFeature({getState,draw,sh,toast,snd,esc,key,sv,D,M,$,languageOf,monthNames}) {
@@ -41,8 +41,9 @@ function fres(){const r=fp.res;if(!r.is_food){sh('Yemek bulunamadı',`<div class
  <div class="fsum" style="margin-top:14px"><div><span class="fbig">${fn(x.kcal)}</span> <span class="mu">kcal</span></div><span class="fcf">Güven: ${esc(r.confidence)}</span></div>
  <div class="fmac" style="margin-top:0"><div class="p"><small>Protein</small><b>${fn(x.p)}g</b></div><div class="c"><small>Karbonhidrat</small><b>${fn(x.c)}g</b></div><div class="f"><small>Yağ</small><b>${fn(x.f)}g</b></div></div>
  <div class="fsrv"><span>Porsiyon</span><span style="display:flex;align-items:center;gap:12px"><button class="stp" onclick="fp.m=Math.max(.5,fp.m-.5);fres()">−</button><b>${String(fp.m).replace('.',',')}</b><button class="stp" onclick="fp.m=Math.min(5,fp.m+.5);fres()">+</button></span></div>
- ${r.items.map((i,j)=>`<div class="fit"><span>${esc(i.name)} <small>· <input type="number" min="1" max="3000" step="1" value="${Number(i.grams)||0}" aria-label="${fq(i.name)} miktarı (gram)" style="width:74px;display:inline-block;padding:3px 6px" onchange="fgrams(${j},this.value)"> g${fp.m!==1?' × '+fp.m:''}</small></span><b>${fn(i.kcal*fp.m)}</b><button class="stp" onclick="fp.res.items.splice(${j},1);if(!fp.res.items.length)fp.res.is_food=false;fres()" aria-label="Kaldır">✕</button></div>`).join('')}
+ ${r.items.map((i,j)=>`<div class="fit"><span>${esc(i.name)} <small>· <input type="number" min="1" max="3000" step="1" value="${Number(i.grams)||0}" aria-label="${fq(i.name)} miktarı (gram)" style="width:74px;display:inline-block;padding:3px 6px" onchange="fgrams(${j},this.value)"> g${fp.m!==1?' × '+fp.m:''}</small></span><b>${fn(i.kcal*fp.m)}</b><button class="stp" onclick="feditItem('pending',${j})" aria-label="Besin değerlerini düzenle">✎</button><button class="stp" onclick="fp.res.items.splice(${j},1);if(!fp.res.items.length)fp.res.is_food=false;fres()" aria-label="Kaldır">✕</button></div>`).join('')}
  ${r.note?`<p class="fnote">${esc(r.note)}</p>`:''}
+ ${calorieConsistency({items:r.items,m:fp.m}).needsReview?`<p class="fnote">Kalori ve makrolar arasında fark var; kaydetmeden önce değerleri kontrol et.</p>`:''}
  <p class="mu" style="font-size:12px">Yemek miktarını gram olarak değiştirebilirsin. Fotoğraftaki kalori tahmini kesin bir ölçüm değildir.</p>
  <div style="display:flex;gap:8px;margin-top:14px"><input id="fhn" placeholder="Düzelt: ör. yağsız pişti, 2 dilim ekmek"><button class="pill" onclick="const v=$('fhn').value.trim();if(v)fana(v)">Düzelt</button></div>
  <button class="btn" onclick="fadd()">Öğünü Kaydet</button>`)}
@@ -61,7 +62,7 @@ function fview(id){const o=ffind(id);if(!o)return;const e=o.e,x=ftot(e);
  sh(esc(e.name),`${e.img?`<div class="fimg" style="aspect-ratio:auto;max-height:200px"><img src="${e.img}" alt="" style="max-height:200px"></div>`:''}<div class="fsum"><div><span class="fbig">${fn(x.kcal)}</span> <span class="mu">kcal</span></div></div>
  <div class="fmac" style="margin-top:0"><div class="p"><small>Protein</small><b>${fn(x.p)}g</b></div><div class="c"><small>Karbonhidrat</small><b>${fn(x.c)}g</b></div><div class="f"><small>Yağ</small><b>${fn(x.f)}g</b></div></div>
  <div class="fsrv"><span>Porsiyon</span><span style="display:flex;align-items:center;gap:12px"><button class="stp" onclick="fsrv('${id}',-.5)">−</button><b>${String(e.m||1).replace('.',',')}</b><button class="stp" onclick="fsrv('${id}',.5)">+</button></span></div>
- ${e.items.map(i=>`<div class="fit"><span>${esc(i.name)} <small>· ${fn(i.grams*(e.m||1))}g</small></span><b>${fn(i.kcal*(e.m||1))}</b></div>`).join('')}${e.note?`<p class="fnote">${esc(e.note)}</p>`:''}
+ ${e.items.map((i,j)=>`<div class="fit"><span>${esc(i.name)} <small>· ${fn(i.grams*(e.m||1))}g</small></span><b>${fn(i.kcal*(e.m||1))}</b><button class="stp" onclick="feditItem(\'${id}\',${j})" aria-label="Besin değerlerini düzenle">✎</button></div>`).join('')}${e.note?`<p class="fnote">${esc(e.note)}</p>`:''}
  <button class="btn" style="background:var(--card2);color:#ff453a;box-shadow:none" onclick="fdel('${id}',this)">Öğünü Sil</button>`)}
 function fsrv(id,d){const o=ffind(id);if(!o)return;o.e.m=Math.min(5,Math.max(.5,(o.e.m||1)+d));fsave();fview(id);draw()}
 function fdel(id,b){if(!b.dataset.a){b.dataset.a=1;b.textContent='Emin misin? Tekrar dokun';setTimeout(()=>{delete b.dataset.a;b.textContent='Öğünü Sil'},2500);return}const o=ffind(id);if(o){o.L.splice(o.i,1);if(!o.L.length)delete F.d[o.k];fsave()}const e=$('sh');if(e)e.remove();draw()}
