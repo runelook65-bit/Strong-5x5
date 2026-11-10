@@ -22,12 +22,13 @@ Set these environment variables directly in the Vercel arm-5x5 project:
 - UPSTASH_REDIS_REST_URL: HTTPS URL of a dedicated Upstash database
 - UPSTASH_REDIS_REST_TOKEN: Upstash REST secret, server only
 - FOOD_AI_DAILY_LIMIT: optional, 12 by default (clamped 1–50), one quota per Google account per UTC day
+- FOOD_AI_GLOBAL_DAILY_LIMIT: optional, 40 by default (clamped 1–1000), global quota across the entire app per UTC day. Set no higher than your OpenRouter account's real free allowance, leaving headroom for other uses.
 - ALLOWED_ORIGINS: optional additional browser origins if deliberately required
 
 Configure production and preview environments separately. Never paste API keys into GitHub issues, code, conversations, or documentation. Every Vercel environment variable update requires a fresh deployment.
 
 ## Security behavior
-The quota key includes a SHA-256 hash of Google's stable subject, not an email or plain user identifier. The counter expires after the next UTC midnight. The quota counts attempted valid image analyses, including upstream errors, because requests may incur external resource usage. Quota checks use a single atomic Redis operation to prevent concurrent overuse. No token, raw photo or Redis secret is persisted in Redis.
+The quota keys include a SHA-256 hash of Google's stable subject (not email or plain user ID) and an app-wide global count. Both counters expire after the next UTC midnight. The quota counts attempted valid image analyses, including upstream errors, because requests may incur external resource usage. Quota checks use a single atomic Redis operation that checks and increments both the user and app-wide counters, preventing concurrent overuse. No token, raw photo or Redis secret is persisted in Redis.
 
 The existing Vercel WAF rate limit (five POST requests/IP/minute) stays in place as a separate layer. Multiple Google accounts could otherwise circumvent per-account limits; retain WAF and upstream usage controls.
 
