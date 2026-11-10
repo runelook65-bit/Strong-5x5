@@ -121,7 +121,7 @@ return async function handler(req, res) {
       return res.status(error.status).json({error:error.code});
     return res.status(503).json({error:'auth_service'});
   }
-  if(!quota?.allowed)return res.status(429).json({error:'quota'});
+  if(!quota?.allowed)return res.status(429).json({error:quota?.reason==='global'?'global_quota':'quota'});
   res.setHeader('X-StrongFits-Quota-Remaining',String(quota.remaining));
 
   const content = [
