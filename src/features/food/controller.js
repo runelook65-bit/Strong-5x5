@@ -1,4 +1,5 @@
-import { mealTotals, rescaleFoodItem, correctFoodItem, calorieConsistency } from './portion.js';
+import {createFoodPhotoAuth} from './auth.js';
+import {mealTotals,rescaleFoodItem,correctFoodItem,calorieConsistency} from './portion.js';
 // Integrated nutrition tracker from feat/beslenme-kalori.
 // Nutrition records remain in sl5x5_food, independently of workout data.
 export function createFoodFeature({getState,draw,sh,toast,snd,esc,key,sv,D,M,$,languageOf,monthNames}) {
@@ -7,7 +8,8 @@ const FK='sl5x5_food',FG0={kcal:2200,p:150,c:220,f:70};
 let F;try{F=JSON.parse(localStorage.getItem(FK))||{}}catch(e){F={}}
 if(!F||typeof F!=='object')F={};F.g=Object.assign({},FG0,F.g);if(!F.d||typeof F.d!=='object')F.d={};
 const fsave=()=>{try{localStorage.setItem(FK,JSON.stringify(F));return true}catch(e){toast('Depolama dolu, eski fotoğraflar silinebilir');return false}};
-let fOff=0,fp=null;
+let fOff=0,fp=null,analysisVersion=0;
+const photoAuth=createFoodPhotoAuth({showSheet:sh});
 const fq=s=>esc(String(s==null?'':s)).replace(/"/g,'&quot;');
 const fn=n=>Math.round(n||0).toLocaleString(({en:'en-US',es:'es-ES',tr:'tr-TR'})[languageOf(getState().lang)]);
 const fdk=()=>{const d=new Date();d.setDate(d.getDate()-fOff);return key(d)};
@@ -29,11 +31,28 @@ function food(){
 function fpick(cam){const i=document.createElement('input');i.type='file';i.accept='image/*';if(cam)i.setAttribute('capture','environment');i.onchange=()=>{const f=i.files&&i.files[0];if(f)fimg(f)};i.click()}
 function fshrink(img,max,q){const r=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
 function fimg(file){const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const big=fshrink(im,1024,.82),th=fshrink(im,160,.6);URL.revokeObjectURL(u);fp={img:big,th,res:null,m:1};fana()};im.onerror=()=>{URL.revokeObjectURL(u);toast('Fotoğraf açılamadı')};im.src=u}
-const FERR={not_configured:'Analiz servisi henüz kurulmadı (API anahtarı eksik).',busy:'Servis şu an yoğun, biraz sonra tekrar dene.',image:'Fotoğraf okunamadı, başka bir fotoğraf dene.',origin:'Bu adresten analiz yapılamıyor.',offline:'İnternet bağlantısı yok.'};
-async function fana(hint){if(!fp)return;snd('tap');
- sh('Analiz ediliyor',`<div class="fimg scan"><img src="${fp.img}" alt=""></div><div class="fload"><i></i>Tabağındakileri inceliyorum…</div><p class="mu" style="text-align:center;margin:4px 0 0">Porsiyon ve kalori tahmini birkaç saniye sürer.</p>`);
- let err='';try{if(navigator.onLine===false)throw{c:'offline'};const r=await fetch('/api/food/analyze',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({image:fp.img.split(',')[1],mediaType:'image/jpeg',hint:hint||''})});const j=await r.json().catch(()=>({}));if(!r.ok)throw{c:j.error};fp.res=j;fp.m=1}catch(e){err=FERR[e&&e.c]||'Analiz başarısız oldu. Tekrar dene ya da elle ekle.'}
- if(!fp)return;if(err){sh('Analiz yapılamadı',`<div class="fimg"><img src="${fp.img}" alt=""></div><p class="mu">${err}</p><div style="display:flex;gap:8px"><button class="pill r" onclick="fana()">Tekrar Dene</button><button class="pill" onclick="fman(1)">Elle Ekle</button></div>`);return}
+const FERR={not_configured:'Fotoğraf analizi bu ortamda henüz etkinleştirilmedi.',auth:'Oturum doğrulanamadı. Yeniden giriş yap.',auth_service:'Google kimlik doğrulama geçici olarak kullanılamıyor.',quota:'Bugünkü fotoğraf analiz hakkın doldu. Yarın tekrar dene veya elle ekle.',quota_service:'Günlük analiz kotası doğrulanamadı. Elle ekleyebilirsin.',busy:'Servis şu an yoğun, biraz sonra tekrar dene.',image:'Fotoğraf okunamadı, başka bir fotoğraf dene.',origin:'Bu adresten analiz yapılamıyor.',offline:'İnternet bağlantısı yok.'};
+async function fana(hint){if(!fp)return;
+ const meal=fp,attempt=++analysisVersion;
+ const idToken=await photoAuth.requireToken(()=>fana(hint));
+ if(!idToken||fp!==meal||attempt!==analysisVersion)return;
+ snd('tap');
+ sh('Analiz ediliyor',`<div class="fimg scan"><img src="${meal.img}" alt=""></div><div class="fload"><i></i>Tabağındakileri inceliyorum…</div><p class="mu" style="text-align:center;margin:4px 0 0">Porsiyon ve kalori tahmini birkaç saniye sürer.</p>`);
+ const loadingNode=$('sh')?.querySelector('.fload');
+ let err='',result=null;
+ try{
+  if(navigator.onLine===false)throw{c:'offline'};
+  const r=await fetch('/api/food/analyze',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+idToken},body:JSON.stringify({image:meal.img.split(',')[1],mediaType:'image/jpeg',hint:hint||''})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw{c:j.error};
+  result=j;
+ }catch(e){err=FERR[e&&e.c]||'Analiz başarısız oldu. Tekrar dene ya da elle ekle.'}
+ if(err===FERR.auth)photoAuth.clear();
+ // A closed sheet, changed meal, or superseded request must never reopen
+ // the photo overlay or overwrite another meal's analysis.
+ if(fp!==meal||attempt!==analysisVersion||!loadingNode?.isConnected)return;
+ if(err){sh('Analiz yapılamadı',`<div class="fimg"><img src="${meal.img}" alt=""></div><p class="mu">${err}</p><div style="display:flex;gap:8px"><button class="pill r" onclick="fana()">Tekrar Dene</button><button class="pill" onclick="fman(1)">Elle Ekle</button></div>`);return}
+ meal.res=result;meal.m=1;
  snd('ok');fres()}
 function fres(){const r=fp.res;if(!r.is_food){sh('Yemek bulunamadı',`<div class="fimg"><img src="${fp.img}" alt=""></div><p class="mu">Bu fotoğrafta yemek göremedim. Tabağın tamamı görünecek şekilde tekrar çekmeyi dene.</p><div style="display:flex;gap:8px"><button class="pill r" onclick="fpick(1)">Yeniden Çek</button><button class="pill" onclick="fman(1)">Elle Ekle</button></div>`);return}
  const x=ftot({items:r.items,m:fp.m});
