@@ -30,3 +30,22 @@ test('missing and malformed meals do not create NaN in dashboard', async () => {
   assert.deepEqual(mealTotals({items:[]}),{kcal:0,p:0,c:0,f:0});
   assert.deepEqual(mealTotals({m:Infinity,items:[{kcal:'bad',protein:-10,carbs:10,fat:2}]}),{kcal:0,p:0,c:10,f:2});
 });
+
+test('manual edits preserve source meal and reject out-of-range calories or macros', async () => {
+ const {correctFoodItem} = await nutrition;
+ const source={name:'Rice',grams:120,kcal:155,protein:3,carbs:34,fat:0.3};
+ const next=correctFoodItem(source,{name:' Rice, cooked ',grams:'180',kcal:'233',protein:'5',carbs:'50',fat:'0.5'});
+ assert.deepEqual(next,{name:'Rice, cooked',grams:180,kcal:233,protein:5,carbs:50,fat:0.5});
+ assert.equal(source.grams,120);
+ assert.equal(correctFoodItem(source,{...source,kcal:'-1'}),null);
+ assert.equal(correctFoodItem(source,{...source,protein:'Infinity'}),null);
+ assert.equal(correctFoodItem(source,{...source,fat:''}),null);
+ assert.equal(correctFoodItem(source,{...source,kcal:'11000'}),null);
+});
+
+test('macro energy mismatch flags questionable scans but does not rewrite AI values', async () => {
+ const {calorieConsistency} = await nutrition;
+ assert.deepEqual(calorieConsistency({items:[{kcal:200,protein:10,carbs:20,fat:9}]}),{needsReview:false,calculatedKcal:201});
+ assert.deepEqual(calorieConsistency({items:[{kcal:200,protein:1,carbs:1,fat:1}]}),{needsReview:true,calculatedKcal:17});
+ assert.deepEqual(calorieConsistency({items:[]}),{needsReview:false,calculatedKcal:0});
+});
