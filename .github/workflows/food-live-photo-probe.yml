@@ -29,7 +29,7 @@ jobs:
               get=urllib.request.Request(url,headers={'User-Agent':'StrongFitsNutritionSmoke/1.0 (meal photo quality check)'})
               with urllib.request.urlopen(get,timeout=25) as response:
                 image=response.read(1_300_000)
-              if not image.startswith(b'\\xff\\xd8'):
+              if not image.startswith(bytes([255,216])):
                 raise ValueError('Downloaded fixture is not a JPEG')
               payload=json.dumps({'image':base64.b64encode(image).decode(),'mediaType':'image/jpeg','hint':''}).encode()
               req=urllib.request.Request(endpoint,data=payload,headers={
