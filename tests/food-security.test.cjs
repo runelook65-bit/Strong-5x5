@@ -61,7 +61,7 @@ test('daily usage limit uses hashed per-account key and atomic Redis EVAL',async
  };
  const time=Date.UTC(2026,10,8,12);
  const result=await consumeDailyQuota(user,{env,fetcher,now:()=>time});
- assert.deepEqual(result,{allowed:true,remaining:11,limit:12,globalRemaining:39,globalLimit:40});
+ assert.deepEqual(result,{allowed:true,reason:null,remaining:11,limit:12,globalRemaining:39,globalLimit:40});
  assert.equal(request.url,'https://test.upstash.io/');
  assert.equal(request.options.headers.authorization,'Bearer not-a-real-token');
  const payload=JSON.parse(request.options.body);
@@ -83,9 +83,11 @@ test('quota exhausted and storage failures never authorize AI requests',async()=
  const user='123456789012345678901';
  let response=await consumeDailyQuota(user,{env,fetcher:async()=>({ok:true,json:async()=>({result:[0,12,0]})})});
  assert.equal(response.allowed,false);
+ assert.equal(response.reason,'user');
  const global=await consumeDailyQuota(user,{env,fetcher:async()=>({ok:true,json:async()=>({result:[0,0,40]})})});
  assert.equal(global.allowed,false);
  assert.equal(global.globalRemaining,0);
+ assert.equal(global.reason,'global');
  await assert.rejects(
   consumeDailyQuota(user,{env,fetcher:async()=>{throw Error('offline')}}),/quota_service/);
  await assert.rejects(
