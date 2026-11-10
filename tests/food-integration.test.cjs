@@ -94,3 +94,30 @@ test('API maps OpenRouter errors and malformed JSON without exposing details',as
   assert.equal(r.code,502);assert.equal(r.body.error,'parse');
  }finally{global.fetch=previousFetch;if(old===undefined)delete process.env.OPENROUTER_API_KEY;else process.env.OPENROUTER_API_KEY=old}
 });
+
+test('user can correct photo and saved meal nutrients without changing workout data',async()=>{
+ const e=reg();
+ try{
+  const {createFoodFeature}=await foodPromise;
+  const f=createFoodFeature(e.ctx);
+  const item={name:'Rice',grams:100,kcal:130,protein:3,carbs:28,fat:0.3};
+  const photo={img:'data:image/jpeg;base64,AAAA',th:'',res:{is_food:true,name:'Rice',confidence:'orta',items:[item]},m:1};
+  window.fp=photo;
+  f.feditItem('pending',0);
+  for(const [id,value] of Object.entries({
+   'fe-name':'Rice cooked','fe-grams':'150','fe-kcal':'195','fe-protein':'5',
+   'fe-carbs':'42','fe-fat':'0.4'
+  }))e.fields[id]={value};
+  f.feditSave('pending',0);
+  assert.equal(window.fp.res.items[0].kcal,195);
+  assert.equal(window.fp.res.items[0].grams,150);
+  const t=Date.now(),id='m'+t;
+  f.fput({id,t,name:'Rice',items:[item],m:1});
+  f.feditItem(id,0);
+  f.feditSave(id,0);
+  const k=e.ctx.key(t),saved=JSON.parse(e.store.get('sl5x5_food'));
+  assert.equal(saved.d[k][0].items[0].kcal,195);
+  assert.equal(f.fday(k).kcal,195);
+  assert.ok(!e.store.has('sl5x5'));
+ }finally{e.restore()}
+});
