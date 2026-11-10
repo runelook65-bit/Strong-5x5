@@ -36,3 +36,32 @@ export function rescaleFoodItem(item, grams) {
     fat: scale(item.fat)
   };
 }
+
+
+// Explicit user corrections take precedence over a vision model's estimates.
+// Reject invalid values rather than allowing NaN, negative or unbounded entries into storage.
+export function correctFoodItem(item, fields) {
+  if (!item || typeof item !== 'object' || !fields || typeof fields !== 'object') return null;
+  const name = String(fields.name ?? item.name ?? '').trim().slice(0, 60);
+  if (!name) return null;
+  const numbers = {};
+  for (const [field, limit] of Object.entries({
+    grams: 3000, kcal: 10000, protein: 2500, carbs: 2500, fat: 2500
+  })) {
+    const raw = fields[field] ?? item[field] ?? 0;
+    if (typeof raw === 'string' && raw.trim() === '') return null;
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value < 0 || value > limit) return null;
+    numbers[field] = Math.round(value * 10) / 10;
+  }
+  return { ...item, name, ...numbers };
+}
+
+// Review prompt only: labels unexplained differences, never silently rewrites calories.
+// Fibre, alcohol, labelling conventions and estimation errors can explain discrepancies.
+export function calorieConsistency(entry) {
+  const t = mealTotals(entry);
+  if (t.kcal <= 0) return { needsReview: false, calculatedKcal: 0 };
+  const calculatedKcal = Math.round(4 * t.p + 4 * t.c + 9 * t.f);
+  return { needsReview: Math.abs(calculatedKcal - t.kcal) / t.kcal > 0.25, calculatedKcal };
+}
