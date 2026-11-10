@@ -44,9 +44,25 @@ test('manual meal, goal and portion change survive separate local storage',async
  }finally{e.restore()}
 });
 function res(){const r={code:0,body:null,headers:{}};r.status=c=>{r.code=c;return r};r.json=b=>{r.body=b;return r};r.setHeader=(k,v)=>{r.headers[k]=v};return r}
-const req=(body,extra={})=>({method:'POST',headers:{host:'arm-5x5.vercel.app',origin:'https://arm-5x5.vercel.app',...extra},body});
+const req=(body,extra={})=>({method:'POST',headers:{host:'arm-5x5.vercel.app',origin:'https://arm-5x5.vercel.app',authorization:'Bearer '+('a'.repeat(80)),...extra},body});
+const withSecurityEnv=()=>{
+ const keys=['GOOGLE_CLIENT_ID','UPSTASH_REDIS_REST_URL','UPSTASH_REDIS_REST_TOKEN'];
+ const old=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
+ process.env.GOOGLE_CLIENT_ID='test-app.apps.googleusercontent.com';
+ process.env.UPSTASH_REDIS_REST_URL='https://test.upstash.io';
+ process.env.UPSTASH_REDIS_REST_TOKEN='test';
+ return ()=>{for(const k of keys){if(old[k]===undefined)delete process.env[k];else process.env[k]=old[k]}};
+};
+const fakeHandler=async()=>{
+ const {createFoodAnalyzeHandler}=await analyzePromise;
+ return createFoodAnalyzeHandler({
+  authenticate:async()=>({sub:'12345678901234567890'}),
+  charge:async()=>({allowed:true,remaining:10})
+ });
+};
 test('API requires OpenRouter key, correct origin, and valid image',async()=>{
- const {default:analyze}=await analyzePromise;
+ const analyze=await fakeHandler();
+ const restoreSecurityEnv=withSecurityEnv();
  const old=process.env.OPENROUTER_API_KEY;
  try{
   delete process.env.OPENROUTER_API_KEY;
@@ -56,10 +72,11 @@ test('API requires OpenRouter key, correct origin, and valid image',async()=>{
   r=res();await analyze(req({image:'AAAA'},{origin:'https://evil.example'}),r);assert.equal(r.code,403);
   r=res();await analyze(req({image:'AAAA'},{origin:undefined}),r);assert.equal(r.code,403);
   r=res();await analyze(req({image:'not base64!'}),r);assert.equal(r.code,400);
- }finally{if(old===undefined)delete process.env.OPENROUTER_API_KEY;else process.env.OPENROUTER_API_KEY=old}
+ }finally{restoreSecurityEnv();if(old===undefined)delete process.env.OPENROUTER_API_KEY;else process.env.OPENROUTER_API_KEY=old}
 });
 test('API sends image to OpenRouter free vision model and cleans JSON result',async()=>{
- const {default:analyze}=await analyzePromise;
+ const analyze=await fakeHandler();
+ const restoreSecurityEnv=withSecurityEnv();
  const previousFetch=global.fetch,old=process.env.OPENROUTER_API_KEY;
  process.env.OPENROUTER_API_KEY='test';
  let call;
@@ -79,10 +96,11 @@ test('API sends image to OpenRouter free vision model and cleans JSON result',as
   assert.equal(sent.model,'google/gemma-4-26b-a4b-it:free');
   assert.equal(sent.response_format.type,'json_object');
   assert.equal(sent.messages[1].content[1].image_url.url,'data:image/jpeg;base64,AAAA');
- }finally{global.fetch=previousFetch;if(old===undefined)delete process.env.OPENROUTER_API_KEY;else process.env.OPENROUTER_API_KEY=old}
+ }finally{restoreSecurityEnv();global.fetch=previousFetch;if(old===undefined)delete process.env.OPENROUTER_API_KEY;else process.env.OPENROUTER_API_KEY=old}
 });
 test('API maps OpenRouter errors and malformed JSON without exposing details',async()=>{
- const {default:analyze}=await analyzePromise;
+ const analyze=await fakeHandler();
+ const restoreSecurityEnv=withSecurityEnv();
  const previousFetch=global.fetch,old=process.env.OPENROUTER_API_KEY;
  process.env.OPENROUTER_API_KEY='test';
  try{
@@ -92,5 +110,32 @@ test('API maps OpenRouter errors and malformed JSON without exposing details',as
   global.fetch=async()=>({ok:true,json:async()=>({choices:[{message:{content:'not json'}}]})});
   r=res();await analyze(req({image:'AAAA'}),r);
   assert.equal(r.code,502);assert.equal(r.body.error,'parse');
- }finally{global.fetch=previousFetch;if(old===undefined)delete process.env.OPENROUTER_API_KEY;else process.env.OPENROUTER_API_KEY=old}
+ }finally{restoreSecurityEnv();global.fetch=previousFetch;if(old===undefined)delete process.env.OPENROUTER_API_KEY;else process.env.OPENROUTER_API_KEY=old}
+});
+
+test('user can correct photo and saved meal nutrients without changing workout data',async()=>{
+ const e=reg();
+ try{
+  const {createFoodFeature}=await foodPromise;
+  const f=createFoodFeature(e.ctx);
+  const item={name:'Rice',grams:100,kcal:130,protein:3,carbs:28,fat:0.3};
+  const photo={img:'data:image/jpeg;base64,AAAA',th:'',res:{is_food:true,name:'Rice',confidence:'orta',items:[item]},m:1};
+  window.fp=photo;
+  f.feditItem('pending',0);
+  for(const [id,value] of Object.entries({
+   'fe-name':'Rice cooked','fe-grams':'150','fe-kcal':'195','fe-protein':'5',
+   'fe-carbs':'42','fe-fat':'0.4'
+  }))e.fields[id]={value};
+  f.feditSave('pending',0);
+  assert.equal(window.fp.res.items[0].kcal,195);
+  assert.equal(window.fp.res.items[0].grams,150);
+  const t=Date.now(),id='m'+t;
+  f.fput({id,t,name:'Rice',items:[item],m:1});
+  f.feditItem(id,0);
+  f.feditSave(id,0);
+  const k=e.ctx.key(t),saved=JSON.parse(e.store.get('sl5x5_food'));
+  assert.equal(saved.d[k][0].items[0].kcal,195);
+  assert.equal(f.fday(k).kcal,195);
+  assert.ok(!e.store.has('sl5x5'));
+ }finally{e.restore()}
 });
