@@ -41,3 +41,16 @@ Run npm test, npm run build and npm run test:e2e; automated CI now checks Chromi
 - Keep the production release unchanged until Google client ID and dedicated Redis credentials are configured and these acceptance checks pass.
 
 WebKit browser automation is not equivalent to testing a physical iPhone or actual VoiceOver.
+
+
+## Real-photo probe (2026-11-10 UTC)
+A **one-time** GitHub Actions check (run [42921151824](https://github.com/runelook65-bit/Strong-5x5/actions/runs/42921151824)) used two publicly licensed Wikimedia Commons photographs: [MenemenIstanbul](https://commons.wikimedia.org/wiki/File:MenemenIstanbul.jpg) and [Spaghetti bolognese](https://commons.wikimedia.org/wiki/File:Spaghetti_bolognese.jpg). Both were fetched successfully and sent as one POST each to the **existing production endpoint** (prior to the changes in this feature branch).
+
+Result: both returned **HTTP 429 `{"error":"busy"}`**, which is the existing server's mapping for a rate-limited OpenRouter response. **No real-model nutrition estimate was obtained.** This may represent free-account daily quota or provider congestion; the API currently discards upstream diagnostic details. The ephemeral CI probe was removed after the result to avoid repeated live calls.
+
+### Re-validation after external services are configured
+1. Configure Google OAuth Web client and a dedicated Upstash Redis instance. Set `GOOGLE_CLIENT_ID`, `UPSTASH_REDIS_REST_URL`, and `UPSTASH_REDIS_REST_TOKEN` in the appropriate Vercel preview environment. Use a separate OpenRouter key/workspace for preview (do not copy or expose a production secret), and set `OPENROUTER_API_KEY`.
+2. Deploy and open the **preview**, confirm `/api/food/config` reports `enabled: true`, sign in to the photo flow, and confirm a request reaches OpenRouter only after Google token verification and quota acceptance.
+3. Test one photograph each of a single-component dish and mixed dish with known weighed ingredients. Record item recognition, estimated grams, kcal/macros, response code, latency and manual corrections. Without ground truth weights, this is only a structural smoke test, not an accuracy benchmark.
+4. Test wrong audience/expired token, quota exhaustion and Redis outage before production rollout. Failed upstream free calls consume quota; do not blindly retry.
+5. Keep the existing production deployment unchanged until the live end-to-end test and access controls pass.
