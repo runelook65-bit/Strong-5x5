@@ -1,3 +1,4 @@
+import { mealTotals, rescaleFoodItem } from './portion.js';
 // Integrated nutrition tracker from feat/beslenme-kalori.
 // Nutrition records remain in sl5x5_food, independently of workout data.
 export function createFoodFeature({getState,draw,sh,toast,snd,esc,key,sv,D,M,$,languageOf,monthNames}) {
@@ -10,7 +11,7 @@ let fOff=0,fp=null;
 const fq=s=>esc(String(s==null?'':s)).replace(/"/g,'&quot;');
 const fn=n=>Math.round(n||0).toLocaleString(({en:'en-US',es:'es-ES',tr:'tr-TR'})[languageOf(getState().lang)]);
 const fdk=()=>{const d=new Date();d.setDate(d.getDate()-fOff);return key(d)};
-function ftot(e){const m=e.m||1,t={kcal:0,p:0,c:0,f:0};(e.items||[]).forEach(i=>{t.kcal+=i.kcal*m;t.p+=i.protein*m;t.c+=i.carbs*m;t.f+=i.fat*m});return t}
+function ftot(e){return mealTotals(e)}
 function fday(k){const L=Array.isArray(F.d[k])?F.d[k]:[],t={kcal:0,p:0,c:0,f:0};L.forEach(e=>{const x=ftot(e);for(const q in t)t[q]+=x[q]});return t}
 function food(){
  const k=fdk(),L=Array.isArray(F.d[k])?F.d[k]:[],t=fday(k),g=F.g,d=new Date();d.setDate(d.getDate()-fOff);
@@ -40,10 +41,18 @@ function fres(){const r=fp.res;if(!r.is_food){sh('Yemek bulunamadı',`<div class
  <div class="fsum" style="margin-top:14px"><div><span class="fbig">${fn(x.kcal)}</span> <span class="mu">kcal</span></div><span class="fcf">Güven: ${esc(r.confidence)}</span></div>
  <div class="fmac" style="margin-top:0"><div class="p"><small>Protein</small><b>${fn(x.p)}g</b></div><div class="c"><small>Karbonhidrat</small><b>${fn(x.c)}g</b></div><div class="f"><small>Yağ</small><b>${fn(x.f)}g</b></div></div>
  <div class="fsrv"><span>Porsiyon</span><span style="display:flex;align-items:center;gap:12px"><button class="stp" onclick="fp.m=Math.max(.5,fp.m-.5);fres()">−</button><b>${String(fp.m).replace('.',',')}</b><button class="stp" onclick="fp.m=Math.min(5,fp.m+.5);fres()">+</button></span></div>
- ${r.items.map((i,j)=>`<div class="fit"><span>${esc(i.name)} <small>· ${fn(i.grams*fp.m)}g</small></span><b>${fn(i.kcal*fp.m)}</b><button class="stp" onclick="fp.res.items.splice(${j},1);if(!fp.res.items.length)fp.res.is_food=false;fres()" aria-label="Kaldır">✕</button></div>`).join('')}
+ ${r.items.map((i,j)=>`<div class="fit"><span>${esc(i.name)} <small>· <input type="number" min="1" max="3000" step="1" value="${Number(i.grams)||0}" aria-label="${fq(i.name)} miktarı (gram)" style="width:74px;display:inline-block;padding:3px 6px" onchange="fgrams(${j},this.value)"> g${fp.m!==1?' × '+fp.m:''}</small></span><b>${fn(i.kcal*fp.m)}</b><button class="stp" onclick="fp.res.items.splice(${j},1);if(!fp.res.items.length)fp.res.is_food=false;fres()" aria-label="Kaldır">✕</button></div>`).join('')}
  ${r.note?`<p class="fnote">${esc(r.note)}</p>`:''}
+ <p class="mu" style="font-size:12px">Yemek miktarını gram olarak değiştirebilirsin. Fotoğraftaki kalori tahmini kesin bir ölçüm değildir.</p>
  <div style="display:flex;gap:8px;margin-top:14px"><input id="fhn" placeholder="Düzelt: ör. yağsız pişti, 2 dilim ekmek"><button class="pill" onclick="const v=$('fhn').value.trim();if(v)fana(v)">Düzelt</button></div>
  <button class="btn" onclick="fadd()">Öğünü Kaydet</button>`)}
+function fgrams(index, grams){
+ if(!fp?.res||!Array.isArray(fp.res.items)||!Number.isInteger(index)||index<0||index>=fp.res.items.length)return;
+ const revised=rescaleFoodItem(fp.res.items[index],grams);
+ if(!revised){toast('Gram miktarı 1 ile 3000 arasında olmalı');fres();return}
+ fp.res.items[index]=revised;
+ fres();
+}
 function fput(e){const k=key(e.t);(F.d[k]=F.d[k]||[]).push(e);return fsave()}
 function fwhen(){const d=new Date();d.setDate(d.getDate()-fOff);return d.getTime()}
 function fadd(){if(!fp||!fp.res)return;const r=fp.res;fput({id:'m'+Date.now(),t:fwhen(),name:(String(r.name||'').trim()||'Öğün').slice(0,80),items:r.items,m:fp.m,img:fp.th,note:r.note||''});fp=null;const e=$('sh');if(e)e.remove();draw();toast('Öğün kaydedildi 🍽')}
@@ -65,7 +74,7 @@ function fgoal(){const g=F.g;
 function fauto(){const w=+getState().bw,k=Math.round(w*33/10)*10,p=Math.round(w*1.8),f=Math.round(k*.25/9),c=Math.max(0,Math.round((k-p*4-f*9)/4));$('gk').value=k;$('gp').value=p;$('gc').value=c;$('gf').value=f}
 function fgsave(){const v=id=>Math.max(0,Math.round(+$(id).value||0));F.g={kcal:v('gk')||FG0.kcal,p:v('gp'),c:v('gc'),f:v('gf')};fsave();const e=$('sh');if(e)e.remove();draw();toast('Hedef güncellendi')}
 
-const actions={food,fpick,fimg,fana,fres,fadd,fview,fsrv,fdel,fman,fmsave,fgoal,fauto,fgsave,fday,fput,ftot};
+const actions={food,fpick,fimg,fana,fres,fgrams,fadd,fview,fsrv,fdel,fman,fmsave,fgoal,fauto,fgsave,fday,fput,ftot};
 Object.assign(window,actions);
 Object.defineProperties(window,{
   fp:{configurable:true,get:()=>fp,set:value=>{fp=value}},
