@@ -155,3 +155,39 @@ test('home opens directly on workout without starter weight setup banner',async(
   await page.locator('#nav button[data-ui-tab="set"]').click();
   await expect(page.locator('#app .srow[onclick="go(\'w\')"]')).toHaveCount(1);
 });
+
+test('nutrition photo estimates can be corrected before and after logging',async({page})=>{
+ await page.goto('/');
+ const workoutBefore=await page.evaluate(()=>localStorage.getItem('sl5x5'));
+ await page.locator('#nav button[data-ui-tab="food"]').click();
+ await page.evaluate(()=>{
+  window.fp={
+   img:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL/nwAAAABJRU5ErkJggg==',
+   th:'',m:1,
+   res:{is_food:true,name:'Rice',confidence:'orta',items:[{name:'Rice',grams:100,kcal:130,protein:3,carbs:28,fat:0.3}],note:''}
+  };
+  window.fres();
+ });
+ await expect(page.locator('#sh')).toContainText('130');
+ await page.locator('#sh button[onclick="feditItem(\'pending\',0)"]').click();
+ await page.locator('#fe-grams').fill('150');
+ await page.locator('#fe-kcal').fill('195');
+ await page.locator('#fe-protein').fill('5');
+ await page.locator('#fe-carbs').fill('42');
+ await page.locator('#sh button[onclick^="feditSave"]').click();
+ await expect(page.locator('#sh')).toContainText('195');
+ await page.locator('#sh button[onclick="fadd()"]').click();
+ let meal=await page.evaluate(()=>Object.values(JSON.parse(localStorage.getItem('sl5x5_food')).d).flat()[0]);
+ expect(meal.items[0].grams).toBe(150);
+ expect(meal.items[0].kcal).toBe(195);
+ await page.locator('#app .card.fm').first().click();
+ await page.locator('#sh button[onclick^="feditItem"]').click();
+ await page.locator('#fe-kcal').fill('205');
+ await page.locator('#sh button[onclick^="feditSave"]').click();
+ meal=await page.evaluate(()=>Object.values(JSON.parse(localStorage.getItem('sl5x5_food')).d).flat()[0]);
+ expect(meal.items[0].kcal).toBe(205);
+ expect(await page.evaluate(()=>localStorage.getItem('sl5x5'))).toBe(workoutBefore);
+ await page.reload();
+ await page.locator('#nav button[data-ui-tab="food"]').click();
+ await expect(page.locator('#app')).toContainText('205');
+});
