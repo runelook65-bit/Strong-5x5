@@ -57,30 +57,35 @@ test('daily usage limit uses hashed per-account key and atomic Redis EVAL',async
  const user='123456789012345678901';
  const fetcher=async(url,options)=>{
   request={url,options};
-  return {ok:true,json:async()=>({result:[1,1]})};
+  return {ok:true,json:async()=>({result:[1,1,1]})};
  };
  const time=Date.UTC(2026,10,8,12);
  const result=await consumeDailyQuota(user,{env,fetcher,now:()=>time});
- assert.deepEqual(result,{allowed:true,remaining:11,limit:12});
+ assert.deepEqual(result,{allowed:true,remaining:11,limit:12,globalRemaining:39,globalLimit:40});
  assert.equal(request.url,'https://test.upstash.io/');
  assert.equal(request.options.headers.authorization,'Bearer not-a-real-token');
  const payload=JSON.parse(request.options.body);
  assert.equal(payload[0],'EVAL');
  assert.match(payload[1],/redis.call\('INCR'/);
  assert.match(payload[1],/redis.call\('EXPIRE'/);
- assert.equal(payload[2],'1');
+ assert.equal(payload[2],'2');
  assert.ok(!payload[3].includes(user),'User ID is hashed before storage');
  assert.ok(payload[3].endsWith(':2026-11-08'));
- assert.equal(payload[4],'12');
- assert.ok(Number(payload[5])>40000&&Number(payload[5])<50000);
+ assert.ok(payload[4].startsWith('strongfits:food:global:v1:'));
+ assert.equal(payload[5],'12');
+ assert.ok(Number(payload[6])>40000&&Number(payload[6])<50000);
+ assert.equal(payload[7],'40');
 });
 
 test('quota exhausted and storage failures never authorize AI requests',async()=>{
  const {consumeDailyQuota}=await security;
  const env={UPSTASH_REDIS_REST_URL:'https://test.upstash.io',UPSTASH_REDIS_REST_TOKEN:'secret'};
  const user='123456789012345678901';
- let response=await consumeDailyQuota(user,{env,fetcher:async()=>({ok:true,json:async()=>({result:[0,12]})})});
+ let response=await consumeDailyQuota(user,{env,fetcher:async()=>({ok:true,json:async()=>({result:[0,12,0]})})});
  assert.equal(response.allowed,false);
+ const global=await consumeDailyQuota(user,{env,fetcher:async()=>({ok:true,json:async()=>({result:[0,0,40]})})});
+ assert.equal(global.allowed,false);
+ assert.equal(global.globalRemaining,0);
  await assert.rejects(
   consumeDailyQuota(user,{env,fetcher:async()=>{throw Error('offline')}}),/quota_service/);
  await assert.rejects(
