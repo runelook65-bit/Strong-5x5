@@ -54,6 +54,34 @@ function fgrams(index, grams){
  fp.res.items[index]=revised;
  fres();
 }
+
+function feditItem(id,index){
+ const items=id==='pending'?fp?.res?.items:ffind(id)?.e?.items;
+ const item=Array.isArray(items)&&Number.isInteger(index)?items[index]:null;
+ if(!item)return;
+ const inputs=[['grams','Gram'],['kcal','Kalori (kcal)'],['protein','Protein (g)'],['carbs','Karbonhidrat (g)'],['fat','Yağ (g)']]
+  .map(([field,label])=>`<label>${label}<input class="w" id="fe-${field}" type="number" min="0" step="0.1" inputmode="decimal" value="${Number(item[field])||0}" style="width:100%;margin-top:6px"></label>`).join('');
+ sh('Besin değerlerini düzenle',`<label>Besin adı<input id="fe-name" maxlength="60" value="${fq(item.name)}"></label>
+ <div class="fgrid" style="margin-top:12px">${inputs}</div>
+ <p class="mu" style="font-size:12px;margin-top:10px">Yaptığın düzeltme AI tahmininin yerini alır. Gram miktarını değiştirirken kalori ve makroları da kontrol et.</p>
+ <button class="btn" onclick="feditSave('${id}',${index})">Değişiklikleri Kaydet</button>`);
+}
+function feditSave(id,index){
+ const saved=id!=='pending'?ffind(id):null;
+ const items=id==='pending'?fp?.res?.items:saved?.e?.items;
+ if(!Array.isArray(items)||!Number.isInteger(index)||!items[index])return;
+ const input={name:$('fe-name')?.value};
+ for(const field of ['grams','kcal','protein','carbs','fat'])input[field]=$('fe-'+field)?.value;
+ const next=correctFoodItem(items[index],input);
+ if(!next){toast('Geçerli bir besin adı ve sıfırdan küçük olmayan sayılar gir');return}
+ const prev=items[index];
+ items[index]=next;
+ if(id==='pending'){fres();return}
+ if(!fsave()){items[index]=prev;return}
+ draw();
+ fview(id);
+}
+
 function fput(e){const k=key(e.t);(F.d[k]=F.d[k]||[]).push(e);return fsave()}
 function fwhen(){const d=new Date();d.setDate(d.getDate()-fOff);return d.getTime()}
 function fadd(){if(!fp||!fp.res)return;const r=fp.res;fput({id:'m'+Date.now(),t:fwhen(),name:(String(r.name||'').trim()||'Öğün').slice(0,80),items:r.items,m:fp.m,img:fp.th,note:r.note||''});fp=null;const e=$('sh');if(e)e.remove();draw();toast('Öğün kaydedildi 🍽')}
@@ -75,7 +103,7 @@ function fgoal(){const g=F.g;
 function fauto(){const w=+getState().bw,k=Math.round(w*33/10)*10,p=Math.round(w*1.8),f=Math.round(k*.25/9),c=Math.max(0,Math.round((k-p*4-f*9)/4));$('gk').value=k;$('gp').value=p;$('gc').value=c;$('gf').value=f}
 function fgsave(){const v=id=>Math.max(0,Math.round(+$(id).value||0));F.g={kcal:v('gk')||FG0.kcal,p:v('gp'),c:v('gc'),f:v('gf')};fsave();const e=$('sh');if(e)e.remove();draw();toast('Hedef güncellendi')}
 
-const actions={food,fpick,fimg,fana,fres,fgrams,fadd,fview,fsrv,fdel,fman,fmsave,fgoal,fauto,fgsave,fday,fput,ftot};
+const actions={food,fpick,fimg,fana,fres,fgrams,feditItem,feditSave,fadd,fview,fsrv,fdel,fman,fmsave,fgoal,fauto,fgsave,fday,fput,ftot};
 Object.assign(window,actions);
 Object.defineProperties(window,{
   fp:{configurable:true,get:()=>fp,set:value=>{fp=value}},
